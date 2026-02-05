@@ -121,16 +121,17 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                 <h3 className="font-bold mb-4">⚙️ 系统配置</h3>
                 <div className="space-y-3">
                     <div className="flex items-center gap-4">
-                        <label className="w-24 text-sm text-gray-500">联系微信</label>
+                        <label className="w-28 text-sm text-gray-500 shrink-0">联系微信</label>
                         <input
                             type="text"
                             value={config.contact_wechat || ''}
                             onChange={e => updateConfig('contact_wechat', e.target.value)}
                             className="flex-1 h-10 px-3 rounded-xl border border-gray-200"
+                            placeholder="例如: sekesm"
                         />
                     </div>
                     <div className="flex items-center gap-4">
-                        <label className="w-24 text-sm text-gray-500">充值功能</label>
+                        <label className="w-28 text-sm text-gray-500 shrink-0">充值功能</label>
                         <button
                             onClick={() => updateConfig('recharge_enabled', config.recharge_enabled === 'true' ? 'false' : 'true')}
                             className={`px-4 py-2 rounded-xl ${config.recharge_enabled === 'true' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
@@ -138,16 +139,64 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                             {config.recharge_enabled === 'true' ? '已开启' : '已关闭'}
                         </button>
                     </div>
+                </div>
+            </div>
+
+            {/* 支付宝配置 */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                <h3 className="font-bold mb-4">💰 支付宝配置</h3>
+                <div className="space-y-3">
                     <div className="flex items-center gap-4">
-                        <label className="w-24 text-sm text-gray-500">支付宝AppID</label>
+                        <label className="w-28 text-sm text-gray-500 shrink-0">AppID</label>
                         <input
                             type="text"
                             value={config.alipay_app_id || ''}
                             onChange={e => updateConfig('alipay_app_id', e.target.value)}
                             className="flex-1 h-10 px-3 rounded-xl border border-gray-200"
-                            placeholder="沙箱AppID"
+                            placeholder="支付宝应用AppID"
                         />
                     </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-500">应用私钥 (明文)</label>
+                        <textarea
+                            value={config.alipay_private_key || ''}
+                            onChange={e => updateConfig('alipay_private_key', e.target.value)}
+                            className="w-full h-24 px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono"
+                            placeholder="MIIEvgIBADANBgkqhkiG9w0BAQEFAASC..."
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm text-gray-500">支付宝公钥 (明文)</label>
+                        <textarea
+                            value={config.alipay_public_key || ''}
+                            onChange={e => updateConfig('alipay_public_key', e.target.value)}
+                            className="w-full h-24 px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono"
+                            placeholder="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A..."
+                        />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <label className="w-28 text-sm text-gray-500 shrink-0">支付网关</label>
+                        <input
+                            type="text"
+                            value={config.alipay_gateway || 'https://openapi.alipay.com/gateway.do'}
+                            onChange={e => updateConfig('alipay_gateway', e.target.value)}
+                            className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm"
+                            placeholder="https://openapi.alipay.com/gateway.do"
+                        />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <label className="w-28 text-sm text-gray-500 shrink-0">回调地址</label>
+                        <input
+                            type="text"
+                            value={config.alipay_notify_url || ''}
+                            onChange={e => updateConfig('alipay_notify_url', e.target.value)}
+                            className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm"
+                            placeholder="https://yourdomain.com/api/alipay/notify"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-400">
+                        💡 提示：充值套餐为 9.9元=12次，19.9元=30次
+                    </p>
                 </div>
             </div>
 
