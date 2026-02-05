@@ -96,15 +96,37 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
     };
 
     // 处理充值
-    const handleRecharge = async (amount: number, credits: number) => {
+    const handleRecharge = async (amount: number, creditsToAdd: number) => {
         // 检查支付宝配置
         if (!config.alipay_app_id || !config.alipay_private_key) {
             setRechargeMessage('⚠️ 支付功能配置中，请联系管理员');
             return;
         }
-        setRechargeMessage(`正在跳转支付宝支付 ¥${amount}...`);
-        // TODO: 实际支付宝支付集成
-        alert(`充值功能开发中\n套餐: ${credits}次 / ¥${amount}`);
+
+        setRechargeMessage(`正在创建订单...`);
+
+        try {
+            const res = await fetch('/api/alipay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'createOrder',
+                    userId: user.id,
+                    amount,
+                    credits: creditsToAdd
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setRechargeMessage('正在跳转支付宝...');
+
+            // 跳转到支付宝支付页面
+            window.location.href = data.payUrl;
+        } catch (err: any) {
+            setRechargeMessage('❌ ' + (err.message || '支付失败'));
+        }
     };
 
     return (
