@@ -8,6 +8,7 @@ import AnalysisView from './views/AnalysisView';
 import CalendarView from './views/CalendarView';
 import CoupleFaceView from './views/CoupleFaceView';
 import FengShuiView from './views/FengShuiView';
+import LicensePlateView from './views/LicensePlateView';
 import LoginView from './views/LoginView';
 import MemberView from './views/MemberView';
 import AdminView from './views/AdminView';
@@ -145,6 +146,9 @@ const App: React.FC = () => {
 
       case AppSection.FENG_SHUI:
         return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} />;
+
+      case AppSection.LICENSE_PLATE:
+        return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} />;
 
       case AppSection.CALENDAR:
         return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} />;

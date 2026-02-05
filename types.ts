@@ -10,7 +10,8 @@ export enum AppSection {
   FACE_COLOR = 'face-color',
   FACE_READING = 'face-reading',
   FENG_SHUI = 'feng-shui',
-  CALENDAR = 'calendar'
+  CALENDAR = 'calendar',
+  LICENSE_PLATE = 'license-plate'
 }
 
 export interface AnalysisResult {
