@@ -198,6 +198,26 @@ export default async function handler(req: any, res: any) {
                 return res.status(200).json({ result });
             }
 
+            case 'textAnalysis': {
+                // 纯文本分析 (五行车牌等)
+                const { prompt } = req.body;
+
+                if (!prompt) {
+                    return res.status(400).json({ error: '缺少分析内容' });
+                }
+
+                const result = await requestWithRetry(async (ai) => {
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-3-flash-preview',
+                        contents: { parts: [{ text: prompt }] },
+                        config: { temperature: 0.7 }
+                    });
+                    return response.text;
+                });
+
+                return res.status(200).json({ result });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }

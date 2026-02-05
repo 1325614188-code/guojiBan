@@ -124,7 +124,7 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack }) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    type: '五行车牌',
+                    action: 'textAnalysis',
                     prompt
                 })
             });
@@ -213,8 +213,8 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack }) => {
                                 key={c.name}
                                 onClick={() => setCarColor(c.name)}
                                 className={`aspect-square rounded-xl flex items-center justify-center transition-all ${carColor === c.name
-                                        ? 'ring-2 ring-offset-2 ring-cyan-500 scale-110'
-                                        : ''
+                                    ? 'ring-2 ring-offset-2 ring-cyan-500 scale-110'
+                                    : ''
                                     } ${c.border ? 'border border-gray-300' : ''}`}
                                 style={{ backgroundColor: c.color }}
                                 title={c.name}
