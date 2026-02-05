@@ -38,27 +38,29 @@ function signWithRSA(content: string, privateKey: string): string {
     return sign.sign(pemKey, 'base64');
 }
 
-// 生成支付宝请求参数
-function buildAlipayParams(config: Record<string, string>, orderId: string, amount: number, credits: number) {
+// 生成支付宝请求参数 - 手机网站支付
+function buildAlipayParams(config: Record<string, string>, orderId: string, amount: number, credits: number, returnUrl: string) {
     const now = new Date();
-    const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+    // 北京时间
+    const timestamp = new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
 
     const bizContent = JSON.stringify({
         out_trade_no: orderId,
         total_amount: amount.toFixed(2),
         subject: `美力实验室充值 ${credits}次`,
-        product_code: 'FAST_INSTANT_TRADE_PAY'
+        product_code: 'QUICK_WAP_WAY'  // 手机网站支付产品码
     });
 
     const params: Record<string, string> = {
         app_id: config.alipay_app_id,
-        method: 'alipay.trade.page.pay',
+        method: 'alipay.trade.wap.pay',  // 手机网站支付接口
         format: 'JSON',
         charset: 'utf-8',
         sign_type: 'RSA2',
         timestamp,
         version: '1.0',
-        biz_content: bizContent
+        biz_content: bizContent,
+        return_url: returnUrl  // 支付完成后返回的页面
     };
 
     if (config.alipay_notify_url) {
@@ -108,7 +110,8 @@ export default async function handler(req: any, res: any) {
                 });
 
                 // 生成支付宝支付参数
-                const params = buildAlipayParams(config, orderId, amount, credits);
+                const returnUrl = req.headers.origin || 'https://www.qczj.xyz';
+                const params = buildAlipayParams(config, orderId, amount, credits, returnUrl);
                 const gateway = config.alipay_gateway || 'https://openapi.alipay.com/gateway.do';
 
                 // 构建支付URL
