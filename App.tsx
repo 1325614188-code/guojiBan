@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppSection } from './types';
+import { getStableDeviceId } from './lib/fingerprint';
 import HomeView from './views/HomeView';
 import TryOnView from './views/TryOnView';
 import HairstyleView from './views/HairstyleView';
@@ -49,12 +50,15 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // 初始化设备ID
+  // 初始化设备ID (基于硬件指纹)
   useEffect(() => {
-    if (!localStorage.getItem('device_id')) {
-      const deviceId = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-      localStorage.setItem('device_id', deviceId);
-    }
+    const initId = async () => {
+      if (!localStorage.getItem('device_id')) {
+        const fingerId = await getStableDeviceId();
+        localStorage.setItem('device_id', fingerId);
+      }
+    };
+    initId();
   }, []);
 
   const handleLogin = (loggedUser: any) => {

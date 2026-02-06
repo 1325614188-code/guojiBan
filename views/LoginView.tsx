@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getStableDeviceId } from '../lib/fingerprint';
 
 interface LoginViewProps {
     onLogin: (user: any) => void;
@@ -14,10 +15,10 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
     const [referrerId, setReferrerId] = useState<string | null>(null);
 
     // 获取设备ID
-    const getDeviceId = (): string => {
+    const getDeviceId = async (): Promise<string> => {
         let deviceId = localStorage.getItem('device_id');
         if (!deviceId) {
-            deviceId = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+            deviceId = await getStableDeviceId();
             localStorage.setItem('device_id', deviceId);
         }
         return deviceId;
@@ -38,7 +39,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
         setLoading(true);
 
         try {
-            const deviceId = getDeviceId();
+            const deviceId = await getDeviceId();
             const response = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
