@@ -11,6 +11,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ totalUsers: 0, totalOrders: 0 });
     const [editingCredits, setEditingCredits] = useState<{ id: string; amount: number } | null>(null);
+    const [editingPoints, setEditingPoints] = useState<{ id: string; amount: number } | null>(null);
     const [pointRedemptions, setPointRedemptions] = useState<any[]>([]);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -94,6 +95,21 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                 body: JSON.stringify({ action: 'updateCredits', adminId: admin.id, userId, amount })
             });
             setEditingCredits(null);
+            loadData();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    // 更新用户积分
+    const updatePoints = async (userId: string, amount: number) => {
+        try {
+            await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'updatePoints', adminId: admin.id, userId, amount })
+            });
+            setEditingPoints(null);
             loadData();
         } catch (e) {
             console.error(e);
@@ -281,6 +297,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                 <th className="pb-2">用户名</th>
                                 <th className="pb-2">昵称</th>
                                 <th className="pb-2">额度</th>
+                                <th className="pb-2">积分</th>
                                 <th className="pb-2">注册时间</th>
                                 <th className="pb-2">操作</th>
                             </tr>
@@ -310,16 +327,44 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                             <span className="font-bold text-pink-500">{user.credits}</span>
                                         )}
                                     </td>
+                                    <td className="py-3">
+                                        {editingPoints?.id === user.id ? (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="number"
+                                                    value={editingPoints.amount}
+                                                    onChange={e => setEditingPoints({ ...editingPoints, amount: parseInt(e.target.value) || 0 })}
+                                                    className="w-16 h-8 px-2 rounded border"
+                                                />
+                                                <button
+                                                    onClick={() => updatePoints(user.id, editingPoints.amount - user.points)}
+                                                    className="px-2 h-8 bg-purple-500 text-white rounded text-xs"
+                                                >
+                                                    保存
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="font-bold text-purple-500">{user.points || 0}</span>
+                                        )}
+                                    </td>
                                     <td className="py-3 text-gray-500">
                                         {new Date(user.created_at).toLocaleDateString()}
                                     </td>
                                     <td className="py-3">
-                                        <button
-                                            onClick={() => setEditingCredits({ id: user.id, amount: user.credits })}
-                                            className="text-pink-500 text-xs"
-                                        >
-                                            修改额度
-                                        </button>
+                                        <div className="flex flex-col gap-1">
+                                            <button
+                                                onClick={() => setEditingCredits({ id: user.id, amount: user.credits })}
+                                                className="text-pink-500 text-xs text-left"
+                                            >
+                                                修改额度
+                                            </button>
+                                            <button
+                                                onClick={() => setEditingPoints({ id: user.id, amount: user.points || 0 })}
+                                                className="text-purple-500 text-xs text-left"
+                                            >
+                                                修改积分
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

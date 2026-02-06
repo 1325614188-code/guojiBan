@@ -64,7 +64,7 @@ export default async function handler(req: any, res: any) {
 
                 const { data: users, count } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, device_id, created_at, is_admin', { count: 'exact' })
+                    .select('id, username, nickname, credits, points, device_id, created_at, is_admin', { count: 'exact' })
                     .order('created_at', { ascending: false })
                     .range((page - 1) * pageSize, page * pageSize - 1);
 
@@ -83,6 +83,20 @@ export default async function handler(req: any, res: any) {
                     .single();
 
                 return res.status(200).json({ success: true, newCredits: user?.credits });
+            }
+
+            case 'updatePoints': {
+                const { userId, amount } = data;
+
+                await supabase.rpc('add_points', { user_id: userId, amount });
+
+                const { data: user } = await supabase
+                    .from('users')
+                    .select('points')
+                    .eq('id', userId)
+                    .single();
+
+                return res.status(200).json({ success: true, newPoints: user?.points });
             }
 
             case 'getConfig': {
