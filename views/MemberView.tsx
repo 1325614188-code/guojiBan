@@ -242,8 +242,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
                             👤
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold">{user?.nickname || user?.username}</h3>
-                            <p className="text-white/80 text-sm">@{user?.username}</p>
+                            <h3 className="text-xl font-bold">@{user?.username}</h3>
+                            <p className="text-white/80 text-sm">本机识别码: {getDeviceIdSuffix()}</p>
                         </div>
                     </div>
                     <div className="mt-4 flex justify-between items-center">
@@ -258,11 +258,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
                         <h4 className="font-bold">📤 分享免费获得次数</h4>
                         <span className="text-sm text-pink-500 font-bold">已获得 {referralCount} 次</span>
                     </div>
-                    <p className="text-sm text-gray-500 mb-2">
+                    <p className="text-sm text-gray-500 mb-3">
                         分享专属链接，好友<span className="text-pink-500 font-bold">在手机上</span>注册后您将获得1次额度 <span className="text-orange-500">⚠️ 好友必须在手机端注册才能获得奖励</span>
-                    </p>
-                    <p className="text-xs text-gray-400 mb-3">
-                        本机识别码：<span className="font-mono font-bold text-cyan-600">{getDeviceIdSuffix()}</span>
                     </p>
                     <div className="flex gap-2">
                         <input

@@ -9,7 +9,6 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
     const [isRegister, setIsRegister] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [nickname, setNickname] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [referrerId, setReferrerId] = useState<string | null>(null);
@@ -47,7 +46,6 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                     action: isRegister ? 'register' : 'login',
                     username,
                     password,
-                    nickname: nickname || username,
                     deviceId,
                     referrerId
                 })
@@ -110,18 +108,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                             />
                         </div>
 
-                        {isRegister && (
-                            <div>
-                                <label className="block text-sm text-gray-500 mb-1">昵称 (选填)</label>
-                                <input
-                                    type="text"
-                                    value={nickname}
-                                    onChange={e => setNickname(e.target.value)}
-                                    className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pink-400 focus:outline-none"
-                                    placeholder="给自己取个昵称吧"
-                                />
-                            </div>
-                        )}
+                        {/* 移除昵称项 */}
 
                         <button
                             type="submit"
