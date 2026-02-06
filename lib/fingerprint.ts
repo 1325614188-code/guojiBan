@@ -27,15 +27,13 @@ function getFingerprintData(): string {
     const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'unknown';
 
     const features = [
-        navigator.userAgent,
-        navigator.language,
+        // 核心硬件参数 (不同浏览器/App 之间通常一致)
         screen.width + 'x' + screen.height,
+        window.devicePixelRatio || 1,
         screen.colorDepth,
-        new Date().getTimezoneOffset(),
-        !!window.sessionStorage,
-        !!window.localStorage,
         navigator.hardwareConcurrency || 'unknown',
         renderer,
+        new Date().getTimezoneOffset(),
     ];
 
     // Canvas 渲染特征
