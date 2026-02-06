@@ -216,11 +216,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
                         <h4 className="font-bold">📤 分享免费获得次数</h4>
                         <span className="text-sm text-pink-500 font-bold">已获得 {referralCount} 次</span>
                     </div>
-                    <p className="text-sm text-gray-500 mb-1">
-                        分享专属链接，好友<span className="text-pink-500 font-bold">在手机上</span>注册后您将获得1次额度
-                    </p>
-                    <p className="text-xs text-orange-500 mb-2">
-                        ⚠️ 好友必须在手机端注册才能获得奖励
+                    <p className="text-sm text-gray-500 mb-2">
+                        分享专属链接，好友<span className="text-pink-500 font-bold">在手机上</span>注册后您将获得1次额度 <span className="text-orange-500">⚠️ 好友必须在手机端注册才能获得奖励</span>
                     </p>
                     <p className="text-xs text-gray-400 mb-3">
                         本机识别码：<span className="font-mono font-bold text-cyan-600">{getDeviceIdSuffix()}</span>
