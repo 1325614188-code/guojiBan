@@ -16,6 +16,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
     const [rechargeMessage, setRechargeMessage] = useState('');
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const [referralCount, setReferralCount] = useState(0);
+    const [userPoints, setUserPoints] = useState(0);
+    const [pointsMessage, setPointsMessage] = useState('');
 
     // 获取设备ID后6位
     const getDeviceIdSuffix = (): string => {
@@ -49,6 +51,16 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
             })
                 .then(res => res.json())
                 .then(data => setReferralCount(data.referralCount || 0))
+                .catch(console.error);
+
+            // 加载积分
+            fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getPointsStats', userId: user.id })
+            })
+                .then(res => res.json())
+                .then(data => setUserPoints(data.points || 0))
                 .catch(console.error);
         }
 
@@ -113,6 +125,36 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
         navigator.clipboard.writeText(getShareLink());
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    // 积分兑换申请
+    const handlePointsRedeem = async (pointsUsed: number, rewardAmount: number) => {
+        if (userPoints < pointsUsed) {
+            setPointsMessage('❌ 积分不足');
+            return;
+        }
+
+        setPointsMessage('提交中...');
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'redeemPoints',
+                    userId: user.id,
+                    pointsUsed,
+                    rewardAmount
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setPointsMessage(`🎉 ${data.message}，请联系微信“${config.contact_wechat || 'sekesm'}”完成兑换`);
+        } catch (err: any) {
+            setPointsMessage('❌ ' + err.message);
+        }
     };
 
     // 处理充值
@@ -236,6 +278,46 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack }) => {
                             {copied ? '已复制' : '复制'}
                         </button>
                     </div>
+                </div>
+
+                {/* 推荐奖励积分 */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-bold">⭐ 推荐奖励积分</h4>
+                        <span className="text-sm text-purple-500 font-bold">当前积分：{userPoints}</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-2">
+                        好友通过分享链接注册，您将获得<span className="text-purple-500 font-bold">1个积分</span>，积分可兑换奖励
+                    </p>
+                    <div className="bg-purple-50 rounded-xl p-3 mb-3">
+                        <p className="text-xs text-purple-700 mb-1">🎁 奖励制度：</p>
+                        <p className="text-xs text-purple-600">• 50积分 → 20元红包</p>
+                        <p className="text-xs text-purple-600">• 100积分 → 50元红包</p>
+                        <p className="text-xs text-orange-500 mt-2">⚠️ 点击兑换后，请联系微信“{config.contact_wechat || 'sekesm'}”完成兑换</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => handlePointsRedeem(50, 20)}
+                            disabled={userPoints < 50}
+                            className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 50 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
+                        >
+                            <div className="text-lg font-bold text-purple-500">50积分</div>
+                            <div className="text-xs text-gray-500">→ 20元红包</div>
+                        </button>
+                        <button
+                            onClick={() => handlePointsRedeem(100, 50)}
+                            disabled={userPoints < 100}
+                            className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 100 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
+                        >
+                            <div className="text-lg font-bold text-purple-500">100积分</div>
+                            <div className="text-xs text-gray-500">→ 50元红包</div>
+                        </button>
+                    </div>
+                    {pointsMessage && (
+                        <p className={`mt-3 text-sm text-center ${pointsMessage.includes('❌') ? 'text-red-500' : 'text-green-500'}`}>
+                            {pointsMessage}
+                        </p>
+                    )}
                 </div>
 
                 {/* 兑换码 */}

@@ -140,6 +140,9 @@ export default async function handler(req: any, res: any) {
                             // 使用 add_credits 函数增加次数
                             await supabase.rpc('add_credits', { user_id: referrerId, amount: 1 });
 
+                            // 同时增加1个推荐积分
+                            await supabase.rpc('add_points', { user_id: referrerId, amount: 1 });
+
                             // 记录奖励
                             await supabase.from('referral_rewards').insert({
                                 referrer_id: referrerId,
@@ -187,7 +190,7 @@ export default async function handler(req: any, res: any) {
 
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, device_id, created_at')
+                    .select('id, username, nickname, credits, points, device_id, created_at')
                     .eq('id', userId)
                     .single();
 
@@ -306,6 +309,70 @@ export default async function handler(req: any, res: any) {
 
                 return res.status(200).json({
                     referralCount: count || 0
+                });
+            }
+
+            case 'getPointsStats': {
+                const { userId } = data;
+
+                const { data: user } = await supabase
+                    .from('users')
+                    .select('points')
+                    .eq('id', userId)
+                    .single();
+
+                return res.status(200).json({
+                    points: user?.points || 0
+                });
+            }
+
+            case 'redeemPoints': {
+                const { userId, pointsUsed, rewardAmount } = data;
+
+                // 获取用户信息
+                const { data: user } = await supabase
+                    .from('users')
+                    .select('points, username')
+                    .eq('id', userId)
+                    .single();
+
+                if (!user) {
+                    return res.status(404).json({ error: '用户不存在' });
+                }
+
+                // 检查积分是否足够
+                if (user.points < pointsUsed) {
+                    return res.status(400).json({ error: '积分不足' });
+                }
+
+                // 检查是否有待处理的兑换申请
+                const { data: pendingRedemption } = await supabase
+                    .from('point_redemptions')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('status', 'pending')
+                    .single();
+
+                if (pendingRedemption) {
+                    return res.status(400).json({ error: '您有待处理的兑换申请，请等待管理员处理' });
+                }
+
+                // 创建兑换申请
+                const { error: insertError } = await supabase
+                    .from('point_redemptions')
+                    .insert({
+                        user_id: userId,
+                        username: user.username,
+                        points_used: pointsUsed,
+                        reward_amount: rewardAmount,
+                        status: 'pending'
+                    });
+
+                if (insertError) throw insertError;
+
+                return res.status(200).json({
+                    success: true,
+                    message: '兑换申请已提交，请联系管理员微信完成兑换'
                 });
             }
 

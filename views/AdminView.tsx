@@ -11,6 +11,8 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ totalUsers: 0, totalOrders: 0 });
     const [editingCredits, setEditingCredits] = useState<{ id: string; amount: number } | null>(null);
+    const [pointRedemptions, setPointRedemptions] = useState<any[]>([]);
+    const [processingId, setProcessingId] = useState<string | null>(null);
 
     // 加载数据
     useEffect(() => {
@@ -53,6 +55,15 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             });
             const statsData = await statsRes.json();
             setStats(statsData);
+
+            // 获取积分兑换申请
+            const redemptionsRes = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getPointRedemptions', adminId: admin.id })
+            });
+            const redemptionsData = await redemptionsRes.json();
+            setPointRedemptions(redemptionsData.redemptions || []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -89,6 +100,28 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         }
     };
 
+    // 处理积分兑换申请
+    const processRedemption = async (redemptionId: string, approved: boolean) => {
+        setProcessingId(redemptionId);
+        try {
+            await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'processPointRedemption',
+                    adminId: admin.id,
+                    redemptionId,
+                    approved
+                })
+            });
+            loadData();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -115,6 +148,44 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                     <div className="text-3xl font-bold">{stats.totalOrders}</div>
                 </div>
             </div>
+
+            {/* 积分兑换申请 */}
+            {pointRedemptions.filter(r => r.status === 'pending').length > 0 && (
+                <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                    <h3 className="font-bold mb-4">🌟 积分兑换申请 <span className="text-pink-500">(待处理: {pointRedemptions.filter(r => r.status === 'pending').length})</span></h3>
+                    <div className="space-y-3">
+                        {pointRedemptions.filter(r => r.status === 'pending').map(redemption => (
+                            <div key={redemption.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
+                                <div>
+                                    <p className="font-bold text-sm">{redemption.username}</p>
+                                    <p className="text-xs text-gray-500">
+                                        {redemption.points_used}积分 → {redemption.reward_amount}元红包
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                        {new Date(redemption.created_at).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => processRedemption(redemption.id, true)}
+                                        disabled={processingId === redemption.id}
+                                        className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs"
+                                    >
+                                        {processingId === redemption.id ? '...' : '批准'}
+                                    </button>
+                                    <button
+                                        onClick={() => processRedemption(redemption.id, false)}
+                                        disabled={processingId === redemption.id}
+                                        className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs"
+                                    >
+                                        拒绝
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* 配置管理 */}
             <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">

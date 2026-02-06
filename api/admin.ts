@@ -122,6 +122,68 @@ export default async function handler(req: any, res: any) {
                 });
             }
 
+            case 'getPointRedemptions': {
+                // 获取积分兑换申请列表
+                const { data: redemptions } = await supabase
+                    .from('point_redemptions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                return res.status(200).json({ redemptions: redemptions || [] });
+            }
+
+            case 'processPointRedemption': {
+                const { redemptionId, approved, adminNote } = data;
+
+                // 获取兑换申请
+                const { data: redemption } = await supabase
+                    .from('point_redemptions')
+                    .select('*')
+                    .eq('id', redemptionId)
+                    .single();
+
+                if (!redemption) {
+                    return res.status(404).json({ error: '兑换申请不存在' });
+                }
+
+                if (redemption.status !== 'pending') {
+                    return res.status(400).json({ error: '该申请已被处理' });
+                }
+
+                if (approved) {
+                    // 批准：扣除用户积分
+                    await supabase.rpc('add_points', {
+                        user_id: redemption.user_id,
+                        amount: -redemption.points_used
+                    });
+
+                    // 更新申请状态
+                    await supabase
+                        .from('point_redemptions')
+                        .update({
+                            status: 'approved',
+                            processed_at: new Date().toISOString(),
+                            admin_note: adminNote || '已批准'
+                        })
+                        .eq('id', redemptionId);
+                } else {
+                    // 拒绝：不扣除积分，仅更新状态
+                    await supabase
+                        .from('point_redemptions')
+                        .update({
+                            status: 'rejected',
+                            processed_at: new Date().toISOString(),
+                            admin_note: adminNote || '已拒绝'
+                        })
+                        .eq('id', redemptionId);
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: approved ? '已批准兑换申请' : '已拒绝兑换申请'
+                });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }
