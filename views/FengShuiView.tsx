@@ -3,7 +3,13 @@ import React, { useState } from 'react';
 import { generateXHSStyleReport } from '../services/gemini';
 import ReactMarkdown from 'https://esm.sh/react-markdown';
 
-const FengShuiView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+interface FengShuiViewProps {
+  onBack: () => void;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
+}
+
+const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
   const [image, setImage] = useState<string | null>(null);
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,10 +25,17 @@ const FengShuiView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   const handleAnalyze = async () => {
     if (!image) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     try {
       const res = await generateXHSStyleReport("摆设风水分析", [image], "分析图中办公桌或家居摆设的布局，给出风水评分和改进建议。");
       setReport(res);
+      // 成功后扣除额度
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('分析失败');

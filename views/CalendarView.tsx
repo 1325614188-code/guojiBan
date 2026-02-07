@@ -3,23 +3,36 @@ import React, { useState } from 'react';
 import { analyzeImage } from '../services/gemini';
 import ReactMarkdown from 'https://esm.sh/react-markdown';
 
-const CalendarView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+interface CalendarViewProps {
+  onBack: () => void;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
+}
+
+const CalendarView: React.FC<CalendarViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
   const [todo, setTodo] = useState('');
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const today = new Date().toLocaleDateString('zh-CN', { 
-    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+  const today = new Date().toLocaleDateString('zh-CN', {
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
   });
 
   const handleCheck = async () => {
     if (!todo) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     try {
       const systemInstruction = "你是一位精通传统黄历和时尚穿搭的博主。语气亲切，富有生活气息。";
       const prompt = `今天是${today}。我想做的事情是：${todo}。请结合今日黄历背景，给出吉凶建议，并推荐今天适合穿什么颜色的衣服来提升好运，最后用小红书风格排版。`;
       const res = await analyzeImage(prompt, [], systemInstruction);
       setReport(res);
+      // 成功后扣除额度
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('系统繁忙，请稍后再试');
@@ -40,8 +53,8 @@ const CalendarView: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <h3 className="text-2xl font-bold mb-4">今日万事如意 ✨</h3>
         <div className="bg-white/10 p-4 rounded-xl">
           <label className="block text-sm font-bold mb-2">今天打算去干嘛？</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={todo}
             onChange={(e) => setTodo(e.target.value)}
             placeholder="如：去面试、约会、搬家..."

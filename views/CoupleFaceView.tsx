@@ -5,9 +5,11 @@ import ReactMarkdown from 'https://esm.sh/react-markdown';
 
 interface CoupleFaceViewProps {
   onBack: () => void;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
 }
 
-const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack }) => {
+const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
   const [maleImg, setMaleImg] = useState<string | null>(null);
   const [femaleImg, setFemaleImg] = useState<string | null>(null);
   const [report, setReport] = useState<string | null>(null);
@@ -24,10 +26,17 @@ const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack }) => {
 
   const handleAnalyze = async () => {
     if (!maleImg || !femaleImg) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     try {
       const res = await generateXHSStyleReport("夫妻相分析", [maleImg, femaleImg], "分析这两张脸的五官特征是否契合，给出夫妻相打分和情感建议。");
       setReport(res);
+      // 成功后扣除额度
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('分析失败');

@@ -5,9 +5,11 @@ import { generateTryOnImage } from '../services/gemini';
 interface TryOnViewProps {
   type: 'clothes' | 'accessories';
   onBack: () => void;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
 }
 
-const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack }) => {
+const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onDeductCredit }) => {
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [itemImage, setItemImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
@@ -24,10 +26,17 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack }) => {
 
   const handleGenerate = async () => {
     if (!faceImage || !itemImage) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     try {
       const result = await generateTryOnImage(faceImage, itemImage, type === 'clothes' ? 'clothes' : 'earrings');
       setResultImage(result);
+      // 成功后扣除额度
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('生成失败，请稍后重试');
@@ -85,7 +94,7 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack }) => {
           <div className="rounded-3xl overflow-hidden shadow-xl">
             <img src={resultImage} className="w-full" />
           </div>
-          <button 
+          <button
             onClick={() => {
               const link = document.createElement('a');
               link.href = resultImage;

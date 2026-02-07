@@ -4,9 +4,11 @@ import { generateHairstyles } from '../services/gemini';
 
 interface HairstyleViewProps {
   onBack: () => void;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
 }
 
-const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack }) => {
+const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [gender, setGender] = useState<'女' | '男'>('女');
   const [results, setResults] = useState<{ name: string; imageUrl: string }[]>([]);
@@ -25,6 +27,11 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack }) => {
 
   const handleGenerate = async () => {
     if (!faceImage) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     setResults([]);
     setProgress({ current: 0, total: 10 });
@@ -40,6 +47,8 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack }) => {
           });
         }
       });
+      // 成功生成后扣除 1 次额度 (虽然生成了 10 款)
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('生成失败，请重试');

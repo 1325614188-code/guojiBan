@@ -8,9 +8,11 @@ interface AnalysisViewProps {
   type: string;
   onBack: () => void;
   helpText?: string;
+  onCheckCredits?: () => Promise<boolean>;
+  onDeductCredit?: () => Promise<void>;
 }
 
-const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpText }) => {
+const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpText, onCheckCredits, onDeductCredit }) => {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<string | null>(null);
@@ -27,10 +29,17 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
 
   const handleAnalyze = async () => {
     if (!image) return;
+
+    // 检查额度
+    const hasCredits = await onCheckCredits?.();
+    if (!hasCredits) return;
+
     setLoading(true);
     try {
       const res = await generateXHSStyleReport(type, [image], gender ? `性别：${gender}` : "");
       setReport(res);
+      // 成功后扣除额度
+      await onDeductCredit?.();
     } catch (e) {
       console.error(e);
       alert('分析遇到了点困难，稍后再试吧');

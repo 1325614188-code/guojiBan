@@ -144,37 +144,37 @@ const App: React.FC = () => {
         return <HomeView onNavigate={setCurrentSection} />;
 
       case AppSection.TRY_ON_CLOTHES:
-        return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.TRY_ON_ACCESSORIES:
-        return <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.HAIRSTYLE:
-        return <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.BEAUTY_SCORE:
-        return <AnalysisView title="颜值打分" type="颜值打分" onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <AnalysisView title="颜值打分" type="颜值打分" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.COUPLE_FACE:
-        return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.TONGUE_DIAGNOSIS:
-        return <AnalysisView title="趣味舌诊" type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText="请上传一张清晰的舌头照片哦～" />;
+        return <AnalysisView title="趣味舌诊" type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText="请上传一张清晰的舌头照片哦～" onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.FACE_COLOR:
-        return <AnalysisView title="面色分析" type="中医面色" onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <AnalysisView title="面色分析" type="中医面色" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.FACE_READING:
-        return <AnalysisView title="传统面相" type="传统相术" onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <AnalysisView title="传统面相" type="传统相术" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.FENG_SHUI:
-        return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.LICENSE_PLATE:
-        return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       case AppSection.CALENDAR:
-        return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} />;
+        return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
 
       default:
         return <HomeView onNavigate={setCurrentSection} />;
