@@ -60,12 +60,15 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold text-gray-500">1. 上传人脸照片</p>
-          <label className="aspect-[3/4] rounded-2xl bg-white border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer">
+          <p className="text-xs font-bold text-gray-500">1. 上传上半身人脸照片</p>
+          <label className="aspect-[3/4] rounded-2xl bg-white border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer">
             {faceImage ? (
               <img src={faceImage} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-3xl">👤</span>
+              <>
+                <span className="text-3xl">👤</span>
+                <span className="text-xs text-gray-400 mt-2 px-2 text-center">请上传清晰的上半身照片</span>
+              </>
             )}
             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, setFaceImage)} />
           </label>
