@@ -11,7 +11,7 @@ interface HairstyleViewProps {
 const MALE_HAIRSTYLES = [
   { id: 'pompadour', name: '现代纹理飞机头', desc: '经典飞机头的升级版，哑光发泥打造自然的蓬松纹理', icon: '✈️' },
   { id: 'wolf', name: '软狼尾', desc: '缩短脑后长度，适合通勤，极具少年感', icon: '🐺' },
-  { id: 'french', name: '法式剪裁', desc: '头顶保留向前梳理，整齐短刘海配合高渐变', icon: '🇫🇷' },
+  { id: 'french', name: '复古油头', desc: '经典背梳造型，光亮整齐，绅士复古', icon: '🎩' },
   { id: 'fade', name: '侧爆渐变', desc: '渐变围绕耳朵呈半圆状散开，结构感强', icon: '💈' },
   { id: 'medium', name: '流动感中长发', desc: '文艺气息长碎发，发尾微卷，慵懒高级', icon: '🌊' },
   { id: 'mod', name: '现代英伦摩德头', desc: '层次丰富，刘海盖额，不羁摇滚感', icon: '🎸' },
@@ -146,8 +146,8 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
               key={style.id}
               onClick={() => setSelectedStyle(style.id)}
               className={`p-3 rounded-xl border-2 transition-all text-left ${selectedStyle === style.id
-                  ? 'border-rose-500 bg-rose-50'
-                  : 'border-gray-200 bg-white hover:border-rose-300'
+                ? 'border-rose-500 bg-rose-50'
+                : 'border-gray-200 bg-white hover:border-rose-300'
                 }`}
             >
               <div className="flex items-center gap-2 mb-1">
