@@ -7,10 +7,63 @@ interface LicensePlateViewProps {
 }
 
 // 时辰对照表
-// ... (rest of constants stay the same)
+const SHICHEN_MAP = [
+    { name: '子时', range: '23:00-00:59', hours: [23, 0] },
+    { name: '丑时', range: '01:00-02:59', hours: [1, 2] },
+    { name: '寅时', range: '03:00-04:59', hours: [3, 4] },
+    { name: '卯时', range: '05:00-06:59', hours: [5, 6] },
+    { name: '辰时', range: '07:00-08:59', hours: [7, 8] },
+    { name: '巳时', range: '09:00-10:59', hours: [9, 10] },
+    { name: '午时', range: '11:00-12:59', hours: [11, 12] },
+    { name: '未时', range: '13:00-14:59', hours: [13, 14] },
+    { name: '申时', range: '15:00-16:59', hours: [15, 16] },
+    { name: '酉时', range: '17:00-18:59', hours: [17, 18] },
+    { name: '戌时', range: '19:00-20:59', hours: [19, 20] },
+    { name: '亥时', range: '21:00-22:59', hours: [21, 22] },
+];
+
+// 车身颜色选项
+const CAR_COLORS = [
+    { name: '白色', color: '#FFFFFF', border: true },
+    { name: '黑色', color: '#1a1a1a' },
+    { name: '银色', color: '#C0C0C0' },
+    { name: '灰色', color: '#808080' },
+    { name: '红色', color: '#DC143C' },
+    { name: '蓝色', color: '#1E90FF' },
+    { name: '绿色', color: '#228B22' },
+    { name: '黄色', color: '#FFD700' },
+    { name: '橙色', color: '#FF8C00' },
+    { name: '棕色', color: '#8B4513' },
+    { name: '紫色', color: '#9400D3' },
+    { name: '粉色', color: '#FF69B4' },
+];
 
 const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
-    // ... (state stays the same)
+    // 表单状态
+    const [birthDate, setBirthDate] = useState('');
+    const [birthTime, setBirthTime] = useState('');
+    const [shichen, setShichen] = useState('');
+    const [licensePlate, setLicensePlate] = useState('');
+    const [carColor, setCarColor] = useState('');
+
+    // 分析状态
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<string | null>(null);
+    const [error, setError] = useState('');
+
+    // 根据具体时间自动计算时辰
+    const handleTimeChange = (time: string) => {
+        setBirthTime(time);
+        if (time) {
+            const hour = parseInt(time.split(':')[0]);
+            const matched = SHICHEN_MAP.find(s =>
+                s.hours.includes(hour) || (hour === 0 && s.name === '子时')
+            );
+            if (matched) {
+                setShichen(matched.name);
+            }
+        }
+    };
 
     // 开始分析
     const handleAnalyze = async () => {
@@ -28,7 +81,50 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
         setResult(null);
 
         try {
-            const prompt = `...`; // (prompt stays same)
+            const prompt = `你是一位精通中国传统五行命理的大师。请根据以下信息进行详细的五行车牌分析：
+
+**个人信息：**
+- 新历出生日期：${birthDate}
+- 出生时辰：${shichen}
+- 车牌号码：${licensePlate}
+- 车身颜色：${carColor}
+
+**请按以下步骤进行分析：**
+
+1. **新历转农历**：将新历出生日期转换为农历日期
+
+2. **生辰八字分析**：
+   - 计算年柱、月柱、日柱、时柱
+   - 分析五行分布（金木水火土各有多少）
+   - 指出五行中缺什么、补什么、泄什么
+
+3. **命主喜忌分析**：
+   - 幸运数字（1-9中哪些数字有利）
+   - 应避开的数字
+   - 幸运颜色
+   - 应避开的颜色
+
+4. **车牌五行分析**：
+   - 分析车牌号每个字符对应的五行属性
+   - 数字五行：1/6属水、2/7属火、3/8属木、4/9属金、5/0属土
+   - 字母五行：根据形状和笔画判断
+
+5. **车身颜色五行**：
+   - 分析${carColor}对应的五行属性
+   - 是否与命主五行相合或相克
+
+6. **综合评分**：
+   - 车牌与命主匹配度（0-100分）
+   - 车身颜色与命主匹配度（0-100分）
+   - 总体旺主指数（0-100分）
+   - 判断：旺车主还是损车主，程度如何
+
+7. **改善建议**：
+   - 如果车牌不利，给出化解方法
+   - 车内可以摆放什么物品增加运势
+   - 其他调整建议
+
+请用通俗易懂的语言，使用emoji让内容更生动，用markdown格式输出。`;
 
             const response = await fetch('/api/gemini', {
                 method: 'POST',

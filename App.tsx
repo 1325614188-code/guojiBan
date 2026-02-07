@@ -113,11 +113,21 @@ const App: React.FC = () => {
   const deductCredit = async () => {
     if (!user) return;
     try {
-      await fetch('/api/auth', {
+      const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
       });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && typeof data.credits === 'number') {
+          // 更新本地状态，确保 UI 实时同步
+          const updatedUser = { ...user, credits: data.credits };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      }
     } catch (e) {
       console.error(e);
     }

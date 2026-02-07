@@ -201,13 +201,20 @@ export default async function handler(req: any, res: any) {
             case 'getUser': {
                 const { userId } = data;
 
+                if (!userId) {
+                    return res.status(400).json({ error: 'Missing userId' });
+                }
+
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, points, device_id, created_at')
+                    .select('id, username, nickname, credits, points, device_id, is_admin, created_at')
                     .eq('id', userId)
                     .single();
 
-                if (error) throw error;
+                if (error) {
+                    console.error('[getUser Error]', error);
+                    return res.status(404).json({ error: 'User not found' });
+                }
 
                 return res.status(200).json({ user });
             }
@@ -290,26 +297,27 @@ export default async function handler(req: any, res: any) {
             case 'deductCredit': {
                 const { userId } = data;
 
-                await supabase.rpc('add_credits', { user_id: userId, amount: -1 });
+                if (!userId) {
+                    return res.status(400).json({ error: 'Missing userId' });
+                }
 
-                return res.status(200).json({ success: true });
-            }
+                // 扣除额度
+                const { error: rpcError } = await supabase.rpc('add_credits', { user_id: userId, amount: -1 });
+                if (rpcError) {
+                    console.error('[deductCredit RPC Error]', rpcError);
+                    throw rpcError;
+                }
 
-            case 'getUser': {
-                const { userId } = data;
-
+                // 获取并返回最新额度
                 const { data: user } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, is_admin')
+                    .select('credits')
                     .eq('id', userId)
                     .single();
 
-                if (!user) {
-                    return res.status(404).json({ error: '用户不存在' });
-                }
-
-                return res.status(200).json({ user });
+                return res.status(200).json({ success: true, credits: user?.credits });
             }
+
 
             case 'getReferralStats': {
                 const { userId } = data;
