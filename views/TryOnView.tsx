@@ -34,9 +34,15 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
     setLoading(true);
     try {
       const result = await generateTryOnImage(faceImage, itemImage, type === 'clothes' ? 'clothes' : 'earrings');
-      setResultImage(result);
-      // 成功后扣除额度
-      await onDeductCredit?.();
+      if (result) {
+        setResultImage(result);
+        // 成功后扣除额度
+        console.log('[TryOnView] 生成成功，开始扣除额度');
+        await onDeductCredit?.();
+      } else {
+        console.warn('[TryOnView] 生成失败，未返回结果，不扣除额度');
+        alert('生成失败，请稍后重试');
+      }
     } catch (e) {
       console.error(e);
       alert('生成失败，请稍后重试');

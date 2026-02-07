@@ -37,9 +37,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
     setLoading(true);
     try {
       const res = await generateXHSStyleReport(type, [image], gender ? `性别：${gender}` : "");
-      setReport(res);
-      // 成功后扣除额度
-      await onDeductCredit?.();
+      if (res) {
+        setReport(res);
+        // 成功后扣除额度
+        console.log('[AnalysisView] 分析成功，开始扣除额度');
+        await onDeductCredit?.();
+      } else {
+        console.warn('[AnalysisView] 分析失败，未返回结果，不扣除额度');
+        alert('分析遇到了点困难，稍后再试吧');
+      }
     } catch (e) {
       console.error(e);
       alert('分析遇到了点困难，稍后再试吧');

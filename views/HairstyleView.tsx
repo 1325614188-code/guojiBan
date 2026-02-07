@@ -48,6 +48,7 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
         }
       });
       // 成功生成后扣除 1 次额度 (虽然生成了 10 款)
+      console.log('[HairstyleView] 生成完成，开始扣除额度');
       await onDeductCredit?.();
     } catch (e) {
       console.error(e);

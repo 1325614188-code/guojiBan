@@ -110,26 +110,36 @@ const App: React.FC = () => {
   };
 
   // 扣除额度 (成功后调用)
-  const deductCredit = async () => {
-    if (!user) return;
+  const deductCredit = async (): Promise<boolean> => {
+    if (!user) {
+      console.warn('[deductCredit] 用户未登录，跳过扣除');
+      return false;
+    }
     try {
+      console.log('[deductCredit] 开始扣除额度，用户ID:', user.id);
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && typeof data.credits === 'number') {
-          // 更新本地状态，确保 UI 实时同步
-          const updatedUser = { ...user, credits: data.credits };
-          setUser(updatedUser);
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-        }
+      const data = await res.json();
+      console.log('[deductCredit] API 响应:', data);
+
+      if (res.ok && data.success && typeof data.credits === 'number') {
+        // 更新本地状态，确保 UI 实时同步
+        const updatedUser = { ...user, credits: data.credits };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('[deductCredit] 额度扣除成功，剩余:', data.credits);
+        return true;
+      } else {
+        console.error('[deductCredit] 扣除失败:', data.error || '未知错误');
+        return false;
       }
     } catch (e) {
-      console.error(e);
+      console.error('[deductCredit] 请求异常:', e);
+      return false;
     }
   };
 

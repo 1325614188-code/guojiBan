@@ -34,9 +34,14 @@ const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits,
     setLoading(true);
     try {
       const res = await generateXHSStyleReport("夫妻相分析", [maleImg, femaleImg], "分析这两张脸的五官特征是否契合，给出夫妻相打分和情感建议。");
-      setReport(res);
-      // 成功后扣除额度
-      await onDeductCredit?.();
+      if (res) {
+        setReport(res);
+        // 成功后扣除额度
+        console.log('[CoupleFaceView] 分析成功，开始扣除额度');
+        await onDeductCredit?.();
+      } else {
+        alert('分析失败');
+      }
     } catch (e) {
       console.error(e);
       alert('分析失败');

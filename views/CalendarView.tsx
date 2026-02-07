@@ -30,9 +30,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ onBack, onCheckCredits, onD
       const systemInstruction = "你是一位精通传统黄历和时尚穿搭的博主。语气亲切，富有生活气息。";
       const prompt = `今天是${today}。我想做的事情是：${todo}。请结合今日黄历背景，给出吉凶建议，并推荐今天适合穿什么颜色的衣服来提升好运，最后用小红书风格排版。`;
       const res = await analyzeImage(prompt, [], systemInstruction);
-      setReport(res);
-      // 成功后扣除额度
-      await onDeductCredit?.();
+      if (res) {
+        setReport(res);
+        // 成功后扣除额度
+        console.log('[CalendarView] 分析成功，开始扣除额度');
+        await onDeductCredit?.();
+      } else {
+        alert('系统繁忙，请稍后再试');
+      }
     } catch (e) {
       console.error(e);
       alert('系统繁忙，请稍后再试');

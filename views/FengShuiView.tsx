@@ -33,9 +33,14 @@ const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onD
     setLoading(true);
     try {
       const res = await generateXHSStyleReport("摆设风水分析", [image], "分析图中办公桌或家居摆设的布局，给出风水评分和改进建议。");
-      setReport(res);
-      // 成功后扣除额度
-      await onDeductCredit?.();
+      if (res) {
+        setReport(res);
+        // 成功后扣除额度
+        console.log('[FengShuiView] 分析成功，开始扣除额度');
+        await onDeductCredit?.();
+      } else {
+        alert('分析失败');
+      }
     } catch (e) {
       console.error(e);
       alert('分析失败');
