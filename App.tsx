@@ -52,7 +52,12 @@ const App: React.FC = () => {
             const data = await res.json();
             if (data.user) {
               console.log('[App] API User Sync Output:', data.user.credits);
-              const updatedUser = { ...parsedUser, credits: data.user.credits };
+              const updatedUser = {
+                ...parsedUser,
+                credits: data.user.credits,
+                _db: data._db,
+                _v: data._v
+              };
               setUser(updatedUser);
               localStorage.setItem('user', JSON.stringify(updatedUser));
             }
@@ -101,7 +106,12 @@ const App: React.FC = () => {
               .then(res => res.json())
               .then(userData => {
                 if (userData.user) {
-                  const freshUser = { ...(parsedUser || userData.user), credits: userData.user.credits };
+                  const freshUser = {
+                    ...(parsedUser || userData.user),
+                    credits: userData.user.credits,
+                    _db: userData._db,
+                    _v: userData._v
+                  };
                   setUser(freshUser);
                   localStorage.setItem('user', JSON.stringify(freshUser));
                   console.log('[Payment] Final UI Update Success:', userData.user.credits);

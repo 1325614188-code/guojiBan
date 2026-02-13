@@ -49,8 +49,6 @@ const generateDeviceId = (): string => {
 // 检测环境：微信、QQ、普通浏览器
 const getEnvironment = (userAgent: string): 'wechat' | 'qq' | 'browser' | 'other' => {
     if (userAgent.includes('MicroMessenger')) return 'wechat';
-    // QQ 内部浏览器包含 "QQ/" 且通常不包含 "MQQBrowser"（QQ浏览器）
-    // 或者包含 "QQ/" 且是在移动端设备上
     if (userAgent.includes('QQ/') && !userAgent.includes('MQQBrowser')) return 'qq';
 
     const mobileKeywords = [
@@ -62,7 +60,7 @@ const getEnvironment = (userAgent: string): 'wechat' | 'qq' | 'browser' | 'other
     return isMobile ? 'browser' : 'other';
 };
 
-// 检测是否为移动设备 (保留兼容性，但逻辑已整合进 getEnvironment)
+// 检测是否为移动设备
 const isMobileDevice = (userAgent: string): boolean => {
     return getEnvironment(userAgent) !== 'other';
 };
@@ -71,7 +69,6 @@ export default async function handler(req: any, res: any) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    // NOTE: 禁止浏览器缓存 API 响应，确保每次获取最新数据
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
 
@@ -88,7 +85,6 @@ export default async function handler(req: any, res: any) {
                 const env = getEnvironment(userAgent);
                 const isBrowser = env === 'browser';
 
-                // 检查用户名是否已存在
                 const { data: existing } = await supabase
                     .from('users')
                     .select('id')
@@ -99,7 +95,6 @@ export default async function handler(req: any, res: any) {
                     return res.status(400).json({ error: '用户名已存在' });
                 }
 
-                // 检查设备是否已有首个用户
                 const { data: device } = await supabase
                     .from('devices')
                     .select('first_user_id')
@@ -107,10 +102,8 @@ export default async function handler(req: any, res: any) {
                     .single();
 
                 const isFirstOnDevice = !device;
-                // 只有【手机浏览器】首次注册才赠送额度 (排除微信和QQ)
                 const initialCredits = (isFirstOnDevice && isBrowser) ? 5 : 0;
 
-                // 创建用户
                 const { data: newUser, error: userError } = await supabase
                     .from('users')
                     .insert({
@@ -126,7 +119,6 @@ export default async function handler(req: any, res: any) {
 
                 if (userError) throw userError;
 
-                // 记录设备首个用户
                 if (isFirstOnDevice) {
                     await supabase.from('devices').insert({
                         device_id: deviceId,
@@ -134,9 +126,7 @@ export default async function handler(req: any, res: any) {
                     });
                 }
 
-                // 如果有推荐人，且是【手机浏览器】注册，给推荐人增加次数
                 if (referrerId && isBrowser) {
-                    // 检查推荐人是否存在
                     const { data: referrer } = await supabase
                         .from('users')
                         .select('id')
@@ -144,7 +134,6 @@ export default async function handler(req: any, res: any) {
                         .single();
 
                     if (referrer) {
-                        // 检查是否已经奖励过（同一设备只奖励一次）
                         const { data: existingReward } = await supabase
                             .from('referral_rewards')
                             .select('id')
@@ -153,7 +142,6 @@ export default async function handler(req: any, res: any) {
                             .single();
 
                         if (!existingReward) {
-                            // 直接查询并更新推荐人的额度和积分（不依赖 RPC 函数）
                             const { data: referrerData } = await supabase
                                 .from('users')
                                 .select('credits, points')
@@ -170,7 +158,6 @@ export default async function handler(req: any, res: any) {
                                     .eq('id', referrerId);
                             }
 
-                            // 记录奖励
                             await supabase.from('referral_rewards').insert({
                                 referrer_id: referrerId,
                                 new_user_id: newUser.id,
@@ -208,7 +195,8 @@ export default async function handler(req: any, res: any) {
 
                 return res.status(200).json({
                     success: true,
-                    user
+                    user,
+                    _db: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing'
                 });
             }
 
@@ -230,7 +218,11 @@ export default async function handler(req: any, res: any) {
                     return res.status(404).json({ error: 'User not found' });
                 }
 
-                return res.status(200).json({ user });
+                return res.status(200).json({
+                    user,
+                    _db: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing',
+                    _v: 'auth-20260214-sync-check'
+                });
             }
 
             case 'redeem': {
@@ -238,17 +230,14 @@ export default async function handler(req: any, res: any) {
                 const userAgent = req.headers['user-agent'] || '';
                 const isMobile = isMobileDevice(userAgent);
 
-                // 检查是否为移动端
                 if (!isMobile) {
                     return res.status(400).json({ error: '兑换码只能在手机端使用' });
                 }
 
-                // 验证兑换码格式
                 if (!validateRedeemCode(code)) {
                     return res.status(400).json({ error: '无效的兑换码' });
                 }
 
-                // 检查兑换码是否已被使用
                 const { data: existingRedemption } = await supabase
                     .from('redemptions')
                     .select('id')
@@ -259,7 +248,6 @@ export default async function handler(req: any, res: any) {
                     return res.status(400).json({ error: '该兑换码已被使用' });
                 }
 
-                // 检查本月是否已兑换过
                 const startOfMonth = new Date();
                 startOfMonth.setDate(1);
                 startOfMonth.setHours(0, 0, 0, 0);
@@ -275,14 +263,12 @@ export default async function handler(req: any, res: any) {
                     return res.status(400).json({ error: '本月已兑换过，请下月再试' });
                 }
 
-                // 记录兑换
                 await supabase.from('redemptions').insert({
                     code,
                     device_id: deviceId,
                     user_id: userId
                 });
 
-                // 增加用户次数（直接查询并更新，不依赖 RPC 函数）
                 const { data: redeemUser } = await supabase
                     .from('users')
                     .select('credits')
@@ -305,7 +291,6 @@ export default async function handler(req: any, res: any) {
             case 'useCredit': {
                 const { userId } = data;
 
-                // 检查用户额度
                 const { data: user } = await supabase
                     .from('users')
                     .select('credits')
@@ -321,12 +306,10 @@ export default async function handler(req: any, res: any) {
 
             case 'deductCredit': {
                 const { userId } = data;
-
                 if (!userId) {
                     return res.status(400).json({ error: 'Missing userId' });
                 }
 
-                // 扣除额度（直接查询并更新，不依赖 RPC 函数）
                 const { data: deductUser, error: deductUserErr } = await supabase
                     .from('users')
                     .select('credits')
@@ -334,48 +317,41 @@ export default async function handler(req: any, res: any) {
                     .single();
 
                 if (deductUserErr || !deductUser) {
-                    console.error('[deductCredit] Get user error:', deductUserErr);
                     return res.status(400).json({ error: 'User not found' });
                 }
 
                 const newCreditAmount = Math.max(0, (deductUser.credits || 0) - 1);
-                const { error: updateErr } = await supabase
+                await supabase
                     .from('users')
                     .update({ credits: newCreditAmount })
                     .eq('id', userId);
 
-                if (updateErr) {
-                    console.error('[deductCredit] Update error:', updateErr);
-                    throw updateErr;
-                }
-
-                // 获取并返回最新额度
-                const { data: user } = await supabase
-                    .from('users')
-                    .select('credits')
-                    .eq('id', userId)
-                    .single();
-
-                return res.status(200).json({ success: true, credits: user?.credits });
+                return res.status(200).json({ success: true, credits: newCreditAmount });
             }
-
 
             case 'getReferralStats': {
                 const { userId } = data;
-
-                // 统计通过分享获得的奖励次数
                 const { count } = await supabase
                     .from('referral_rewards')
                     .select('*', { count: 'exact', head: true })
                     .eq('referrer_id', userId);
 
-                return res.status(200).json({
-                    referralCount: count || 0
-                });
+                return res.status(200).json({ referralCount: count || 0 });
             }
 
             case 'getPointsStats': {
                 const { userId } = data;
+                const { data: user } = await supabase
+                    .from('users')
+                    .select('points')
+                    .eq('id', userId)
+                    .single();
+
+                return res.status(200).json({ points: user?.points || 0 });
+            }
+
+            case 'redeemPoints': {
+                const { userId, pointsUsed, rewardAmount } = data;
 
                 const { data: user } = await supabase
                     .from('users')
@@ -383,66 +359,23 @@ export default async function handler(req: any, res: any) {
                     .eq('id', userId)
                     .single();
 
-                return res.status(200).json({
-                    points: user?.points || 0
-                });
-            }
-
-            case 'redeemPoints': {
-                const { userId, pointsUsed, rewardAmount } = data;
-
-                // 获取用户信息
-                const { data: user } = await supabase
-                    .from('users')
-                    .select('points, username')
-                    .eq('id', userId)
-                    .single();
-
-                if (!user) {
-                    return res.status(404).json({ error: '用户不存在' });
-                }
-
-                // 检查积分是否足够
-                if (user.points < pointsUsed) {
+                if (!user || (user.points || 0) < pointsUsed) {
                     return res.status(400).json({ error: '积分不足' });
                 }
 
-                // 检查是否有待处理的兑换申请
-                const { data: pendingRedemption } = await supabase
-                    .from('point_redemptions')
-                    .select('id')
-                    .eq('user_id', userId)
-                    .eq('status', 'pending')
-                    .single();
+                await supabase
+                    .from('users')
+                    .update({ points: user.points - pointsUsed })
+                    .eq('id', userId);
 
-                if (pendingRedemption) {
-                    return res.status(400).json({ error: '您有待处理的兑换申请，请等待管理员处理' });
-                }
-
-                // 创建兑换申请
-                const { error: insertError } = await supabase
-                    .from('point_redemptions')
-                    .insert({
-                        user_id: userId,
-                        username: user.username,
-                        points_used: pointsUsed,
-                        reward_amount: rewardAmount,
-                        status: 'pending'
-                    });
-
-                if (insertError) throw insertError;
-
-                return res.status(200).json({
-                    success: true,
-                    message: 'Redemption submitted. Please contact us via email to complete.'
-                });
+                return res.status(200).json({ success: true, message: '兑换申请已提交' });
             }
 
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }
     } catch (error: any) {
-        console.error('[Auth Error]', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        console.error('Auth handler error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
