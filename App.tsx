@@ -33,8 +33,8 @@ const App: React.FC = () => {
         parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
 
-        // 异步获取最新数据，不阻塞主流程
-        fetch('/api/auth', {
+        // 异步获取最新数据（增加时间戳后缀彻底防止缓存）
+        fetch(`/api/auth?t=${Date.now()}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
@@ -43,6 +43,7 @@ const App: React.FC = () => {
           .then(res => res.json())
           .then(data => {
             if (data.user) {
+              console.log('[App] Auth sync credits:', data.user.credits);
               const updatedUser = { ...parsedUser, credits: data.user.credits };
               setUser(updatedUser);
               localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -54,7 +55,7 @@ const App: React.FC = () => {
       }
     }
 
-    // 2. 检测 Stripe 支付成功回调 (必须移出 if(savedUser) 块)
+    // 2. 检测 Stripe 支付成功回调
     const urlParams = new URLSearchParams(window.location.search);
     const paymentResult = urlParams.get('payment');
     const orderIdFromUrl = urlParams.get('order_id');
@@ -64,8 +65,8 @@ const App: React.FC = () => {
       // 清除 URL 参数
       window.history.replaceState({}, '', window.location.pathname);
 
-      // 自动确认订单
-      fetch('/api/stripe', {
+      // 自动确认订单 (增加时间戳)
+      fetch(`/api/stripe?t=${Date.now()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,30 +80,34 @@ const App: React.FC = () => {
           console.log('[Payment Confirm Success]', confirmData);
           localStorage.removeItem('pending_order_id');
 
-          // 如果已登录，获取最新数据并刷新
-          if (parsedUser) {
-            return fetch('/api/auth', {
+          // 获取最新数据并手动更新状态，不再依赖 reload (防止加载到旧 SW/缓存)
+          const targetUserId = parsedUser?.id || confirmData.userId;
+          if (targetUserId) {
+            fetch(`/api/auth?t=${Date.now()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
+              cache: 'no-store',
+              body: JSON.stringify({ action: 'getUser', userId: targetUserId })
             })
               .then(res => res.json())
               .then(userData => {
                 if (userData.user) {
-                  const freshUser = { ...parsedUser, credits: userData.user.credits };
+                  const freshUser = { ...(parsedUser || userData.user), credits: userData.user.credits };
+                  setUser(freshUser);
                   localStorage.setItem('user', JSON.stringify(freshUser));
+                  console.log('[Payment] UI Updated with credits:', userData.user.credits);
+
+                  // 如果之前没登录，自动登录
+                  if (!parsedUser) {
+                    setShowLogin(false);
+                    setShowMember(true);
+                  }
                 }
-                setTimeout(() => window.location.reload(), 500);
               });
-          } else {
-            // 如果未登录，提示成功并弹窗登录
-            alert('Recharge successful! Please log in to view your credits.');
-            setShowLogin(true);
           }
         })
         .catch(err => {
           console.error('[Payment Confirm Error]', err);
-          window.location.reload();
         });
     } else if (paymentResult === 'cancel') {
       window.history.replaceState({}, '', window.location.pathname);
@@ -142,7 +147,7 @@ const App: React.FC = () => {
       return false;
     }
     try {
-      const res = await fetch('/api/auth', {
+      const res = await fetch(`/api/auth?t=${Date.now()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'useCredit', userId: user.id })
@@ -165,7 +170,7 @@ const App: React.FC = () => {
   const deductCredit = async (): Promise<boolean> => {
     if (!user) return false;
     try {
-      const res = await fetch('/api/auth', {
+      const res = await fetch(`/api/auth?t=${Date.now()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
