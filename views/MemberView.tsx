@@ -317,6 +317,10 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                                 )}
                             </button>
                         </div>
+                        {/* 临时调试：确认 credits 字段是否正确 */}
+                        <div className="text-[10px] text-white/20 font-mono mt-1 break-all p-1 bg-black/10 rounded">
+                            RAW: {JSON.stringify(user)}
+                        </div>
                     </div>
                 </div>
 
