@@ -277,9 +277,9 @@ const App: React.FC = () => {
       </div>
 
       {/* Version Tag */}
-      {/* Version Tag - 醒目化 */}
-      <div className="fixed top-2 right-2 text-[10px] font-bold text-red-500 bg-white/90 px-2 py-0.5 rounded shadow-sm border border-red-200 pointer-events-none z-[9999]">
-        LIVE-{APP_VERSION}
+      {/* Version Tag */}
+      <div className="fixed top-2 right-2 text-[8px] text-gray-300 pointer-events-none z-50">
+        v{APP_VERSION}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">

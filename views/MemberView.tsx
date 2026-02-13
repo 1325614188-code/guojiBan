@@ -296,30 +296,23 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         </div>
                     </div>
                     <div className="mt-3 bg-black/10 rounded-xl px-3 py-2">
-                        <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center justify-between mb-2">
                             <span className="text-white/80 text-sm">Remaining Credits</span>
-                            <span className="text-xl font-bold">{user?.credits || 0}</span>
+                            <span className="text-white text-3xl font-bold">{user?.credits || 0}</span>
                         </div>
-                        <div className="flex justify-between items-start pt-1 border-t border-white/10 mt-1">
-                            <div className="text-[10px] text-white/60 font-mono break-all pr-4">
+
+                        <div className="pt-2 border-t border-white/20 flex items-center justify-between">
+                            <div className="text-white/60 text-[10px] break-all mr-4">
                                 ID: {user?.id}
                             </div>
                             <button
                                 onClick={refreshUser}
                                 disabled={loading}
-                                className="flex-shrink-0 text-white/80 hover:text-white transition-all p-1"
-                                title="Sync data"
+                                className="p-1.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full transition-all disabled:opacity-50"
+                                title="Sync Credits"
                             >
-                                {loading ? (
-                                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                    <span className="text-xs flex items-center gap-1">🔄 {syncTime}</span>
-                                )}
+                                <span className={`text-sm inline-block ${loading ? 'animate-spin' : ''}`}>🔄</span>
                             </button>
-                        </div>
-                        {/* 临时调试：确认 credits 字段是否正确 */}
-                        <div className="text-[10px] text-white/20 font-mono mt-1 break-all p-1 bg-black/10 rounded">
-                            RAW: {JSON.stringify(user)}
                         </div>
                     </div>
                 </div>

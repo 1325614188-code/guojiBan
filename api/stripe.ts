@@ -134,27 +134,6 @@ export default async function handler(req: any, res: any) {
                 });
             }
 
-            case 'debug': {
-                const { userId } = data;
-                const debugInfo: any = {
-                    version: 'v5-db-sync-check',
-                    db_subdomain: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing'
-                };
-
-                if (userId) {
-                    const { data: targetUser } = await supabase.from('users').select('id, username, credits').eq('id', userId).single();
-                    debugInfo.targetUser = targetUser;
-                }
-
-                const { data: usersData } = await supabase.from('users').select('id, username, credits').limit(10);
-                debugInfo.usersSample = usersData;
-
-                const { data: ordersData } = await supabase.from('orders').select('trade_no, status, credits, user_id').order('created_at', { ascending: false }).limit(10);
-                debugInfo.ordersSample = ordersData;
-
-                return res.status(200).json({ debug: debugInfo });
-            }
-
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }
