@@ -135,8 +135,18 @@ export default async function handler(req: any, res: any) {
                                         .update({ status: 'paid', paid_at: new Date().toISOString() })
                                         .eq('trade_no', orderId);
 
-                                    // 增加用户额度
-                                    await supabase.rpc('add_credits', { user_id: order.user_id, amount: order.credits });
+                                    // 直接查询用户当前额度并更新（不依赖 RPC 函数）
+                                    const { data: userData } = await supabase
+                                        .from('users')
+                                        .select('credits')
+                                        .eq('id', order.user_id)
+                                        .single();
+
+                                    const currentCredits = userData?.credits || 0;
+                                    await supabase
+                                        .from('users')
+                                        .update({ credits: currentCredits + order.credits })
+                                        .eq('id', order.user_id);
                                 }
                             }
                         }
@@ -185,13 +195,40 @@ export default async function handler(req: any, res: any) {
                 }
 
                 // 更新订单为已支付
-                await supabase
+                const { error: updateError } = await supabase
                     .from('orders')
                     .update({ status: 'paid', paid_at: new Date().toISOString() })
                     .eq('trade_no', orderId);
 
-                // 增加用户额度
-                await supabase.rpc('add_credits', { user_id: order.user_id, amount: order.credits });
+                if (updateError) {
+                    console.error('[confirmOrder] Update order error:', updateError);
+                    return res.status(500).json({ error: 'Failed to update order: ' + updateError.message });
+                }
+
+                // 直接查询用户当前额度并更新（不依赖 RPC 函数）
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('credits')
+                    .eq('id', order.user_id)
+                    .single();
+
+                if (userError) {
+                    console.error('[confirmOrder] Get user error:', userError);
+                    return res.status(500).json({ error: 'Failed to get user: ' + userError.message });
+                }
+
+                const currentCredits = userData?.credits || 0;
+                const newCredits = currentCredits + order.credits;
+
+                const { error: creditError } = await supabase
+                    .from('users')
+                    .update({ credits: newCredits })
+                    .eq('id', order.user_id);
+
+                if (creditError) {
+                    console.error('[confirmOrder] Update credits error:', creditError);
+                    return res.status(500).json({ error: 'Failed to update credits: ' + creditError.message });
+                }
 
                 return res.status(200).json({
                     success: true,
