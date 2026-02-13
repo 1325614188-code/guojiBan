@@ -209,19 +209,23 @@ export default async function handler(req: any, res: any) {
 
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, points, device_id, is_admin, created_at')
+                    .select('id, username, credits')
                     .eq('id', userId)
                     .single();
 
                 if (error) {
                     console.error('[getUser Error]', error);
-                    return res.status(404).json({ error: 'User not found' });
+                    return res.status(404).json({
+                        error: 'User not found',
+                        _db: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing',
+                        _v: 'auth-v2-diag-v10'
+                    });
                 }
 
                 return res.status(200).json({
                     user,
                     _db: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing',
-                    _v: 'auth-20260214-sync-check'
+                    _v: 'auth-v2-diag-v10'
                 });
             }
 
