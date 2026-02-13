@@ -244,22 +244,33 @@ export default async function handler(req: any, res: any) {
             // 调试端点：检查数据库连接和表是否存在
             case 'debug': {
                 const debugInfo: any = {
+                    version: 'v4-app-level-confirm',
                     supabaseUrl: supabaseUrl ? 'configured' : 'MISSING',
                     supabaseKey: supabaseKey ? 'configured' : 'MISSING',
                     stripeKey: stripeSecretKey ? 'configured' : 'MISSING',
                 };
 
+                // 如果提供了 userId，直接查询该用户
+                if (data.userId) {
+                    const { data: targetUser, error: targetErr } = await supabase
+                        .from('users')
+                        .select('id, username, credits')
+                        .eq('id', data.userId)
+                        .single();
+                    debugInfo.targetUser = targetErr ? `ERROR: ${targetErr.message}` : targetUser;
+                }
+
                 try {
-                    const { data: usersData, error: usersErr } = await supabase.from('users').select('id, credits').limit(3);
-                    debugInfo.usersTable = usersErr ? `ERROR: ${usersErr.message}` : `OK (${usersData?.length || 0} rows sample)`;
+                    const { data: usersData, error: usersErr } = await supabase.from('users').select('id, username, credits').limit(10);
+                    debugInfo.usersTable = usersErr ? `ERROR: ${usersErr.message}` : `OK (${usersData?.length || 0} rows)`;
                     debugInfo.usersSample = usersData;
                 } catch (e: any) {
                     debugInfo.usersTable = `EXCEPTION: ${e.message}`;
                 }
 
                 try {
-                    const { data: ordersData, error: ordersErr } = await supabase.from('orders').select('trade_no, status, credits, user_id').order('created_at', { ascending: false }).limit(5);
-                    debugInfo.ordersTable = ordersErr ? `ERROR: ${ordersErr.message}` : `OK (${ordersData?.length || 0} rows sample)`;
+                    const { data: ordersData, error: ordersErr } = await supabase.from('orders').select('trade_no, status, credits, user_id').order('created_at', { ascending: false }).limit(10);
+                    debugInfo.ordersTable = ordersErr ? `ERROR: ${ordersErr.message}` : `OK (${ordersData?.length || 0} rows)`;
                     debugInfo.ordersSample = ordersData;
                 } catch (e: any) {
                     debugInfo.ordersTable = `EXCEPTION: ${e.message}`;
