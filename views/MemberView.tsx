@@ -78,9 +78,11 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         if (paymentResult === 'success' && orderIdFromUrl) {
             setPendingOrderId(orderIdFromUrl);
             localStorage.setItem('pending_order_id', orderIdFromUrl);
-            setRechargeMessage('✅ Payment completed! Click below to confirm.');
+            setRechargeMessage('⏳ Confirming payment, please wait...');
             // 清除 URL 参数
             window.history.replaceState({}, '', window.location.pathname);
+            // NOTE: 支付成功后自动确认订单，不需要用户手动点击
+            autoConfirmOrder(orderIdFromUrl);
         } else if (paymentResult === 'cancel') {
             setRechargeMessage('❌ Payment cancelled.');
             window.history.replaceState({}, '', window.location.pathname);
@@ -206,7 +208,36 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // 确认支付（支付完成后点击）
+    // NOTE: 支付成功后自动确认订单（无需用户手动点击）
+    const autoConfirmOrder = async (orderId: string) => {
+        try {
+            const res = await fetch('/api/stripe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'confirmOrder',
+                    orderId,
+                    userId: user.id
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                // 如果自动确认失败，显示手动确认按钮
+                setRechargeMessage(`❌ Auto-confirm failed: ${data.error || 'Unknown error'}. Try clicking confirm below.`);
+                return;
+            }
+
+            setRechargeMessage(`✅ ${data.message || 'Payment confirmed'}, ${data.credits} credits added!`);
+            localStorage.removeItem('pending_order_id');
+            setPendingOrderId(null);
+            refreshUser();
+        } catch (err: any) {
+            setRechargeMessage(`❌ Auto-confirm error: ${err.message}. Try clicking confirm below.`);
+        }
+    };
+
+    // 确认支付（手动备用方案）
     const confirmPayment = async () => {
         if (!pendingOrderId) return;
 

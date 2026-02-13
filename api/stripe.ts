@@ -60,13 +60,18 @@ export default async function handler(req: any, res: any) {
                 const orderId = `ML${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
                 // 创建订单记录
-                await supabase.from('orders').insert({
+                const { error: insertError } = await supabase.from('orders').insert({
                     user_id: userId,
-                    amount: plan.amount / 100, // 存储实际美元金额
+                    amount: plan.amount / 100,
                     credits: plan.credits,
                     status: 'pending',
                     trade_no: orderId
                 });
+
+                if (insertError) {
+                    console.error('[createCheckoutSession] Insert order error:', insertError);
+                    return res.status(500).json({ error: 'Failed to create order: ' + insertError.message });
+                }
 
                 // 创建 Stripe Checkout Session
                 const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || 'https://your-domain.com';
@@ -235,6 +240,33 @@ export default async function handler(req: any, res: any) {
 
             default:
                 return res.status(400).json({ error: 'Invalid action' });
+
+            // 调试端点：检查数据库连接和表是否存在
+            case 'debug': {
+                const debugInfo: any = {
+                    supabaseUrl: supabaseUrl ? 'configured' : 'MISSING',
+                    supabaseKey: supabaseKey ? 'configured' : 'MISSING',
+                    stripeKey: stripeSecretKey ? 'configured' : 'MISSING',
+                };
+
+                try {
+                    const { data: usersData, error: usersErr } = await supabase.from('users').select('id, credits').limit(3);
+                    debugInfo.usersTable = usersErr ? `ERROR: ${usersErr.message}` : `OK (${usersData?.length || 0} rows sample)`;
+                    debugInfo.usersSample = usersData;
+                } catch (e: any) {
+                    debugInfo.usersTable = `EXCEPTION: ${e.message}`;
+                }
+
+                try {
+                    const { data: ordersData, error: ordersErr } = await supabase.from('orders').select('trade_no, status, credits, user_id').order('created_at', { ascending: false }).limit(5);
+                    debugInfo.ordersTable = ordersErr ? `ERROR: ${ordersErr.message}` : `OK (${ordersData?.length || 0} rows sample)`;
+                    debugInfo.ordersSample = ordersData;
+                } catch (e: any) {
+                    debugInfo.ordersTable = `EXCEPTION: ${e.message}`;
+                }
+
+                return res.status(200).json({ debug: debugInfo });
+            }
         }
     } catch (error: any) {
         console.error('[Stripe Error]', error);
