@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AppSection } from './types';
 import { getStableDeviceId } from './lib/fingerprint';
@@ -24,15 +23,17 @@ const App: React.FC = () => {
   const [showMember, setShowMember] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
-  // 从 localStorage 恢复用户状态，并从数据库获取最新数据
+  // 从 localStorage 恢复用户状态，并处理支付回调
   useEffect(() => {
+    // 1. 恢复用户状态
     const savedUser = localStorage.getItem('user');
+    let parsedUser: any = null;
     if (savedUser) {
       try {
-        const parsedUser = JSON.parse(savedUser);
+        parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
 
-        // 从数据库获取最新用户数据（禁用缓存确保获取实时数据）
+        // 异步获取最新数据，不阻塞主流程
         fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -48,67 +49,70 @@ const App: React.FC = () => {
             }
           })
           .catch(console.error);
-
-        // NOTE: 检测 Stripe 支付成功回调，必须在 App 级别处理
-        // 因为 MemberView 在页面初始加载时未挂载，无法捕获 URL 参数
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentResult = urlParams.get('payment');
-        const orderIdFromUrl = urlParams.get('order_id');
-
-        if (paymentResult === 'success' && orderIdFromUrl) {
-          // 清除 URL 参数
-          window.history.replaceState({}, '', window.location.pathname);
-          // 自动确认订单
-          fetch('/api/stripe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'confirmOrder',
-              orderId: orderIdFromUrl,
-              userId: parsedUser.id
-            })
-          })
-            .then(res => res.json())
-            .then(confirmData => {
-              console.log('[Payment Confirm]', confirmData);
-              localStorage.removeItem('pending_order_id');
-              // NOTE: 确认成功后，先从数据库获取最新额度并写入 localStorage
-              // 避免 reload 后旧缓存数据覆盖新数据的竞争条件
-              return fetch('/api/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
-              });
-            })
-            .then(res => res.json())
-            .then(userData => {
-              if (userData.user) {
-                const freshUser = { ...parsedUser, credits: userData.user.credits };
-                localStorage.setItem('user', JSON.stringify(freshUser));
-                console.log('[Payment] Updated credits in localStorage:', userData.user.credits);
-              }
-              // 刷新页面展示最新额度
-              window.location.reload();
-            })
-            .catch(err => {
-              console.error('[Payment Confirm Error]', err);
-              // 即使出错也刷新页面
-              window.location.reload();
-            });
-        } else if (paymentResult === 'cancel') {
-          window.history.replaceState({}, '', window.location.pathname);
-        }
       } catch (e) {
         localStorage.removeItem('user');
       }
     }
+
+    // 2. 检测 Stripe 支付成功回调 (必须移出 if(savedUser) 块)
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentResult = urlParams.get('payment');
+    const orderIdFromUrl = urlParams.get('order_id');
+
+    if (paymentResult === 'success' && orderIdFromUrl) {
+      console.log('[Payment] Callback detected:', orderIdFromUrl);
+      // 清除 URL 参数
+      window.history.replaceState({}, '', window.location.pathname);
+
+      // 自动确认订单
+      fetch('/api/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'confirmOrder',
+          orderId: orderIdFromUrl,
+          userId: parsedUser?.id || 'anonymous'
+        })
+      })
+        .then(res => res.json())
+        .then(confirmData => {
+          console.log('[Payment Confirm Success]', confirmData);
+          localStorage.removeItem('pending_order_id');
+
+          // 如果已登录，获取最新数据并刷新
+          if (parsedUser) {
+            return fetch('/api/auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
+            })
+              .then(res => res.json())
+              .then(userData => {
+                if (userData.user) {
+                  const freshUser = { ...parsedUser, credits: userData.user.credits };
+                  localStorage.setItem('user', JSON.stringify(freshUser));
+                }
+                setTimeout(() => window.location.reload(), 500);
+              });
+          } else {
+            // 如果未登录，提示成功并弹窗登录
+            alert('Recharge successful! Please log in to view your credits.');
+            setShowLogin(true);
+          }
+        })
+        .catch(err => {
+          console.error('[Payment Confirm Error]', err);
+          window.location.reload();
+        });
+    } else if (paymentResult === 'cancel') {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
-  // 初始化设备ID (基于硬件指纹)
+  // 初始化设备ID
   useEffect(() => {
     const initId = async () => {
       const storedId = localStorage.getItem('device_id');
-      // 如果没有ID，或者ID是旧版的随机 dev_ 开头，则强制生成指纹
       if (!storedId || storedId.startsWith('dev_')) {
         const fingerId = await getStableDeviceId();
         localStorage.setItem('device_id', fingerId);
@@ -120,8 +124,6 @@ const App: React.FC = () => {
   const handleLogin = (loggedUser: any) => {
     setUser(loggedUser);
     setShowLogin(false);
-
-    // 如果是管理员，显示管理后台
     if (loggedUser.is_admin) {
       setShowAdmin(true);
     }
@@ -134,24 +136,21 @@ const App: React.FC = () => {
     setShowAdmin(false);
   };
 
-  // 检查额度
   const checkCredits = async (): Promise<boolean> => {
     if (!user) {
       setShowLogin(true);
       return false;
     }
-
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'useCredit', userId: user.id })
       });
-
       const data = await res.json();
       if (!res.ok) {
         if (data.needCredits) {
-          alert('使用额度不足，请充值或获取兑换码');
+          alert('Insufficient credits. Please recharge or use a redeem code.');
           setShowMember(true);
         }
         return false;
@@ -163,51 +162,36 @@ const App: React.FC = () => {
     }
   };
 
-  // 扣除额度 (成功后调用)
   const deductCredit = async (): Promise<boolean> => {
-    if (!user) {
-      console.warn('[deductCredit] 用户未登录，跳过扣除');
-      return false;
-    }
+    if (!user) return false;
     try {
-      console.log('[deductCredit] 开始扣除额度，用户ID:', user.id);
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
       });
-
       const data = await res.json();
-      console.log('[deductCredit] API 响应:', data);
-
       if (res.ok && data.success && typeof data.credits === 'number') {
-        // 更新本地状态，确保 UI 实时同步
         const updatedUser = { ...user, credits: data.credits };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        console.log('[deductCredit] 额度扣除成功，剩余:', data.credits);
         return true;
-      } else {
-        console.error('[deductCredit] 扣除失败:', data.error || '未知错误');
-        return false;
       }
+      return false;
     } catch (e) {
-      console.error('[deductCredit] 请求异常:', e);
+      console.error(e);
       return false;
     }
   };
 
-  // 显示登录页面
   if (showLogin) {
     return <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
   }
 
-  // 显示管理后台
   if (showAdmin && user?.is_admin) {
     return <AdminView admin={user} onBack={() => setShowAdmin(false)} />;
   }
 
-  // 显示会员中心
   if (showMember && user) {
     const handleUserUpdate = (updatedUser: any) => {
       setUser(updatedUser);
@@ -220,49 +204,34 @@ const App: React.FC = () => {
     switch (currentSection) {
       case AppSection.HOME:
         return <HomeView onNavigate={setCurrentSection} />;
-
       case AppSection.TRY_ON_CLOTHES:
         return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.TRY_ON_ACCESSORIES:
         return <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.HAIRSTYLE:
         return <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.MAKEUP:
         return <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.BEAUTY_SCORE:
         return <AnalysisView title="颜值打分" type="颜值打分" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.COUPLE_FACE:
         return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.TONGUE_DIAGNOSIS:
-        return <AnalysisView title="趣味舌诊" type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText="请上传一张清晰的舌头照片哦～" onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
+        return <AnalysisView title="趣味舌诊" type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText="Please upload a clear tongue photo." onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FACE_COLOR:
         return <AnalysisView title="面色分析" type="中医面色" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.FACE_READING:
         return <AnalysisView title="传统面相" type="传统相术" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.FENG_SHUI:
         return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.LICENSE_PLATE:
         return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.CALENDAR:
         return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.MBTI_TEST:
         return <MBTITestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       case AppSection.DEPRESSION_TEST:
         return <DepressionTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
-
       default:
         return <HomeView onNavigate={setCurrentSection} />;
     }
@@ -273,32 +242,28 @@ const App: React.FC = () => {
       <div className="flex-1 overflow-y-auto pb-20">
         {renderSection()}
       </div>
-
-      {/* Tab Bar */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
         <button
           onClick={() => setCurrentSection(AppSection.HOME)}
           className={`flex flex-col items-center gap-1 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
         >
           <span className="text-xl">🏠</span>
-          <span className="text-xs">首页</span>
+          <span className="text-xs">Home</span>
         </button>
-
         <button
           onClick={() => user ? setShowMember(true) : setShowLogin(true)}
           className="flex flex-col items-center gap-1 text-gray-500 hover:text-pink-500 transition-colors"
         >
           <span className="text-xl">{user ? '👤' : '🔐'}</span>
-          <span className="text-xs">{user ? '我的' : '登录'}</span>
+          <span className="text-xs">{user ? 'Me' : 'Login'}</span>
         </button>
-
         {user?.is_admin && (
           <button
             onClick={() => setShowAdmin(true)}
             className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500 transition-colors"
           >
             <span className="text-xl">⚙️</span>
-            <span className="text-xs">管理</span>
+            <span className="text-xs">Admin</span>
           </button>
         )}
       </div>
