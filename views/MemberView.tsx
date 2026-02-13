@@ -223,15 +223,14 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
             const data = await res.json();
             if (!res.ok) {
-                // 如果自动确认失败，显示手动确认按钮
                 setRechargeMessage(`❌ Auto-confirm failed: ${data.error || 'Unknown error'}. Try clicking confirm below.`);
                 return;
             }
 
-            setRechargeMessage(`✅ ${data.message || 'Payment confirmed'}, ${data.credits} credits added!`);
+            setRechargeMessage(`✅ Payment confirmed! ${data.credits} credits added. Refreshing...`);
             localStorage.removeItem('pending_order_id');
-            setPendingOrderId(null);
-            refreshUser();
+            // NOTE: 强制刷新页面以获取最新额度数据
+            setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setRechargeMessage(`❌ Auto-confirm error: ${err.message}. Try clicking confirm below.`);
         }
@@ -258,10 +257,10 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setRechargeMessage(`✅ ${data.message}, ${data.credits} credits added`);
+            setRechargeMessage(`✅ ${data.message}, ${data.credits} credits added! Refreshing...`);
             localStorage.removeItem('pending_order_id');
-            setPendingOrderId(null);
-            refreshUser();
+            // NOTE: 强制刷新页面以获取最新额度数据
+            setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setRechargeMessage('❌ ' + (err.message || 'Confirmation failed'));
         } finally {
