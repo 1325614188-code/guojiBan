@@ -45,7 +45,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
         // 加载分享统计
         if (user?.id) {
-            fetch('/api/auth', {
+            fetch(`/api/auth_v2?t=${Date.now()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getReferralStats', userId: user.id })
@@ -55,7 +55,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 .catch(console.error);
 
             // 加载积分
-            fetch('/api/auth', {
+            fetch(`/api/auth_v2?t=${Date.now()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getPointsStats', userId: user.id })
@@ -95,7 +95,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     const refreshUser = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/auth?t=${Date.now()}`, {
+            const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 cache: 'no-store',
@@ -123,7 +123,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
         try {
             const deviceId = localStorage.getItem('device_id') || '';
-            const res = await fetch('/api/auth', {
+            const res = await fetch(`/api/auth_v2?t=${Date.now()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -164,7 +164,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         setPointsMessage('Submitting...');
 
         try {
-            const res = await fetch('/api/auth', {
+            const res = await fetch('/api/auth_v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

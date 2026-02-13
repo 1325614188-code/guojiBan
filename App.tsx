@@ -53,7 +53,7 @@ const App: React.FC = () => {
         // 强力获取最新数据
         const syncUser = async () => {
           try {
-            const res = await fetch(`/api/auth?t=${Date.now()}`, {
+            const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               cache: 'no-store',
@@ -90,7 +90,7 @@ const App: React.FC = () => {
       console.log('[Payment] Callback detected:', orderIdFromUrl);
       window.history.replaceState({}, '', window.location.pathname);
 
-      fetch(`/api/stripe?t=${Date.now()}`, {
+      fetch(`/api/stripe?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -107,7 +107,7 @@ const App: React.FC = () => {
           const targetUserId = parsedUser?.id || confirmData.userId;
           if (targetUserId) {
             // 立即再次同步
-            fetch(`/api/auth?t=${Date.now()}`, {
+            fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               cache: 'no-store',
@@ -175,7 +175,7 @@ const App: React.FC = () => {
       return false;
     }
     try {
-      const res = await fetch(`/api/auth?t=${Date.now()}`, {
+      const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'useCredit', userId: user.id })
@@ -198,7 +198,7 @@ const App: React.FC = () => {
   const deductCredit = async (): Promise<boolean> => {
     if (!user) return false;
     try {
-      const res = await fetch(`/api/auth?t=${Date.now()}`, {
+      const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
