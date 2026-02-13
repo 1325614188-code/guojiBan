@@ -17,7 +17,7 @@ import MBTITestView from './views/MBTITestView';
 import DepressionTestView from './views/DepressionTestView';
 
 // 版本标识，用于确认用户是否加载了最新代码
-const APP_VERSION = '20260214-FINAL-V1';
+const APP_VERSION = '20260214-V4-FORCE';
 
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
@@ -29,6 +29,16 @@ const App: React.FC = () => {
   // 从 localStorage 恢复用户状态，并处理支付回调
   useEffect(() => {
     console.log(`[App] Version: ${APP_VERSION} initialized.`);
+
+    // 强制清理旧的 Service Worker，防止 API 被缓存拦截
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const registration of registrations) {
+          registration.unregister();
+          console.warn('[App] SW Unregistered');
+        }
+      });
+    }
 
     // 1. 恢复用户状态
     const savedUser = localStorage.getItem('user');
@@ -267,8 +277,9 @@ const App: React.FC = () => {
       </div>
 
       {/* Version Tag */}
-      <div className="fixed top-2 right-2 text-[8px] text-gray-300 pointer-events-none z-50">
-        v{APP_VERSION}
+      {/* Version Tag - 醒目化 */}
+      <div className="fixed top-2 right-2 text-[10px] font-bold text-red-500 bg-white/90 px-2 py-0.5 rounded shadow-sm border border-red-200 pointer-events-none z-[9999]">
+        LIVE-{APP_VERSION}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
