@@ -393,7 +393,7 @@ export default async function handler(req: any, res: any) {
 
                 return res.status(200).json({
                     success: true,
-                    message: '兑换申请已提交，请联系管理员微信完成兑换'
+                    message: 'Redemption submitted. Please contact us via email to complete.'
                 });
             }
 

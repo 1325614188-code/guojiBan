@@ -65,10 +65,25 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 .catch(console.error);
         }
 
-        // 检查是否有待确认的订单
+        // 检查是否有待确认的订单（包括从 Stripe 跳转回来的场景）
         const savedOrderId = localStorage.getItem('pending_order_id');
         if (savedOrderId) {
             setPendingOrderId(savedOrderId);
+        }
+
+        // 检查 URL 参数中的支付结果
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentResult = urlParams.get('payment');
+        const orderIdFromUrl = urlParams.get('order_id');
+        if (paymentResult === 'success' && orderIdFromUrl) {
+            setPendingOrderId(orderIdFromUrl);
+            localStorage.setItem('pending_order_id', orderIdFromUrl);
+            setRechargeMessage('✅ Payment completed! Click below to confirm.');
+            // 清除 URL 参数
+            window.history.replaceState({}, '', window.location.pathname);
+        } else if (paymentResult === 'cancel') {
+            setRechargeMessage('❌ Payment cancelled.');
+            window.history.replaceState({}, '', window.location.pathname);
         }
     }, []);
 
@@ -132,11 +147,11 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     // 积分兑换申请
     const handlePointsRedeem = async (pointsUsed: number, rewardAmount: number) => {
         if (userPoints < pointsUsed) {
-            setPointsMessage('❌ 积分不足');
+            setPointsMessage('❌ Insufficient points');
             return;
         }
 
-        setPointsMessage('提交中...');
+        setPointsMessage('Submitting...');
 
         try {
             const res = await fetch('/api/auth', {
@@ -153,28 +168,22 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setPointsMessage(`🎉 ${data.message}，请联系微信“${config.contact_wechat || 'sekesm'}”完成兑换`);
+            setPointsMessage(`🎉 ${data.message}. Please contact us at "${config.contact_email || 'chanlindong9@gmail.com'}" to complete the redemption.`);
         } catch (err: any) {
             setPointsMessage('❌ ' + err.message);
         }
     };
 
-    // 处理充值
+    // 处理充值 - 使用 Stripe Checkout
     const handleRecharge = async (amount: number, creditsToAdd: number) => {
-        // 检查支付宝配置
-        if (!config.alipay_app_id || !config.alipay_private_key) {
-            setRechargeMessage('⚠️ 支付功能配置中，请联系管理员');
-            return;
-        }
-
-        setRechargeMessage(`正在创建订单...`);
+        setRechargeMessage('Creating order...');
 
         try {
-            const res = await fetch('/api/alipay', {
+            const res = await fetch('/api/stripe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'createOrder',
+                    action: 'createCheckoutSession',
                     userId: user.id,
                     amount,
                     credits: creditsToAdd
@@ -188,12 +197,12 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             localStorage.setItem('pending_order_id', data.orderId);
             setPendingOrderId(data.orderId);
 
-            setRechargeMessage('正在跳转支付宝...');
+            setRechargeMessage('Redirecting to payment...');
 
-            // 跳转到支付宝支付页面
+            // 跳转到 Stripe Checkout 页面
             window.location.href = data.payUrl;
         } catch (err: any) {
-            setRechargeMessage('❌ ' + (err.message || '支付失败'));
+            setRechargeMessage('❌ ' + (err.message || 'Payment failed'));
         }
     };
 
@@ -202,10 +211,10 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         if (!pendingOrderId) return;
 
         setLoading(true);
-        setRechargeMessage('正在确认支付...');
+        setRechargeMessage('Confirming payment...');
 
         try {
-            const res = await fetch('/api/alipay', {
+            const res = await fetch('/api/stripe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -218,12 +227,12 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setRechargeMessage(`✅ ${data.message}，已增加 ${data.credits} 次额度`);
+            setRechargeMessage(`✅ ${data.message}, ${data.credits} credits added`);
             localStorage.removeItem('pending_order_id');
             setPendingOrderId(null);
             refreshUser();
         } catch (err: any) {
-            setRechargeMessage('❌ ' + (err.message || '确认失败'));
+            setRechargeMessage('❌ ' + (err.message || 'Confirmation failed'));
         } finally {
             setLoading(false);
         }
@@ -233,7 +242,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={onBack} className="text-2xl">←</button>
-                <h2 className="text-xl font-bold">会员中心</h2>
+                <h2 className="text-xl font-bold">Member Center</h2>
             </div>
 
             <div className="space-y-4">
@@ -245,23 +254,23 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         </div>
                         <div>
                             <h3 className="text-lg font-bold">@{user?.username}</h3>
-                            <p className="text-white/80 text-xs">本机识别码: {getDeviceIdSuffix()}</p>
+                            <p className="text-white/80 text-xs">Device ID: {getDeviceIdSuffix()}</p>
                         </div>
                     </div>
                     <div className="mt-3 flex justify-between items-center bg-black/10 rounded-xl px-3 py-2">
-                        <span className="text-white/80 text-sm">剩余额度</span>
-                        <span className="text-xl font-bold">{user?.credits || 0} 次</span>
+                        <span className="text-white/80 text-sm">Remaining Credits</span>
+                        <span className="text-xl font-bold">{user?.credits || 0}</span>
                     </div>
                 </div>
 
                 {/* 分享获客 */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-bold">📤 分享免费获得次数</h4>
-                        <span className="text-sm text-pink-500 font-bold">已获得 {referralCount} 次</span>
+                        <h4 className="font-bold">📤 Share & Earn Credits</h4>
+                        <span className="text-sm text-pink-500 font-bold">Earned: {referralCount}</span>
                     </div>
                     <p className="text-sm text-gray-500 mb-3">
-                        分享专属链接，好友<span className="text-pink-500 font-bold">在手机浏览器</span>注册后您将获得1次额度 <span className="text-orange-500">⚠️ 好友必须在【手机浏览器】注册才能获得奖励（微信/QQ内注册无效）</span>
+                        Share your link. When a friend registers via <span className="text-pink-500 font-bold">mobile browser</span>, you earn 1 credit. <span className="text-orange-500">⚠️ Registration must be through a mobile browser to qualify.</span>
                     </p>
                     <div className="flex gap-2">
                         <input
@@ -274,7 +283,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             onClick={copyShareLink}
                             className="px-4 h-10 bg-pink-500 text-white rounded-xl text-sm"
                         >
-                            {copied ? '已复制' : '复制'}
+                            {copied ? 'Copied' : 'Copy'}
                         </button>
                     </div>
                 </div>
@@ -282,34 +291,34 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 {/* 推荐奖励积分 */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-bold">⭐ 推荐奖励积分</h4>
-                        <span className="text-sm text-purple-500 font-bold">当前积分：{userPoints}</span>
+                        <h4 className="font-bold">⭐ Referral Points</h4>
+                        <span className="text-sm text-purple-500 font-bold">Points: {userPoints}</span>
                     </div>
                     <p className="text-sm text-gray-500 mb-2">
-                        好友通过分享链接在<span className="text-pink-500 font-bold">手机浏览器</span>注册，您将获得<span className="text-purple-500 font-bold">1个积分</span>，积分可兑换奖励
+                        When friends register via your link in a <span className="text-pink-500 font-bold">mobile browser</span>, you earn <span className="text-purple-500 font-bold">1 point</span>. Points can be redeemed for rewards.
                     </p>
                     <div className="bg-purple-50 rounded-xl p-3 mb-3">
-                        <p className="text-xs text-purple-700 mb-1">🎁 奖励制度：</p>
-                        <p className="text-xs text-purple-600">• 50积分 → 20元红包 &nbsp;&nbsp; • 100积分 → 50元红包</p>
-                        <p className="text-xs text-blue-500 mt-1">💡 提示：积分仅限手机浏览器注册生效，微信/QQ内注册不计入</p>
-                        <p className="text-xs text-orange-500 mt-2">⚠️ 点击兑换后，请联系微信“{config.contact_wechat || 'sekesm'}”完成兑换</p>
+                        <p className="text-xs text-purple-700 mb-1">🎁 Rewards:</p>
+                        <p className="text-xs text-purple-600">• 50 points → $4 reward &nbsp;&nbsp; • 100 points → $10 reward</p>
+                        <p className="text-xs text-blue-500 mt-1">💡 Note: Only mobile browser registrations count.</p>
+                        <p className="text-xs text-orange-500 mt-2">⚠️ After clicking redeem, please contact "{config.contact_email || 'chanlindong9@gmail.com'}" to complete.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <button
-                            onClick={() => handlePointsRedeem(50, 20)}
+                            onClick={() => handlePointsRedeem(50, 4)}
                             disabled={userPoints < 50}
                             className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 50 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
                         >
-                            <div className="text-lg font-bold text-purple-500">50积分</div>
-                            <div className="text-xs text-gray-500">→ 20元红包</div>
+                            <div className="text-lg font-bold text-purple-500">50 pts</div>
+                            <div className="text-xs text-gray-500">→ $4 reward</div>
                         </button>
                         <button
-                            onClick={() => handlePointsRedeem(100, 50)}
+                            onClick={() => handlePointsRedeem(100, 10)}
                             disabled={userPoints < 100}
                             className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 100 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
                         >
-                            <div className="text-lg font-bold text-purple-500">100积分</div>
-                            <div className="text-xs text-gray-500">→ 50元红包</div>
+                            <div className="text-lg font-bold text-purple-500">100 pts</div>
+                            <div className="text-xs text-gray-500">→ $10 reward</div>
                         </button>
                     </div>
                     {pointsMessage && (
@@ -322,36 +331,36 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 {/* 充值 (根据后台开关显示) */}
                 {config.recharge_enabled === 'true' && (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
-                        <h4 className="font-bold mb-2">💰 充值次数</h4>
+                        <h4 className="font-bold mb-2">💰 Buy Credits</h4>
 
                         {/* 待确认订单提示 */}
                         {pendingOrderId && (
                             <div className="mb-3 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
-                                <p className="text-sm text-yellow-700 mb-2">📌 您有待确认的充值订单</p>
+                                <p className="text-sm text-yellow-700 mb-2">📌 You have a pending order</p>
                                 <button
                                     onClick={confirmPayment}
                                     disabled={loading}
                                     className="w-full h-10 bg-yellow-500 text-white rounded-xl font-bold"
                                 >
-                                    {loading ? '确认中...' : '已支付完成？点击确认'}
+                                    {loading ? 'Confirming...' : 'Already paid? Click to confirm'}
                                 </button>
                             </div>
                         )}
 
                         <div className="grid grid-cols-2 gap-3">
                             <button
-                                onClick={() => handleRecharge(9.9, 12)}
+                                onClick={() => handleRecharge(1.99, 12)}
                                 className="h-20 rounded-xl border-2 border-pink-200 hover:border-pink-400 hover:bg-pink-50 transition-colors"
                             >
-                                <div className="text-2xl font-bold text-pink-500">12次</div>
-                                <div className="text-sm text-gray-500">¥9.9</div>
+                                <div className="text-2xl font-bold text-pink-500">12 Credits</div>
+                                <div className="text-sm text-gray-500">$1.99</div>
                             </button>
                             <button
-                                onClick={() => handleRecharge(19.9, 30)}
+                                onClick={() => handleRecharge(3.99, 30)}
                                 className="h-20 rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-colors"
                             >
-                                <div className="text-2xl font-bold text-purple-500">30次</div>
-                                <div className="text-sm text-gray-500">¥19.9</div>
+                                <div className="text-2xl font-bold text-purple-500">30 Credits</div>
+                                <div className="text-sm text-gray-500">$3.99</div>
                             </button>
                         </div>
                         {rechargeMessage && (
@@ -362,19 +371,19 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
                 {/* 兑换码 */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <h4 className="font-bold mb-2">🎁 兑换码</h4>
+                    <h4 className="font-bold mb-2">🎁 Redeem Code</h4>
                     <p className="text-xs text-gray-400 mb-1">
-                        一个兑换码可免费获得<span className="text-pink-500 font-bold">5次</span>使用额度，每月可兑换一次
+                        Each code gives you <span className="text-pink-500 font-bold">5 free</span> credits. One redemption per month.
                     </p>
                     <p className="text-xs text-gray-400 mb-3">
-                        添加微信"<span className="text-pink-500">{config.contact_wechat || 'sekesm'}</span>"，免费获得兑换码
+                        Contact "<span className="text-pink-500">{config.contact_email || 'chanlindong9@gmail.com'}</span>" to get a free redeem code.
                     </p>
                     <div className="flex gap-2">
                         <input
                             type="text"
                             value={redeemCode}
                             onChange={e => setRedeemCode(e.target.value.toUpperCase())}
-                            placeholder="输入兑换码"
+                            placeholder="Enter redeem code"
                             className="flex-1 h-10 px-3 rounded-xl border border-gray-200"
                             maxLength={9}
                         />
@@ -383,7 +392,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             disabled={loading}
                             className="px-4 h-10 bg-purple-500 text-white rounded-xl text-sm"
                         >
-                            {loading ? '...' : '兑换'}
+                            {loading ? '...' : 'Redeem'}
                         </button>
                     </div>
                     {message && (
@@ -398,7 +407,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     onClick={onLogout}
                     className="w-full h-12 border border-gray-200 rounded-2xl text-gray-500"
                 >
-                    退出登录
+                    Log Out
                 </button>
             </div>
         </div>
