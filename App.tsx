@@ -70,12 +70,29 @@ const App: React.FC = () => {
             .then(res => res.json())
             .then(confirmData => {
               console.log('[Payment Confirm]', confirmData);
-              // 确认成功后刷新页面获取最新额度
               localStorage.removeItem('pending_order_id');
-              setTimeout(() => window.location.reload(), 1000);
+              // NOTE: 确认成功后，先从数据库获取最新额度并写入 localStorage
+              // 避免 reload 后旧缓存数据覆盖新数据的竞争条件
+              return fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
+              });
+            })
+            .then(res => res.json())
+            .then(userData => {
+              if (userData.user) {
+                const freshUser = { ...parsedUser, credits: userData.user.credits };
+                localStorage.setItem('user', JSON.stringify(freshUser));
+                console.log('[Payment] Updated credits in localStorage:', userData.user.credits);
+              }
+              // 刷新页面展示最新额度
+              window.location.reload();
             })
             .catch(err => {
               console.error('[Payment Confirm Error]', err);
+              // 即使出错也刷新页面
+              window.location.reload();
             });
         } else if (paymentResult === 'cancel') {
           window.history.replaceState({}, '', window.location.pathname);
