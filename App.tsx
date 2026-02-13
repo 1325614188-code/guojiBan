@@ -32,10 +32,11 @@ const App: React.FC = () => {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
 
-        // 从数据库获取最新用户数据
+        // 从数据库获取最新用户数据（禁用缓存确保获取实时数据）
         fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
           body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
         })
           .then(res => res.json())
