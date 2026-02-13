@@ -27,7 +27,7 @@ function getStripe(): Stripe {
  * NOTE: 价格单位为美分（cents），Stripe 要求整数金额
  */
 const RECHARGE_PLANS: Record<string, { amount: number; credits: number; name: string }> = {
-    'plan_test': { amount: 50, credits: 1, name: 'Beauty Lab - Test (1 Credit)' },
+    'plan_test': { amount: 100, credits: 1, name: 'Beauty Lab - Test (1 Credit)' },
     'plan_12': { amount: 199, credits: 12, name: 'Beauty Lab - 12 Credits' },
     'plan_30': { amount: 399, credits: 30, name: 'Beauty Lab - 30 Credits' },
 };
