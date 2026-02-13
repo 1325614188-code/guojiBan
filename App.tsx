@@ -16,6 +16,9 @@ import MakeupView from './views/MakeupView';
 import MBTITestView from './views/MBTITestView';
 import DepressionTestView from './views/DepressionTestView';
 
+// 版本标识，用于确认用户是否加载了最新代码
+const APP_VERSION = '20260214-FINAL-V1';
+
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
   const [user, setUser] = useState<any>(null);
@@ -25,31 +28,39 @@ const App: React.FC = () => {
 
   // 从 localStorage 恢复用户状态，并处理支付回调
   useEffect(() => {
+    console.log(`[App] Version: ${APP_VERSION} initialized.`);
+
     // 1. 恢复用户状态
     const savedUser = localStorage.getItem('user');
     let parsedUser: any = null;
+
     if (savedUser) {
       try {
         parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
+        console.log('[App] Local user loaded:', parsedUser.username, parsedUser.id);
 
-        // 异步获取最新数据（增加时间戳后缀彻底防止缓存）
-        fetch(`/api/auth?t=${Date.now()}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store',
-          body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
-        })
-          .then(res => res.json())
-          .then(data => {
+        // 强力获取最新数据
+        const syncUser = async () => {
+          try {
+            const res = await fetch(`/api/auth?t=${Date.now()}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              cache: 'no-store',
+              body: JSON.stringify({ action: 'getUser', userId: parsedUser.id })
+            });
+            const data = await res.json();
             if (data.user) {
-              console.log('[App] Auth sync credits:', data.user.credits);
+              console.log('[App] API User Sync Output:', data.user.credits);
               const updatedUser = { ...parsedUser, credits: data.user.credits };
               setUser(updatedUser);
               localStorage.setItem('user', JSON.stringify(updatedUser));
             }
-          })
-          .catch(console.error);
+          } catch (e) {
+            console.error('[App] Sync Failed:', e);
+          }
+        };
+        syncUser();
       } catch (e) {
         localStorage.removeItem('user');
       }
@@ -62,10 +73,8 @@ const App: React.FC = () => {
 
     if (paymentResult === 'success' && orderIdFromUrl) {
       console.log('[Payment] Callback detected:', orderIdFromUrl);
-      // 清除 URL 参数
       window.history.replaceState({}, '', window.location.pathname);
 
-      // 自动确认订单 (增加时间戳)
       fetch(`/api/stripe?t=${Date.now()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,9 +89,9 @@ const App: React.FC = () => {
           console.log('[Payment Confirm Success]', confirmData);
           localStorage.removeItem('pending_order_id');
 
-          // 获取最新数据并手动更新状态，不再依赖 reload (防止加载到旧 SW/缓存)
           const targetUserId = parsedUser?.id || confirmData.userId;
           if (targetUserId) {
+            // 立即再次同步
             fetch(`/api/auth?t=${Date.now()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -95,9 +104,8 @@ const App: React.FC = () => {
                   const freshUser = { ...(parsedUser || userData.user), credits: userData.user.credits };
                   setUser(freshUser);
                   localStorage.setItem('user', JSON.stringify(freshUser));
-                  console.log('[Payment] UI Updated with credits:', userData.user.credits);
+                  console.log('[Payment] Final UI Update Success:', userData.user.credits);
 
-                  // 如果之前没登录，自动登录
                   if (!parsedUser) {
                     setShowLogin(false);
                     setShowMember(true);
@@ -247,6 +255,12 @@ const App: React.FC = () => {
       <div className="flex-1 overflow-y-auto pb-20">
         {renderSection()}
       </div>
+
+      {/* Version Tag */}
+      <div className="fixed top-2 right-2 text-[8px] text-gray-300 pointer-events-none z-50">
+        v{APP_VERSION}
+      </div>
+
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
         <button
           onClick={() => setCurrentSection(AppSection.HOME)}

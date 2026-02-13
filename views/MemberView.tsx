@@ -89,21 +89,29 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     }, []);
 
+    const [syncTime, setSyncTime] = useState<string>(new Date().toLocaleTimeString());
+
     // 刷新用户信息并同步到父组件
     const refreshUser = async () => {
+        setLoading(true);
         try {
-            const res = await fetch('/api/auth', {
+            const res = await fetch(`/api/auth?t=${Date.now()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
                 body: JSON.stringify({ action: 'getUser', userId: user.id })
             });
             const data = await res.json();
             if (data.user) {
                 // 通过回调同步更新父组件的 user 状态
                 onUserUpdate?.({ ...user, credits: data.user.credits });
+                setSyncTime(new Date().toLocaleTimeString());
+                console.log('[MemberView] Force synced credits:', data.user.credits);
             }
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -287,9 +295,28 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             <p className="text-white/80 text-xs">Device ID: {getDeviceIdSuffix()}</p>
                         </div>
                     </div>
-                    <div className="mt-3 flex justify-between items-center bg-black/10 rounded-xl px-3 py-2">
-                        <span className="text-white/80 text-sm">Remaining Credits</span>
-                        <span className="text-xl font-bold">{user?.credits || 0}</span>
+                    <div className="mt-3 bg-black/10 rounded-xl px-3 py-2">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-white/80 text-sm">Remaining Credits</span>
+                            <span className="text-xl font-bold">{user?.credits || 0}</span>
+                        </div>
+                        <div className="flex justify-between items-start pt-1 border-t border-white/10 mt-1">
+                            <div className="text-[10px] text-white/60 font-mono break-all pr-4">
+                                ID: {user?.id}
+                            </div>
+                            <button
+                                onClick={refreshUser}
+                                disabled={loading}
+                                className="flex-shrink-0 text-white/80 hover:text-white transition-all p-1"
+                                title="Sync data"
+                            >
+                                {loading ? (
+                                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <span className="text-xs flex items-center gap-1">🔄 {syncTime}</span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
