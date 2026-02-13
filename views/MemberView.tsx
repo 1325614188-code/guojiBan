@@ -300,20 +300,6 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             <span className="text-white/80 text-sm">Remaining Credits</span>
                             <span className="text-white text-3xl font-bold">{user?.credits || 0}</span>
                         </div>
-
-                        <div className="pt-2 border-t border-white/20 flex items-center justify-between">
-                            <div className="text-white/60 text-[10px] break-all mr-4">
-                                ID: {user?.id}
-                            </div>
-                            <button
-                                onClick={refreshUser}
-                                disabled={loading}
-                                className="p-1.5 bg-white/10 hover:bg-white/20 active:scale-95 rounded-full transition-all disabled:opacity-50"
-                                title="Sync Credits"
-                            >
-                                <span className={`text-sm inline-block ${loading ? 'animate-spin' : ''}`}>🔄</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
