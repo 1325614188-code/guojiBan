@@ -47,6 +47,39 @@ const App: React.FC = () => {
             }
           })
           .catch(console.error);
+
+        // NOTE: 检测 Stripe 支付成功回调，必须在 App 级别处理
+        // 因为 MemberView 在页面初始加载时未挂载，无法捕获 URL 参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentResult = urlParams.get('payment');
+        const orderIdFromUrl = urlParams.get('order_id');
+
+        if (paymentResult === 'success' && orderIdFromUrl) {
+          // 清除 URL 参数
+          window.history.replaceState({}, '', window.location.pathname);
+          // 自动确认订单
+          fetch('/api/stripe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'confirmOrder',
+              orderId: orderIdFromUrl,
+              userId: parsedUser.id
+            })
+          })
+            .then(res => res.json())
+            .then(confirmData => {
+              console.log('[Payment Confirm]', confirmData);
+              // 确认成功后刷新页面获取最新额度
+              localStorage.removeItem('pending_order_id');
+              setTimeout(() => window.location.reload(), 1000);
+            })
+            .catch(err => {
+              console.error('[Payment Confirm Error]', err);
+            });
+        } else if (paymentResult === 'cancel') {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
       } catch (e) {
         localStorage.removeItem('user');
       }
