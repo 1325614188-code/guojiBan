@@ -190,19 +190,9 @@ export default async function handler(req: any, res: any) {
                     return res.status(404).json({ error: 'Order not found' });
                 }
 
-                if (order.status === 'paid') {
+                // NOTE: 只有 'completed' 才表示额度已到账，'paid' 可能是旧代码标记但额度未添加
+                if (order.status === 'completed') {
                     return res.status(200).json({ success: true, message: 'Order already processed', credits: order.credits });
-                }
-
-                // 更新订单为已支付
-                const { error: updateError } = await supabase
-                    .from('orders')
-                    .update({ status: 'paid', paid_at: new Date().toISOString() })
-                    .eq('trade_no', orderId);
-
-                if (updateError) {
-                    console.error('[confirmOrder] Update order error:', updateError);
-                    return res.status(500).json({ error: 'Failed to update order: ' + updateError.message });
                 }
 
                 // 直接查询用户当前额度并更新（不依赖 RPC 函数）
@@ -229,6 +219,12 @@ export default async function handler(req: any, res: any) {
                     console.error('[confirmOrder] Update credits error:', creditError);
                     return res.status(500).json({ error: 'Failed to update credits: ' + creditError.message });
                 }
+
+                // 标记订单为 completed（额度已到账）
+                await supabase
+                    .from('orders')
+                    .update({ status: 'completed', paid_at: new Date().toISOString() })
+                    .eq('trade_no', orderId);
 
                 return res.status(200).json({
                     success: true,
