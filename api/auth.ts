@@ -150,11 +150,22 @@ export default async function handler(req: any, res: any) {
                             .single();
 
                         if (!existingReward) {
-                            // 使用 add_credits 函数增加次数
-                            await supabase.rpc('add_credits', { user_id: referrerId, amount: 1 });
+                            // 直接查询并更新推荐人的额度和积分（不依赖 RPC 函数）
+                            const { data: referrerData } = await supabase
+                                .from('users')
+                                .select('credits, points')
+                                .eq('id', referrerId)
+                                .single();
 
-                            // 同时增加1个推荐积分
-                            await supabase.rpc('add_points', { user_id: referrerId, amount: 1 });
+                            if (referrerData) {
+                                await supabase
+                                    .from('users')
+                                    .update({
+                                        credits: (referrerData.credits || 0) + 1,
+                                        points: (referrerData.points || 0) + 1
+                                    })
+                                    .eq('id', referrerId);
+                            }
 
                             // 记录奖励
                             await supabase.from('referral_rewards').insert({
@@ -268,8 +279,19 @@ export default async function handler(req: any, res: any) {
                     user_id: userId
                 });
 
-                // 增加用户次数
-                await supabase.rpc('add_credits', { user_id: userId, amount: 5 });
+                // 增加用户次数（直接查询并更新，不依赖 RPC 函数）
+                const { data: redeemUser } = await supabase
+                    .from('users')
+                    .select('credits')
+                    .eq('id', userId)
+                    .single();
+
+                if (redeemUser) {
+                    await supabase
+                        .from('users')
+                        .update({ credits: (redeemUser.credits || 0) + 5 })
+                        .eq('id', userId);
+                }
 
                 return res.status(200).json({
                     success: true,
@@ -301,11 +323,27 @@ export default async function handler(req: any, res: any) {
                     return res.status(400).json({ error: 'Missing userId' });
                 }
 
-                // 扣除额度
-                const { error: rpcError } = await supabase.rpc('add_credits', { user_id: userId, amount: -1 });
-                if (rpcError) {
-                    console.error('[deductCredit RPC Error]', rpcError);
-                    throw rpcError;
+                // 扣除额度（直接查询并更新，不依赖 RPC 函数）
+                const { data: deductUser, error: deductUserErr } = await supabase
+                    .from('users')
+                    .select('credits')
+                    .eq('id', userId)
+                    .single();
+
+                if (deductUserErr || !deductUser) {
+                    console.error('[deductCredit] Get user error:', deductUserErr);
+                    return res.status(400).json({ error: 'User not found' });
+                }
+
+                const newCreditAmount = Math.max(0, (deductUser.credits || 0) - 1);
+                const { error: updateErr } = await supabase
+                    .from('users')
+                    .update({ credits: newCreditAmount })
+                    .eq('id', userId);
+
+                if (updateErr) {
+                    console.error('[deductCredit] Update error:', updateErr);
+                    throw updateErr;
                 }
 
                 // 获取并返回最新额度
