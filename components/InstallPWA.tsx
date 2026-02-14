@@ -1,6 +1,6 @@
 /**
- * PWA 安装按钮组件
- * NOTE: 监听 beforeinstallprompt 事件，提供"添加到桌面"功能
+ * PWA Install Button Component
+ * NOTE: Listens to beforeinstallprompt event and provides "Add to Home Screen" functionality
  */
 import React, { useState, useEffect } from 'react';
 
@@ -75,7 +75,7 @@ const InstallPWA: React.FC = () => {
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') setDeferredPrompt(null);
         } else {
-            alert('请点击浏览器菜单中的“添加到主屏幕”手动安装');
+            alert('Please click "Add to Home Screen" in your browser menu to install manually.');
         }
     };
 
@@ -88,7 +88,7 @@ const InstallPWA: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-95"
             >
                 <span className="text-xl">📲</span>
-                <span>把网站添加到桌面</span>
+                <span>Add to Home Screen</span>
             </button>
 
             {/* 引导弹窗 */}
@@ -97,19 +97,19 @@ const InstallPWA: React.FC = () => {
                     <div className="bg-white rounded-3xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
                         {showGuide === 'ios' ? (
                             <div className="text-center">
-                                <h3 className="text-xl font-bold mb-4">添加到主屏幕</h3>
+                                <h3 className="text-xl font-bold mb-4">Add to Home Screen</h3>
                                 <div className="space-y-4 text-left text-gray-600">
-                                    <p>1. 点击浏览器底部的<span className="mx-1 text-blue-500">“分享”</span>按钮 ⬆️</p>
-                                    <p>2. 在菜单中找到并点击<span className="mx-1 font-bold text-gray-800">“添加到主屏幕”</span> ➕</p>
-                                    <p>3. 点击右上角的<span className="mx-1 text-blue-500 font-bold">“添加”</span>按钮</p>
+                                    <p>1. Click the <span className="mx-1 text-blue-500">"Share"</span> button at the bottom of the browser ⬆️</p>
+                                    <p>2. Find and click <span className="mx-1 font-bold text-gray-800">"Add to Home Screen"</span> in the menu ➕</p>
+                                    <p>3. Click the <span className="mx-1 text-blue-500 font-bold">"Add"</span> button in the top right corner</p>
                                 </div>
-                                <button onClick={() => setShowGuide(null)} className="mt-8 w-full py-3 bg-pink-500 text-white rounded-xl font-bold">我知道了</button>
+                                <button onClick={() => setShowGuide(null)} className="mt-8 w-full py-3 bg-pink-500 text-white rounded-xl font-bold">Got it</button>
                             </div>
                         ) : (
                             <div className="text-center">
-                                <h3 className="text-xl font-bold mb-4">提示</h3>
-                                <p className="text-gray-600 mb-6">当前环境不支持直接安装，请点击右上角选择<span className="text-pink-500 font-bold">“在浏览器中打开”</span>后再操作哦～</p>
-                                <button onClick={() => setShowGuide(null)} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">关闭</button>
+                                <h3 className="text-xl font-bold mb-4">Tips</h3>
+                                <p className="text-gray-600 mb-6">Direct installation is not supported in this environment. Please click the top-right menu and select <span className="text-pink-500 font-bold">"Open in Browser"</span> to continue! ✨</p>
+                                <button onClick={() => setShowGuide(null)} className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold">Close</button>
                             </div>
                         )}
                     </div>
