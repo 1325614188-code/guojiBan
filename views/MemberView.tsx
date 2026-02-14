@@ -387,15 +387,6 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             </div>
                         )}
 
-                        {/* 测试充值按钮 - 测试完成后删除 */}
-                        <button
-                            onClick={() => handleRecharge(1.00, 1)}
-                            className="w-full h-14 mb-3 rounded-xl border-2 border-red-300 hover:border-red-500 hover:bg-red-50 transition-colors"
-                        >
-                            <div className="text-lg font-bold text-red-500">🧪 Test - 1 Credit</div>
-                            <div className="text-xs text-gray-500">$1.00 (test only)</div>
-                        </button>
-
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleRecharge(1.99, 12)}
