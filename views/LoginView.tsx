@@ -14,7 +14,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
     const [error, setError] = useState('');
     const [referrerId, setReferrerId] = useState<string | null>(null);
 
-    // 获取设备ID
+    // Get device ID
     const getDeviceId = async (): Promise<string> => {
         let deviceId = localStorage.getItem('device_id');
         if (!deviceId || deviceId.startsWith('dev_')) {
@@ -24,7 +24,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
         return deviceId;
     };
 
-    // 检查URL中的推荐人
+    // Check for referrer in URL
     React.useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const ref = params.get('ref');
@@ -55,10 +55,10 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || '操作失败');
+                throw new Error(data.error || 'Operation failed');
             }
 
-            // 保存用户信息
+            // Save user info
             localStorage.setItem('user', JSON.stringify(data.user));
             onLogin(data.user);
         } catch (err: any) {
@@ -75,7 +75,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
 
                 <div className="bg-white rounded-3xl p-8 shadow-lg">
                     <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                        {isRegister ? '注册新账户' : '登录'}
+                        {isRegister ? 'Create Account' : 'Log In'}
                     </h2>
 
                     {error && (
@@ -86,25 +86,25 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm text-gray-500 mb-1">用户名</label>
+                            <label className="block text-sm text-gray-500 mb-1">Username</label>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={e => setUsername(e.target.value)}
                                 className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pink-400 focus:outline-none"
-                                placeholder="请输入用户名"
+                                placeholder="Enter username"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-gray-500 mb-1">密码</label>
+                            <label className="block text-sm text-gray-500 mb-1">Password</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 className="w-full h-12 px-4 rounded-xl border border-gray-200 focus:border-pink-400 focus:outline-none"
-                                placeholder="请输入密码"
+                                placeholder="Enter password"
                                 required
                             />
                         </div>
@@ -117,8 +117,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                             className="w-full h-14 xhs-gradient text-white rounded-2xl font-bold disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {loading ? (
-                                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> 处理中...</>
-                            ) : (isRegister ? '注册' : '登录')}
+                                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
+                            ) : (isRegister ? 'Sign Up' : 'Log In')}
                         </button>
                     </form>
 
@@ -127,13 +127,13 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                             onClick={() => setIsRegister(!isRegister)}
                             className="text-pink-500 text-sm"
                         >
-                            {isRegister ? '已有账户？去登录' : '没有账户？去注册'}
+                            {isRegister ? 'Already have an account? Log In' : 'No account? Sign Up'}
                         </button>
                     </div>
 
                     {isRegister && (
                         <p className="mt-4 text-xs text-gray-400 text-center">
-                            🎁 首台设备注册赠送5次使用额度
+                            🎁 5 free credits for your first device registration
                         </p>
                     )}
                 </div>

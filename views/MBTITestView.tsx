@@ -7,112 +7,112 @@ interface MBTITestViewProps {
     onDeductCredit?: () => Promise<void>;
 }
 
-// MBTI 80道测试题目
+// MBTI 80 test questions
 const MBTI_QUESTIONS = [
-    // E vs I (外向 vs 内向) - 20题
-    { q: '在社交聚会中，你通常感到精力充沛', dimension: 'EI', direction: 'E' },
-    { q: '你喜欢成为众人瞩目的焦点', dimension: 'EI', direction: 'E' },
-    { q: '你更喜欢独处或与少数亲密朋友在一起', dimension: 'EI', direction: 'I' },
-    { q: '你需要独处时间来恢复精力', dimension: 'EI', direction: 'I' },
-    { q: '你喜欢主动认识新朋友', dimension: 'EI', direction: 'E' },
-    { q: '你说话前会仔细思考', dimension: 'EI', direction: 'I' },
-    { q: '你喜欢热闹的环境', dimension: 'EI', direction: 'E' },
-    { q: '你更擅长倾听而非表达', dimension: 'EI', direction: 'I' },
-    { q: '你在团队中经常发言', dimension: 'EI', direction: 'E' },
-    { q: '你享受安静独处的时光', dimension: 'EI', direction: 'I' },
-    { q: '你容易与陌生人攀谈', dimension: 'EI', direction: 'E' },
-    { q: '你更喜欢书面沟通而非口头交流', dimension: 'EI', direction: 'I' },
-    { q: '你喜欢参加大型派对或活动', dimension: 'EI', direction: 'E' },
-    { q: '你在人群中待久了会感到疲惫', dimension: 'EI', direction: 'I' },
-    { q: '你善于活跃气氛', dimension: 'EI', direction: 'E' },
-    { q: '你更喜欢深入交流而非闲聊', dimension: 'EI', direction: 'I' },
-    { q: '你会主动组织社交活动', dimension: 'EI', direction: 'E' },
-    { q: '你觉得独自思考比讨论更有效', dimension: 'EI', direction: 'I' },
-    { q: '你喜欢边说边想', dimension: 'EI', direction: 'E' },
-    { q: '你倾向于先观察再行动', dimension: 'EI', direction: 'I' },
-    // S vs N (感觉 vs 直觉) - 20题
-    { q: '你更关注当下的实际情况', dimension: 'SN', direction: 'S' },
-    { q: '你喜欢想象未来的可能性', dimension: 'SN', direction: 'N' },
-    { q: '你注重细节和具体事实', dimension: 'SN', direction: 'S' },
-    { q: '你容易看到事物的整体模式', dimension: 'SN', direction: 'N' },
-    { q: '你更信任实际经验', dimension: 'SN', direction: 'S' },
-    { q: '你喜欢探索新想法和理论', dimension: 'SN', direction: 'N' },
-    { q: '你做事注重实用性', dimension: 'SN', direction: 'S' },
-    { q: '你经常有突发的灵感', dimension: 'SN', direction: 'N' },
-    { q: '你喜欢按既定方式做事', dimension: 'SN', direction: 'S' },
-    { q: '你对抽象概念感兴趣', dimension: 'SN', direction: 'N' },
-    { q: '你更相信看得见摸得着的东西', dimension: 'SN', direction: 'S' },
-    { q: '你喜欢探索事物背后的深层含义', dimension: 'SN', direction: 'N' },
-    { q: '你更擅长记住具体细节', dimension: 'SN', direction: 'S' },
-    { q: '你常常展望遥远的未来', dimension: 'SN', direction: 'N' },
-    { q: '你喜欢循序渐进地学习', dimension: 'SN', direction: 'S' },
-    { q: '你喜欢思考"如果...会怎样"', dimension: 'SN', direction: 'N' },
-    { q: '你注重事物的实际应用', dimension: 'SN', direction: 'S' },
-    { q: '你容易发现事物之间的联系', dimension: 'SN', direction: 'N' },
-    { q: '你更关心"是什么"而非"可能是什么"', dimension: 'SN', direction: 'S' },
-    { q: '你喜欢隐喻和象征性的表达', dimension: 'SN', direction: 'N' },
-    // T vs F (思考 vs 情感) - 20题
-    { q: '做决定时你更依赖逻辑分析', dimension: 'TF', direction: 'T' },
-    { q: '你很在意他人的感受', dimension: 'TF', direction: 'F' },
-    { q: '你认为公平比和谐更重要', dimension: 'TF', direction: 'T' },
-    { q: '你容易感受到他人的情绪', dimension: 'TF', direction: 'F' },
-    { q: '你喜欢分析问题的利弊', dimension: 'TF', direction: 'T' },
-    { q: '你更看重人际关系的和谐', dimension: 'TF', direction: 'F' },
-    { q: '你能够客观地批评他人', dimension: 'TF', direction: 'T' },
-    { q: '你经常赞美和鼓励他人', dimension: 'TF', direction: 'F' },
-    { q: '你认为理性比感性更可靠', dimension: 'TF', direction: 'T' },
-    { q: '你做决定时会考虑对他人的影响', dimension: 'TF', direction: 'F' },
-    { q: '你更擅长解决技术问题', dimension: 'TF', direction: 'T' },
-    { q: '你善于调解人际冲突', dimension: 'TF', direction: 'F' },
-    { q: '你认为规则比例外更重要', dimension: 'TF', direction: 'T' },
-    { q: '你在做决定时会考虑个人价值观', dimension: 'TF', direction: 'F' },
-    { q: '你喜欢找出争论中的逻辑漏洞', dimension: 'TF', direction: 'T' },
-    { q: '你容易对他人产生同情心', dimension: 'TF', direction: 'F' },
-    { q: '你认为事实比感受更重要', dimension: 'TF', direction: 'T' },
-    { q: '你更关心他人的需要', dimension: 'TF', direction: 'F' },
-    { q: '你在批评时直言不讳', dimension: 'TF', direction: 'T' },
-    { q: '你很难拒绝别人的请求', dimension: 'TF', direction: 'F' },
-    // J vs P (判断 vs 感知) - 20题
-    { q: '你喜欢按计划行事', dimension: 'JP', direction: 'J' },
-    { q: '你喜欢保持选择的开放性', dimension: 'JP', direction: 'P' },
-    { q: '你做事有条理有系统', dimension: 'JP', direction: 'J' },
-    { q: '你享受临时起意的活动', dimension: 'JP', direction: 'P' },
-    { q: '你喜欢事先做好规划', dimension: 'JP', direction: 'J' },
-    { q: '你能很好地适应变化', dimension: 'JP', direction: 'P' },
-    { q: '你喜欢尽早完成任务', dimension: 'JP', direction: 'J' },
-    { q: '你经常在截止日期前才完成工作', dimension: 'JP', direction: 'P' },
-    { q: '你的生活作息很规律', dimension: 'JP', direction: 'J' },
-    { q: '你喜欢随心所欲地生活', dimension: 'JP', direction: 'P' },
-    { q: '你会提前安排日程', dimension: 'JP', direction: 'J' },
-    { q: '你更喜欢灵活应变', dimension: 'JP', direction: 'P' },
-    { q: '完成任务给你带来满足感', dimension: 'JP', direction: 'J' },
-    { q: '你喜欢同时进行多项任务', dimension: 'JP', direction: 'P' },
-    { q: '你的物品摆放整齐有序', dimension: 'JP', direction: 'J' },
-    { q: '你觉得规则可以灵活变通', dimension: 'JP', direction: 'P' },
-    { q: '你喜欢有明确的目标', dimension: 'JP', direction: 'J' },
-    { q: '你享受探索过程中的不确定性', dimension: 'JP', direction: 'P' },
-    { q: '你常常列清单来管理任务', dimension: 'JP', direction: 'J' },
-    { q: '你更喜欢顺其自然', dimension: 'JP', direction: 'P' },
+    // E vs I (Extraversion vs Introversion) - 20 items
+    { q: 'You usually feel energized in social gatherings', dimension: 'EI', direction: 'E' },
+    { q: 'You like being the center of attention', dimension: 'EI', direction: 'E' },
+    { q: 'You prefer being alone or with a few close friends', dimension: 'EI', direction: 'I' },
+    { q: 'You need alone time to recharge your energy', dimension: 'EI', direction: 'I' },
+    { q: 'You enjoy initiating conversations with new people', dimension: 'EI', direction: 'E' },
+    { q: 'You think carefully before you speak', dimension: 'EI', direction: 'I' },
+    { q: 'You like lively environments', dimension: 'EI', direction: 'E' },
+    { q: 'You are better at listening than expressing', dimension: 'EI', direction: 'I' },
+    { q: 'You often speak up in group settings', dimension: 'EI', direction: 'E' },
+    { q: 'You enjoy quiet time alone', dimension: 'EI', direction: 'I' },
+    { q: 'You find it easy to chat with strangers', dimension: 'EI', direction: 'E' },
+    { q: 'You prefer written communication over verbal exchange', dimension: 'EI', direction: 'I' },
+    { q: 'You like attending large parties or events', dimension: 'EI', direction: 'E' },
+    { q: 'You feel exhausted after being in a crowd for too long', dimension: 'EI', direction: 'I' },
+    { q: 'You are good at livening up the atmosphere', dimension: 'EI', direction: 'E' },
+    { q: 'You prefer deep conversations over small talk', dimension: 'EI', direction: 'I' },
+    { q: 'You take the initiative to organize social activities', dimension: 'EI', direction: 'E' },
+    { q: 'You find thinking alone more effective than discussing', dimension: 'EI', direction: 'I' },
+    { q: 'You like to think out loud', dimension: 'EI', direction: 'E' },
+    { q: 'You tend to observe before acting', dimension: 'EI', direction: 'I' },
+    // S vs N (Sensing vs Intuition) - 20 items
+    { q: 'You focus more on the actual situation at hand', dimension: 'SN', direction: 'S' },
+    { q: 'You like imagining future possibilities', dimension: 'SN', direction: 'N' },
+    { q: 'You pay attention to details and concrete facts', dimension: 'SN', direction: 'S' },
+    { q: 'You easily see patterns in things', dimension: 'SN', direction: 'N' },
+    { q: 'You trust practical experience more', dimension: 'SN', direction: 'S' },
+    { q: 'You like exploring new ideas and theories', dimension: 'SN', direction: 'N' },
+    { q: 'You focus on practicality in what you do', dimension: 'SN', direction: 'S' },
+    { q: 'You often have sudden inspirations', dimension: 'SN', direction: 'N' },
+    { q: 'You like doing things in established ways', dimension: 'SN', direction: 'S' },
+    { q: 'You are interested in abstract concepts', dimension: 'SN', direction: 'N' },
+    { q: 'You trust what you can see and touch more', dimension: 'SN', direction: 'S' },
+    { q: 'You like exploring the deep meaning behind things', dimension: 'SN', direction: 'N' },
+    { q: 'You are good at remembering specific details', dimension: 'SN', direction: 'S' },
+    { q: 'You often look far into the future', dimension: 'SN', direction: 'N' },
+    { q: 'You like learning step by step', dimension: 'SN', direction: 'S' },
+    { q: 'You like thinking about "what if"', dimension: 'SN', direction: 'N' },
+    { q: 'You focus on the practical application of things', dimension: 'SN', direction: 'S' },
+    { q: 'You easily find connections between things', dimension: 'SN', direction: 'N' },
+    { q: 'You care more about "what is" than "what could be"', dimension: 'SN', direction: 'S' },
+    { q: 'You like metaphors and symbolic expressions', dimension: 'SN', direction: 'N' },
+    // T vs F (Thinking vs Feeling) - 20 items
+    { q: 'You rely more on logical analysis when making decisions', dimension: 'TF', direction: 'T' },
+    { q: 'You care a lot about others\' feelings', dimension: 'TF', direction: 'F' },
+    { q: 'You believe fairness is more important than harmony', dimension: 'TF', direction: 'T' },
+    { q: 'You easily sense others\' emotions', dimension: 'TF', direction: 'F' },
+    { q: 'You like analyzing the pros and cons of a problem', dimension: 'TF', direction: 'T' },
+    { q: 'You value harmony in relationships more', dimension: 'TF', direction: 'F' },
+    { q: 'You can criticize others objectively', dimension: 'TF', direction: 'T' },
+    { q: 'You often praise and encourage others', dimension: 'TF', direction: 'F' },
+    { q: 'You believe rationality is more reliable than emotion', dimension: 'TF', direction: 'T' },
+    { q: 'You consider the impact on others when making decisions', dimension: 'TF', direction: 'F' },
+    { q: 'You are better at solving technical problems', dimension: 'TF', direction: 'T' },
+    { q: 'You are good at mediating interpersonal conflicts', dimension: 'TF', direction: 'F' },
+    { q: 'You believe rules are more important than exceptions', dimension: 'TF', direction: 'T' },
+    { q: 'You consider personal values when making decisions', dimension: 'TF', direction: 'F' },
+    { q: 'You like finding logical loopholes in arguments', dimension: 'TF', direction: 'T' },
+    { q: 'You easily feel sympathy for others', dimension: 'TF', direction: 'F' },
+    { q: 'You believe facts are more important than feelings', dimension: 'TF', direction: 'T' },
+    { q: 'You care more about others\' needs', dimension: 'TF', direction: 'F' },
+    { q: 'You are blunt when criticizing', dimension: 'TF', direction: 'T' },
+    { q: 'You find it hard to say no to requests', dimension: 'TF', direction: 'F' },
+    // J vs P (Judging vs Perceiving) - 20 items
+    { q: 'You like acting according to a plan', dimension: 'JP', direction: 'J' },
+    { q: 'You like keeping your options open', dimension: 'JP', direction: 'P' },
+    { q: 'You work in an organized and systematic way', dimension: 'JP', direction: 'J' },
+    { q: 'You enjoy spontaneous activities', dimension: 'JP', direction: 'P' },
+    { q: 'You like planning in advance', dimension: 'JP', direction: 'J' },
+    { q: 'You adapt well to change', dimension: 'JP', direction: 'P' },
+    { q: 'You like completing tasks as early as possible', dimension: 'JP', direction: 'J' },
+    { q: 'You often finish work just before the deadline', dimension: 'JP', direction: 'P' },
+    { q: 'Your daily routine is very regular', dimension: 'JP', direction: 'J' },
+    { q: 'You like living as you please', dimension: 'JP', direction: 'P' },
+    { q: 'You arrange your schedule ahead of time', dimension: 'JP', direction: 'J' },
+    { q: 'You prefer flexibility and adaptation', dimension: 'JP', direction: 'P' },
+    { q: 'Completing a task gives you a sense of satisfaction', dimension: 'JP', direction: 'J' },
+    { q: 'You like performing multiple tasks simultaneously', dimension: 'JP', direction: 'P' },
+    { q: 'Your belongings are arranged neatly and orderly', dimension: 'JP', direction: 'J' },
+    { q: 'You think rules can be flexible', dimension: 'JP', direction: 'P' },
+    { q: 'You like having clear goals', dimension: 'JP', direction: 'J' },
+    { q: 'You enjoy the uncertainty in the exploration process', dimension: 'JP', direction: 'P' },
+    { q: 'You often make lists to manage tasks', dimension: 'JP', direction: 'J' },
+    { q: 'You prefer to let things take their natural course', dimension: 'JP', direction: 'P' },
 ];
 
-// MBTI 类型描述
+// MBTI type descriptions
 const MBTI_DESCRIPTIONS: Record<string, { title: string; traits: string; careers: string; industries: string; earning: string }> = {
-    'INTJ': { title: '建筑师', traits: '独立、战略性思维、高标准', careers: '科学家、战略顾问、系统架构师、投资分析师', industries: '科技、金融、咨询、研究', earning: '💰💰💰💰💰 极强的赚钱潜力，善于规划长期财富' },
-    'INTP': { title: '逻辑学家', traits: '分析能力强、创新、独立思考', careers: '程序员、数据科学家、研究员、哲学家', industries: '科技、学术、研发、游戏开发', earning: '💰💰💰💰 技术型人才收入可观' },
-    'ENTJ': { title: '指挥官', traits: '领导力强、果断、高效', careers: 'CEO、企业家、律师、项目经理', industries: '商业、管理、法律、金融', earning: '💰💰💰💰💰 天生的商业领袖，赚钱能力顶级' },
-    'ENTP': { title: '辩论家', traits: '创新、口才好、思维敏捷', careers: '创业者、营销专家、产品经理、律师', industries: '创业、广告、媒体、科技', earning: '💰💰💰💰 善于发现商机，但需坚持执行' },
-    'INFJ': { title: '提倡者', traits: '有远见、富有同情心、理想主义', careers: '心理咨询师、作家、教育家、人力资源', industries: '教育、心理健康、非营利组织、艺术', earning: '💰💰💰 重视意义大于金钱，但能在专业领域获得认可' },
-    'INFP': { title: '调停者', traits: '理想主义、创造力、同理心强', careers: '作家、艺术家、心理咨询师、设计师', industries: '创意产业、心理咨询、教育、社会服务', earning: '💰💰💰 追求热爱的事业，财富随之而来' },
-    'ENFJ': { title: '主人公', traits: '有魅力、善于激励他人、责任感强', careers: '培训师、教师、人力资源、政治家', industries: '教育、培训、公关、管理', earning: '💰💰💰💰 出色的领导力带来晋升机会' },
-    'ENFP': { title: '竞选者', traits: '热情、创造力、善于交际', careers: '创意总监、记者、公关专家、演员', industries: '媒体、娱乐、广告、创业', earning: '💰💰💰 创意和人脉是最大资产' },
-    'ISTJ': { title: '物流师', traits: '可靠、有条理、注重细节', careers: '会计师、审计员、项目经理、行政管理', industries: '金融、政府、制造业、物流', earning: '💰💰💰💰 稳扎稳打，财务规划能力强' },
-    'ISFJ': { title: '守卫者', traits: '忠诚、细心、乐于助人', careers: '护士、教师、行政助理、客服经理', industries: '医疗、教育、社会服务、零售', earning: '💰💰💰 稳定的职业发展路径' },
-    'ESTJ': { title: '总经理', traits: '组织力强、务实、领导力', careers: '经理、军官、法官、财务总监', industries: '管理、法律、金融、政府', earning: '💰💰💰💰 管理岗位薪资可观' },
-    'ESFJ': { title: '执政官', traits: '热心、善于社交、有责任心', careers: '销售经理、活动策划、人力资源、医生', industries: '销售、医疗、教育、酒店服务', earning: '💰💰💰 人际关系网络带来机遇' },
-    'ISTP': { title: '鉴赏家', traits: '灵活、善于解决问题、实践能力强', careers: '工程师、飞行员、机械师、法医', industries: '工程、航空、技术维修、调查', earning: '💰💰💰💰 技术专业人才稀缺' },
-    'ISFP': { title: '探险家', traits: '艺术感、温和、活在当下', careers: '艺术家、设计师、摄影师、造型师', industries: '艺术、设计、时尚、美容', earning: '💰💰💰 创意作品可创造独特价值' },
-    'ESTP': { title: '企业家', traits: '精力充沛、行动派、善于应变', careers: '销售、运动员、消防员、企业家', industries: '销售、体育、娱乐、创业', earning: '💰💰💰💰 敢于冒险可获高回报' },
-    'ESFP': { title: '表演者', traits: '热情、风趣、享受生活', careers: '演员、主持人、销售、活动策划', industries: '娱乐、销售、餐饮、旅游', earning: '💰💰💰 魅力是最大的资本' },
+    'INTJ': { title: 'Architect', traits: 'Independent, strategic thinking, high standards', careers: 'Scientist, Strategic Consultant, System Architect, Investment Analyst', industries: 'Tech, Finance, Consulting, R&D', earning: '💰💰💰💰💰 High earning potential, good at long-term wealth planning' },
+    'INTP': { title: 'Logician', traits: 'Strong analysis, innovation, independent thinking', careers: 'Programmer, Data Scientist, Researcher, Philosopher', industries: 'Tech, Academia, R&D, Game Dev', earning: '💰💰💰💰 Technical experts with considerable income' },
+    'ENTJ': { title: 'Commander', traits: 'Strong leadership, decisive, efficient', careers: 'CEO, Entrepreneur, Lawyer, Project Manager', industries: 'Business, Management, Legal, Finance', earning: '💰💰💰💰💰 Natural business leaders, top-tier wealth creation' },
+    'ENTP': { title: 'Debater', traits: 'Innovative, eloquent, agile thinking', careers: 'Founder, Marketing Expert, Product Manager, Lawyer', industries: 'Startups, Advertising, Media, Tech', earning: '💰💰💰💰 Good at finding business opportunities' },
+    'INFJ': { title: 'Advocate', traits: 'Visionary, compassionate, idealistic', careers: 'Psychologist, Author, Educator, HR', industries: 'Education, Mental Health, NGO, Arts', earning: '💰💰💰 Values meaning over money, but recognized in specialized fields' },
+    'INFP': { title: 'Mediator', traits: 'Idealistic, creative, strong empathy', careers: 'Writer, Artist, Psychologist, Designer', industries: 'Creative Industries, Counseling, Education', earning: '💰💰💰 Pursues passion, wealth follows success' },
+    'ENFJ': { title: 'Protagonist', traits: 'Charismatic, inspiring, strong responsibility', careers: 'Trainer, Teacher, HR, Politician', industries: 'Education, Training, PR, Management', earning: '💰💰💰💰 Excellent leadership brings promotion opportunities' },
+    'ENFP': { title: 'Campaigner', traits: 'Enthusiastic, creative, sociable', careers: 'Creative Director, Journalist, PR Expert, Actor', industries: 'Media, Entertainment, Advertising', earning: '💰💰💰 Creativity and networking are the biggest assets' },
+    'ISTJ': { title: 'Logistician', traits: 'Reliable, organized, detail-oriented', careers: 'Accountant, Auditor, Project Manager, Administrator', industries: 'Finance, Government, Manufacturing, Logistics', earning: '💰💰💰💰 Steady growth, strong financial planning ability' },
+    'ISFJ': { title: 'Defender', traits: 'Loyal, attentive, helpful', careers: 'Nurse, Teacher, Administrative Assistant, Customer Success', industries: 'Healthcare, Education, Social Service', earning: '💰💰💰 Stable career development path' },
+    'ESTJ': { title: 'Executive', traits: 'Well-organized, pragmatic, leadership', careers: 'Manager, Officer, Judge, Financial Director', industries: 'Management, Law, Finance, Government', earning: '💰💰💰💰 High salaries in management positions' },
+    'ESFJ': { title: 'Consul', traits: 'Warm-hearted, outgoing, responsible', careers: 'Sales Manager, Event Planner, HR, Doctor', industries: 'Sales, Healthcare, Education, Hospitality', earning: '💰💰💰 Opportunities through interpersonal networks' },
+    'ISTP': { title: 'Virtuoso', traits: 'Flexible, problem solver, practical', careers: 'Engineer, Pilot, Mechanic, Forensic Expert', industries: 'Engineering, Aviation, Tech Maintenance', earning: '💰💰💰💰 Technical experts are highly sought after' },
+    'ISFP': { title: 'Adventurer', traits: 'Artistic, gentle, living in the moment', careers: 'Artist, Designer, Photographer, Stylist', industries: 'Arts, Design, Fashion, Beauty', earning: '💰💰💰 Creative work can create unique value' },
+    'ESTP': { title: 'Entrepreneur', traits: 'Energetic, action-oriented, adaptable', careers: 'Sales, Athlete, Firefighter, Entrepreneur', industries: 'Sales, Sports, Entertainment, Startups', earning: '💰💰💰💰 Risk-taking leads to high returns' },
+    'ESFP': { title: 'Entertainer', traits: 'Enthusiastic, humorous, enjoying life', careers: 'Actor, Host, Sales, Event Planner', industries: 'Entertainment, Sales, F&B, Tourism', earning: '💰💰💰 Charisma is the greatest capital' },
 };
 
 const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
@@ -129,11 +129,11 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
     };
 
     const calculateResult = async () => {
-        // 检查额度
+        // Check credits
         const hasCredits = await onCheckCredits?.();
         if (!hasCredits) return;
 
-        // 计算各维度得分
+        // Calculate scores for each dimension
         const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
 
         MBTI_QUESTIONS.forEach((q, idx) => {
@@ -146,7 +146,7 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
             }
         });
 
-        // 确定类型
+        // Determine type
         const type =
             (scores.E > scores.I ? 'E' : 'I') +
             (scores.S > scores.N ? 'S' : 'N') +
@@ -167,36 +167,36 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
             <div className="p-6 flex flex-col gap-6">
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="text-2xl">←</button>
-                    <h2 className="text-xl font-bold">天赋测试结果</h2>
+                    <h2 className="text-xl font-bold">Talent Test Result</h2>
                 </div>
 
                 <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl p-6 text-white text-center">
-                    <p className="text-sm opacity-80 mb-2">你的MBTI类型是</p>
+                    <p className="text-sm opacity-80 mb-2">Your MBTI type is</p>
                     <h1 className="text-5xl font-bold mb-2">{result}</h1>
                     <p className="text-2xl">{desc.title}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">🧠 性格特点</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">🧠 Traits</h3>
                         <p className="text-gray-600 text-sm">{desc.traits}</p>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">💼 适合职业</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">💼 Careers</h3>
                         <p className="text-gray-600 text-sm">{desc.careers}</p>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">🏢 推荐行业</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">🏢 Industries</h3>
                         <p className="text-gray-600 text-sm">{desc.industries}</p>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">💰 赚钱能力</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">💰 Earning Potential</h3>
                         <p className="text-gray-600 text-sm">{desc.earning}</p>
                     </div>
                 </div>
 
                 <button onClick={onBack} className="w-full h-14 bg-purple-500 text-white rounded-2xl font-bold">
-                    返回首页
+                    Back to Home
                 </button>
             </div>
         );
@@ -206,30 +206,30 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
         <div className="p-6 flex flex-col gap-6">
             <div className="flex items-center gap-4">
                 <button onClick={onBack} className="text-2xl">←</button>
-                <h2 className="text-xl font-bold">天赋测试</h2>
+                <h2 className="text-xl font-bold">Talent Test</h2>
             </div>
 
-            {/* 进度条 */}
+            {/* Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2">
                 <div className="bg-purple-500 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             <p className="text-sm text-gray-500 text-center">{currentQuestion + 1} / {MBTI_QUESTIONS.length}</p>
 
-            {/* 题目 */}
+            {/* Question */}
             <div className="bg-white rounded-2xl p-6 shadow-sm min-h-[120px] flex items-center justify-center">
                 <p className="text-lg text-center font-medium text-gray-800">
                     {MBTI_QUESTIONS[currentQuestion].q}
                 </p>
             </div>
 
-            {/* 答案选项 */}
+            {/* Answer Options */}
             <div className="flex flex-col gap-3">
                 {[
-                    { score: 5, label: '非常同意', color: 'bg-purple-500' },
-                    { score: 4, label: '比较同意', color: 'bg-purple-400' },
-                    { score: 3, label: '一般', color: 'bg-gray-400' },
-                    { score: 2, label: '比较不同意', color: 'bg-pink-400' },
-                    { score: 1, label: '非常不同意', color: 'bg-pink-500' },
+                    { score: 5, label: 'Strongly Agree', color: 'bg-purple-500' },
+                    { score: 4, label: 'Agree', color: 'bg-purple-400' },
+                    { score: 3, label: 'Neutral', color: 'bg-gray-400' },
+                    { score: 2, label: 'Disagree', color: 'bg-pink-400' },
+                    { score: 1, label: 'Strongly Disagree', color: 'bg-pink-500' },
                 ].map(opt => (
                     <button
                         key={opt.score}
@@ -241,21 +241,21 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
                 ))}
             </div>
 
-            {/* 导航按钮 */}
+            {/* Navigation Buttons */}
             <div className="flex gap-3">
                 <button
                     onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
                     disabled={currentQuestion === 0}
                     className="flex-1 py-3 rounded-xl border-2 border-gray-300 text-gray-600 font-bold disabled:opacity-50"
                 >
-                    上一题
+                    Previous
                 </button>
                 {allAnswered ? (
                     <button
                         onClick={calculateResult}
                         className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold"
                     >
-                        查看结果 ✨
+                        View Results ✨
                     </button>
                 ) : (
                     <button
@@ -263,7 +263,7 @@ const MBTITestView: React.FC<MBTITestViewProps> = ({ onBack, onCheckCredits, onD
                         disabled={currentQuestion === MBTI_QUESTIONS.length - 1}
                         className="flex-1 py-3 rounded-xl border-2 border-purple-500 text-purple-500 font-bold disabled:opacity-50"
                     >
-                        下一题
+                        Next
                     </button>
                 )}
             </div>

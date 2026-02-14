@@ -16,7 +16,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<string | null>(null);
-  const [gender, setGender] = useState<'女' | '男' | null>(type === '颜值打分' ? '女' : null);
+  const [gender, setGender] = useState<'Female' | 'Male' | null>(type === 'Beauty Score' ? 'Female' : null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,25 +30,25 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
   const handleAnalyze = async () => {
     if (!image) return;
 
-    // 检查额度
+    // Check credits
     const hasCredits = await onCheckCredits?.();
     if (!hasCredits) return;
 
     setLoading(true);
     try {
-      const res = await generateXHSStyleReport(type, [image], gender ? `性别：${gender}` : "");
+      const res = await generateXHSStyleReport(type, [image], gender ? `Gender: ${gender}` : "");
       if (res) {
         setReport(res);
-        // 成功后扣除额度
-        console.log('[AnalysisView] 分析成功，开始扣除额度');
+        // Deduct credit after success
+        console.log('[AnalysisView] Analysis success, deducting credit');
         await onDeductCredit?.();
       } else {
-        console.warn('[AnalysisView] 分析失败，未返回结果，不扣除额度');
-        alert('分析遇到了点困难，稍后再试吧');
+        console.warn('[AnalysisView] Analysis failed, no result, credit not deducted');
+        alert('Analysis encountered some issues, please try again later');
       }
     } catch (e) {
       console.error(e);
-      alert('分析遇到了点困难，稍后再试吧');
+      alert('Analysis encountered some issues, please try again later');
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
           ) : (
             <div className="text-center p-6">
               <span className="text-5xl block mb-2">📸</span>
-              <p className="text-sm text-gray-400">{helpText || '上传照片开始分析'}</p>
+              <p className="text-sm text-gray-400">{helpText || 'Upload photo to start analysis'}</p>
             </div>
           )}
           <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -77,16 +77,16 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
         {type === '颜值打分' && (
           <div className="flex justify-center gap-4">
             <button
-              onClick={() => setGender('女')}
-              className={`px-6 py-2 rounded-full font-bold ${gender === '女' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500'}`}
+              onClick={() => setGender('Female')}
+              className={`px-6 py-2 rounded-full font-bold ${gender === 'Female' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500'}`}
             >
-              女生
+              Female
             </button>
             <button
-              onClick={() => setGender('男')}
-              className={`px-6 py-2 rounded-full font-bold ${gender === '男' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500'}`}
+              onClick={() => setGender('Male')}
+              className={`px-6 py-2 rounded-full font-bold ${gender === 'Male' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500'}`}
             >
-              男生
+              Male
             </button>
           </div>
         )}
@@ -97,15 +97,15 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
           className="w-full h-14 xhs-gradient text-white rounded-2xl font-bold disabled:bg-gray-300 transition-all shadow-lg flex items-center justify-center gap-2"
         >
           {loading ? (
-            <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> AI分析中...</>
-          ) : '开始深度分析'}
+            <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analyzing...</>
+          ) : 'Start Analysis'}
         </button>
 
         {report && (() => {
-          // 提取分数 (格式: [SCORE:XX分])
-          const scoreMatch = report.match(/\[SCORE:(\d+)分?\]/);
+          // Extract score (Format: [SCORE:XX])
+          const scoreMatch = report.match(/\[SCORE:(\d+)\]/);
           const score = scoreMatch ? parseInt(scoreMatch[1]) : null;
-          const cleanReport = report.replace(/\[SCORE:\d+分?\]\s*/, '');
+          const cleanReport = report.replace(/\[SCORE:\d+\]\s*/, '');
 
           return (
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-pink-50 prose prose-pink max-w-none">
@@ -113,10 +113,10 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
               {type === '颜值打分' && score !== null && (
                 <div className="flex flex-col items-center mb-6 -mt-2">
                   <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-lg">
-                    <span className="text-4xl font-bold text-white">{score}<span className="text-lg">分</span></span>
+                    <span className="text-4xl font-bold text-white">{score}</span>
                   </div>
                   <p className="text-gray-500 text-sm mt-2">
-                    {score >= 90 ? '✨ 绝对惊艳！' : score >= 80 ? '🌟 超级好看!' : score >= 70 ? '💕 清新可人~' : score >= 60 ? '😊 蛮不错的' : '💪 潜力股!'}
+                    {score >= 90 ? '✨ Stunning!' : score >= 80 ? '🌟 Gorgeous!' : score >= 70 ? '💕 Refreshing~' : score >= 60 ? '😊 Looking Good' : '💪 Hidden Gem!'}
                   </p>
                 </div>
               )}

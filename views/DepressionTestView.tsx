@@ -7,97 +7,97 @@ interface DepressionTestViewProps {
     onDeductCredit?: () => Promise<void>;
 }
 
-// 抑郁症自测80道题目 (基于PHQ-9、BDI-II和其他量表扩展)
+// Depression self-test 80 questions (based on PHQ-9, BDI-II and other expanded scales)
 const DEPRESSION_QUESTIONS = [
-    // 情绪相关 - 12题
-    { q: '最近两周，你是否经常感到心情低落、沮丧或绝望', category: 'mood' },
-    { q: '你是否感到生活没有意义', category: 'mood' },
-    { q: '你是否经常感到悲伤而无法自控', category: 'mood' },
-    { q: '你是否容易因小事而想哭', category: 'mood' },
-    { q: '你是否感到内心空虚', category: 'mood' },
-    { q: '你是否感到对未来没有希望', category: 'mood' },
-    { q: '你是否感到自己是个失败者', category: 'mood' },
-    { q: '你是否经常感到莫名的恐惧或不安', category: 'mood' },
-    { q: '你是否经常感到烦躁易怒', category: 'mood' },
-    { q: '你是否感到无法控制自己的情绪', category: 'mood' },
-    { q: '你是否经常感到孤独寂寞', category: 'mood' },
-    { q: '你是否感到很难让自己开心起来', category: 'mood' },
-    // 兴趣相关 - 10题
-    { q: '你是否对以前喜欢的事情失去了兴趣', category: 'interest' },
-    { q: '你是否感到做什么都提不起劲', category: 'interest' },
-    { q: '你是否不再期待任何事情', category: 'interest' },
-    { q: '你是否感到生活变得乏味无聊', category: 'interest' },
-    { q: '你是否很难从愉快的活动中获得满足感', category: 'interest' },
-    { q: '你是否不再想参加社交活动', category: 'interest' },
-    { q: '你是否对工作或学习失去热情', category: 'interest' },
-    { q: '你是否不再关心自己的外表或穿着', category: 'interest' },
-    { q: '你是否对性生活或亲密关系失去兴趣', category: 'interest' },
-    { q: '你是否感到音乐、电影等娱乐无法让你开心', category: 'interest' },
-    // 睡眠相关 - 10题
-    { q: '你是否有入睡困难', category: 'sleep' },
-    { q: '你是否经常在半夜醒来', category: 'sleep' },
-    { q: '你是否早醒后难以再入睡', category: 'sleep' },
-    { q: '你是否睡得过多（每天超过10小时）', category: 'sleep' },
-    { q: '你是否即使睡了很久仍感到疲惫', category: 'sleep' },
-    { q: '你是否做噩梦或睡眠质量差', category: 'sleep' },
-    { q: '你是否害怕入睡', category: 'sleep' },
-    { q: '你是否日夜颠倒、作息紊乱', category: 'sleep' },
-    { q: '你是否经常在睡眠中惊醒', category: 'sleep' },
-    { q: '你是否感到无论睡多久都不够', category: 'sleep' },
-    // 精力相关 - 10题
-    { q: '你是否经常感到疲倦、没有精力', category: 'energy' },
-    { q: '你是否感到身体沉重、四肢乏力', category: 'energy' },
-    { q: '你是否即使休息也无法恢复精力', category: 'energy' },
-    { q: '你是否感到完成日常任务都很困难', category: 'energy' },
-    { q: '你是否感到反应变慢了', category: 'energy' },
-    { q: '你是否感到头脑不够清醒', category: 'energy' },
-    { q: '你是否感到起床是一件很艰难的事', category: 'energy' },
-    { q: '你是否经常感到体力不支', category: 'energy' },
-    { q: '你是否感到说话或思考都很费力', category: 'energy' },
-    { q: '你是否感到即使做简单的事也筋疲力尽', category: 'energy' },
-    // 食欲相关 - 6题
-    { q: '你的食欲是否明显下降', category: 'appetite' },
-    { q: '你是否比平时吃得多很多', category: 'appetite' },
-    { q: '你的体重是否有明显变化', category: 'appetite' },
-    { q: '你是否对食物失去兴趣', category: 'appetite' },
-    { q: '你是否经常忘记吃饭', category: 'appetite' },
-    { q: '你是否用暴饮暴食来缓解情绪', category: 'appetite' },
-    // 自我评价 - 10题
-    { q: '你是否经常责怪自己', category: 'self' },
-    { q: '你是否觉得自己不如别人好', category: 'self' },
-    { q: '你是否对自己感到失望', category: 'self' },
-    { q: '你是否觉得自己是别人的负担', category: 'self' },
-    { q: '你是否对自己的外表感到不满', category: 'self' },
-    { q: '你是否感到自己毫无价值', category: 'self' },
-    { q: '你是否经常后悔过去的决定', category: 'self' },
-    { q: '你是否觉得自己一无是处', category: 'self' },
-    { q: '你是否经常批评否定自己', category: 'self' },
-    { q: '你是否觉得自己不值得被爱', category: 'self' },
-    // 注意力相关 - 8题
-    { q: '你是否难以集中注意力', category: 'attention' },
-    { q: '你是否难以做出决定', category: 'attention' },
-    { q: '你是否经常走神发呆', category: 'attention' },
-    { q: '你是否记忆力明显下降', category: 'attention' },
-    { q: '你是否难以完成需要思考的任务', category: 'attention' },
-    { q: '你是否经常忘记重要的事情', category: 'attention' },
-    { q: '你是否难以跟上别人的谈话', category: 'attention' },
-    { q: '你是否阅读时难以理解内容', category: 'attention' },
-    // 行为动作相关 - 8题
-    { q: '你的动作是否变得比平时慢', category: 'behavior' },
-    { q: '你是否经常坐立不安', category: 'behavior' },
-    { q: '你是否减少了与朋友家人的联系', category: 'behavior' },
-    { q: '你是否不想出门或离开家', category: 'behavior' },
-    { q: '你是否逃避需要完成的任务', category: 'behavior' },
-    { q: '你是否经常取消已定好的计划', category: 'behavior' },
-    { q: '你是否长时间躺在床上不想动', category: 'behavior' },
-    { q: '你是否忽视个人卫生（如不洗澡、不刷牙）', category: 'behavior' },
-    // 严重症状 - 6题
-    { q: '你是否有过"不如死了算了"的想法', category: 'severe' },
-    { q: '你是否想过伤害自己', category: 'severe' },
-    { q: '你是否感到活着没有意义', category: 'severe' },
-    { q: '你是否经常想到死亡', category: 'severe' },
-    { q: '你是否有过伤害自己的行为', category: 'severe' },
-    { q: '你是否有过具体的自杀计划', category: 'severe' },
+    // Mood - 12 items
+    { q: 'In the past two weeks, have you often felt down, depressed, or hopeless?', category: 'mood' },
+    { q: 'Do you feel that life has no meaning?', category: 'mood' },
+    { q: 'Do you often feel sadness that you cannot control?', category: 'mood' },
+    { q: 'Do you cry easily over small things?', category: 'mood' },
+    { q: 'Do you feel empty inside?', category: 'mood' },
+    { q: 'Do you feel hopeless about the future?', category: 'mood' },
+    { q: 'Do you feel like a failure?', category: 'mood' },
+    { q: 'Do you often feel unexplained fear or anxiety?', category: 'mood' },
+    { q: 'Do you often feel irritable or easily annoyed?', category: 'mood' },
+    { q: 'Do you feel unable to control your emotions?', category: 'mood' },
+    { q: 'Do you often feel lonely?', category: 'mood' },
+    { q: 'Do you find it hard to make yourself happy?', category: 'mood' },
+    // Interest - 10 items
+    { q: 'Have you lost interest in things you used to enjoy?', category: 'interest' },
+    { q: 'Do you feel like you have no energy for anything?', category: 'interest' },
+    { q: 'Do you no longer look forward to anything?', category: 'interest' },
+    { q: 'Do you feel that life has become dull and boring?', category: 'interest' },
+    { q: 'Do you find it hard to get satisfaction from pleasant activities?', category: 'interest' },
+    { q: 'Have you stopped wanting to participate in social activities?', category: 'interest' },
+    { q: 'Have you lost enthusiasm for work or study?', category: 'interest' },
+    { q: 'Do you no longer care about your appearance or dress?', category: 'interest' },
+    { q: 'Have you lost interest in sex or intimate relationships?', category: 'interest' },
+    { q: 'Do you feel that music, movies, or other entertainment can no longer make you happy?', category: 'interest' },
+    // Sleep - 10 items
+    { q: 'Do you have trouble falling asleep?', category: 'sleep' },
+    { q: 'Do you often wake up in the middle of the night?', category: 'sleep' },
+    { q: 'Do you find it hard to fall back asleep after waking up early?', category: 'sleep' },
+    { q: 'Do you sleep too much (more than 10 hours a day)?', category: 'sleep' },
+    { q: 'Do you still feel tired even after sleeping for a long time?', category: 'sleep' },
+    { q: 'Do you have nightmares or poor sleep quality?', category: 'sleep' },
+    { q: 'Are you afraid of falling asleep?', category: 'sleep' },
+    { q: 'Is your sleep schedule reversed or disrupted?', category: 'sleep' },
+    { q: 'Do you often wake up startled during sleep?', category: 'sleep' },
+    { q: 'Do you feel that no matter how long you sleep, it\'s not enough?', category: 'sleep' },
+    // Energy - 10 items
+    { q: 'Do you often feel tired or have no energy?', category: 'energy' },
+    { q: 'Do you feel heavy or weak in your limbs?', category: 'energy' },
+    { q: 'Do you feel unable to recover energy even after resting?', category: 'energy' },
+    { q: 'Do you find it difficult to complete daily tasks?', category: 'energy' },
+    { q: 'Do you feel that your reactions have slowed down?', category: 'energy' },
+    { q: 'Do you feel that your mind is not clear enough?', category: 'energy' },
+    { q: 'Do you feel that getting out of bed is a very difficult task?', category: 'energy' },
+    { q: 'Do you often feel physically exhausted?', category: 'energy' },
+    { q: 'Do you feel that speaking or thinking takes a lot of effort?', category: 'energy' },
+    { q: 'Do you feel exhausted even after doing simple things?', category: 'energy' },
+    // Appetite - 6 items
+    { q: 'Has your appetite significantly decreased?', category: 'appetite' },
+    { q: 'Are you eating much more than usual?', category: 'appetite' },
+    { q: 'Has your weight changed significantly?', category: 'appetite' },
+    { q: 'Have you lost interest in food?', category: 'appetite' },
+    { q: 'Do you often forget to eat?', category: 'appetite' },
+    { q: 'Do you use binge eating to relieve emotions?', category: 'appetite' },
+    // Self-evaluation - 10 items
+    { q: 'Do you often blame yourself?', category: 'self' },
+    { q: 'Do you feel that you are not as good as others?', category: 'self' },
+    { q: 'Do you feel disappointed in yourself?', category: 'self' },
+    { q: 'Do you feel like you are a burden to others?', category: 'self' },
+    { q: 'Do you feel dissatisfied with your appearance?', category: 'self' },
+    { q: 'Do you feel worthless?', category: 'self' },
+    { q: 'Do you often regret past decisions?', category: 'self' },
+    { q: 'Do you feel completely useless?', category: 'self' },
+    { q: 'Do you often criticize or deny yourself?', category: 'self' },
+    { q: 'Do you feel that you are not worthy of being loved?', category: 'self' },
+    // Attention - 8 items
+    { q: 'Do you find it hard to concentrate?', category: 'attention' },
+    { q: 'Do you find it hard to make decisions?', category: 'attention' },
+    { q: 'Do you often daydream or zone out?', category: 'attention' },
+    { q: 'Has your memory significantly declined?', category: 'attention' },
+    { q: 'Do you find it difficult to complete tasks that require thinking?', category: 'attention' },
+    { q: 'Do you often forget important things?', category: 'attention' },
+    { q: 'Do you find it hard to keep up with others\' conversations?', category: 'attention' },
+    { q: 'Do you find it difficult to understand what you are reading?', category: 'attention' },
+    // Behavior - 8 items
+    { q: 'Have your movements become slower than usual?', category: 'behavior' },
+    { q: 'Do you often feel restless?', category: 'behavior' },
+    { q: 'Have you reduced contact with friends and family?', category: 'behavior' },
+    { q: 'Do you not want to go out or leave home?', category: 'behavior' },
+    { q: 'Do you avoid tasks that need to be completed?', category: 'behavior' },
+    { q: 'Do you often cancel pre-arranged plans?', category: 'behavior' },
+    { q: 'Do you lie in bed for a long time not wanting to move?', category: 'behavior' },
+    { q: 'Do you neglect personal hygiene (e.g., not bathing, not brushing teeth)?', category: 'behavior' },
+    // Severe - 6 items
+    { q: 'Have you ever had the thought "I\'d be better off dead"?', category: 'severe' },
+    { q: 'Have you thought about harming yourself?', category: 'severe' },
+    { q: 'Do you feel that living has no meaning?', category: 'severe' },
+    { q: 'Do you often think about death?', category: 'severe' },
+    { q: 'Have you ever harmed yourself?', category: 'severe' },
+    { q: 'Do you have a specific suicide plan?', category: 'severe' },
 ];
 
 const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
@@ -114,11 +114,11 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
     };
 
     const calculateResult = async () => {
-        // 检查额度
+        // Check credits
         const hasCredits = await onCheckCredits?.();
         if (!hasCredits) return;
 
-        // 计算总分
+        // Calculate total score
         let score = 0;
         Object.values(answers).forEach((a: number) => {
             score += a;
@@ -135,43 +135,43 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
 
         if (percentage <= 20) {
             return {
-                level: '情绪健康',
+                level: 'Emotionally Healthy',
                 color: 'from-green-400 to-emerald-500',
                 emoji: '😊',
-                desc: '恭喜你！你的情绪状态非常健康，没有抑郁倾向。',
-                advice: '继续保持积极乐观的生活态度，多运动、多社交、保持良好的作息习惯。'
+                desc: 'Congratulations! Your emotional state is very healthy, with no depressive tendencies.',
+                advice: 'Continue to maintain a positive and optimistic attitude towards life, exercise more, socialize more, and keep good living habits.'
             };
         } else if (percentage <= 40) {
             return {
-                level: '轻微情绪波动',
+                level: 'Mild Emotional Fluctuations',
                 color: 'from-yellow-400 to-orange-400',
                 emoji: '🙂',
-                desc: '你有一些轻微的情绪波动，这是正常的生活压力反应。',
-                advice: '建议适当调整作息，增加运动和社交活动，培养一些兴趣爱好。如果持续感到困扰，可以与朋友倾诉。'
+                desc: 'You have some mild emotional fluctuations, which are normal reactions to life stress.',
+                advice: 'It is recommended to properly adjust your routine, increase exercise and social activities, and develop some hobbies. If you continue to feel troubled, you can talk to friends.'
             };
         } else if (percentage <= 60) {
             return {
-                level: '中度情绪困扰',
+                level: 'Moderate Emotional Distress',
                 color: 'from-orange-400 to-red-400',
                 emoji: '😔',
-                desc: '你可能正在经历一定程度的情绪困扰，需要关注自己的心理健康。',
-                advice: '建议寻求家人朋友的支持，考虑咨询专业的心理咨询师。保持规律作息，适当运动，避免独处太久。'
+                desc: 'You may be experiencing some degree of emotional distress and need to pay attention to your mental health.',
+                advice: 'It is suggested to seek support from family and friends and consider consulting a professional counselor. Maintain a regular routine, exercise appropriately, and avoid being alone for too long.'
             };
         } else if (percentage <= 80) {
             return {
-                level: '明显抑郁倾向',
+                level: 'Significant Depressive Tendency',
                 color: 'from-red-400 to-red-600',
                 emoji: '😢',
-                desc: '你可能存在明显的抑郁倾向，建议尽快寻求专业帮助。',
-                advice: '强烈建议尽快预约专业心理医生或精神科医生进行评估和治疗。请告诉身边的亲朋好友你的感受，不要独自承担。'
+                desc: 'You may have a clear depressive tendency, and it is recommended to seek professional help as soon as possible.',
+                advice: 'It is strongly suggested to book an appointment with a professional psychologist or psychiatrist for evaluation and treatment as soon as possible. Please tell your friends and family how you feel; do not bear it alone.'
             };
         } else {
             return {
-                level: '严重抑郁倾向',
+                level: 'Severe Depressive Tendency',
                 color: 'from-red-600 to-purple-700',
                 emoji: '🆘',
-                desc: '你的测试结果显示可能存在严重的抑郁倾向，请立即寻求专业帮助。',
-                advice: '请立即联系心理危机干预热线（全国：400-161-9995）或前往医院精神科就诊。你不是一个人，专业帮助可以让你好起来。'
+                desc: 'Your test results show a potential for severe depressive tendency. Please seek professional help immediately.',
+                advice: 'Please contact a mental health crisis intervention hotline or visit a hospital psychiatric department immediately. You are not alone; professional help can make you feel better.'
             };
         }
     };
@@ -186,40 +186,39 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
             <div className="p-6 flex flex-col gap-6">
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="text-2xl">←</button>
-                    <h2 className="text-xl font-bold">抑郁自测结果</h2>
+                    <h2 className="text-xl font-bold">Depression Result</h2>
                 </div>
 
                 <div className={`bg-gradient-to-br ${result.color} rounded-3xl p-6 text-white text-center`}>
                     <p className="text-6xl mb-3">{result.emoji}</p>
                     <h1 className="text-2xl font-bold mb-2">{result.level}</h1>
-                    <p className="text-lg opacity-90">得分：{totalScore} / {maxScore}</p>
+                    <p className="text-lg opacity-90">Score: {totalScore} / {maxScore}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">📊 测试解读</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">📊 Interpretation</h3>
                         <p className="text-gray-600 text-sm">{result.desc}</p>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-800 mb-2">💡 建议</h3>
+                        <h3 className="font-bold text-gray-800 mb-2">💡 Advice</h3>
                         <p className="text-gray-600 text-sm">{result.advice}</p>
                     </div>
                 </div>
 
                 <div className="bg-pink-50 rounded-2xl p-4 border border-pink-200">
                     <p className="text-sm text-pink-700">
-                        ⚠️ 声明：本测试仅供参考，不能替代专业医学诊断。如有需要，请咨询专业心理医生。
+                        ⚠️ Disclaimer: This test is for reference only and cannot replace professional medical diagnosis. If needed, please consult a professional psychiatrist.
                     </p>
                 </div>
 
                 <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-                    <p className="text-sm text-blue-700 font-bold mb-1">🆘 心理援助热线</p>
-                    <p className="text-sm text-blue-600">全国心理援助热线：400-161-9995</p>
-                    <p className="text-sm text-blue-600">北京心理危机研究与干预中心：010-82951332</p>
+                    <p className="text-sm text-blue-700 font-bold mb-1">🆘 Mental Health Hotlines</p>
+                    <p className="text-sm text-blue-600">Global/Local Crisis Hotline: Please contact your local emergency services.</p>
                 </div>
 
                 <button onClick={onBack} className="w-full h-14 bg-blue-500 text-white rounded-2xl font-bold">
-                    返回首页
+                    Back to Home
                 </button>
             </div>
         );
@@ -229,29 +228,29 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
         <div className="p-6 flex flex-col gap-6">
             <div className="flex items-center gap-4">
                 <button onClick={onBack} className="text-2xl">←</button>
-                <h2 className="text-xl font-bold">抑郁自测</h2>
+                <h2 className="text-xl font-bold">Depression Test</h2>
             </div>
 
-            {/* 进度条 */}
+            {/* Progress Bar */}
             <div className="w-full bg-gray-200 rounded-full h-2">
                 <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
             </div>
             <p className="text-sm text-gray-500 text-center">{currentQuestion + 1} / {DEPRESSION_QUESTIONS.length}</p>
 
-            {/* 题目 */}
+            {/* Question */}
             <div className="bg-white rounded-2xl p-6 shadow-sm min-h-[120px] flex items-center justify-center">
                 <p className="text-lg text-center font-medium text-gray-800">
                     {DEPRESSION_QUESTIONS[currentQuestion].q}
                 </p>
             </div>
 
-            {/* 答案选项 */}
+            {/* Answer Options */}
             <div className="flex flex-col gap-3">
                 {[
-                    { score: 0, label: '完全没有', color: 'bg-green-500' },
-                    { score: 1, label: '偶尔有', color: 'bg-yellow-500' },
-                    { score: 2, label: '经常有', color: 'bg-orange-500' },
-                    { score: 3, label: '几乎每天', color: 'bg-red-500' },
+                    { score: 0, label: 'Not at all', color: 'bg-green-500' },
+                    { score: 1, label: 'Occasionally', color: 'bg-yellow-500' },
+                    { score: 2, label: 'Often', color: 'bg-orange-500' },
+                    { score: 3, label: 'Almost every day', color: 'bg-red-500' },
                 ].map(opt => (
                     <button
                         key={opt.score}
@@ -263,21 +262,21 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
                 ))}
             </div>
 
-            {/* 导航按钮 */}
+            {/* Navigation Buttons */}
             <div className="flex gap-3">
                 <button
                     onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
                     disabled={currentQuestion === 0}
                     className="flex-1 py-3 rounded-xl border-2 border-gray-300 text-gray-600 font-bold disabled:opacity-50"
                 >
-                    上一题
+                    Previous
                 </button>
                 {allAnswered ? (
                     <button
                         onClick={calculateResult}
                         className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold"
                     >
-                        查看结果 📊
+                        View Results 📊
                     </button>
                 ) : (
                     <button
@@ -285,7 +284,7 @@ const DepressionTestView: React.FC<DepressionTestViewProps> = ({ onBack, onCheck
                         disabled={currentQuestion === DEPRESSION_QUESTIONS.length - 1}
                         className="flex-1 py-3 rounded-xl border-2 border-blue-500 text-blue-500 font-bold disabled:opacity-50"
                     >
-                        下一题
+                        Next
                     </button>
                 )}
             </div>

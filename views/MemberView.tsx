@@ -4,11 +4,11 @@ interface MemberViewProps {
     user: any;
     onLogout: () => void;
     onBack: () => void;
-    onUserUpdate?: (user: any) => void; // 用于同步更新父组件的 user 状态
+    onUserUpdate?: (user: any) => void; // For syncing user state with parent component
 }
 
 const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserUpdate }) => {
-    // NOTE: 直接使用 user.credits，不再维护独立的本地状态，避免状态不同步
+    // NOTE: Directly using user.credits, no longer maintaining independent local state to avoid state desynchronization.
     const [redeemCode, setRedeemCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -20,19 +20,19 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     const [userPoints, setUserPoints] = useState(0);
     const [pointsMessage, setPointsMessage] = useState('');
 
-    // 获取设备ID后6位
+    // Get last 6 digits of device ID
     const getDeviceIdSuffix = (): string => {
         const deviceId = localStorage.getItem('device_id') || '';
         return deviceId.slice(-6).toUpperCase();
     };
 
-    // 生成分享链接
+    // Generate share link
     const getShareLink = (): string => {
         const baseUrl = window.location.origin;
         return `${baseUrl}?ref=${user?.id}&d=${getDeviceIdSuffix()}`;
     };
 
-    // 加载配置
+    // Load config
     useEffect(() => {
         fetch('/api/admin', {
             method: 'POST',
@@ -43,7 +43,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             .then(data => setConfig(data.config || {}))
             .catch(console.error);
 
-        // 加载分享统计
+        // Load referral stats
         if (user?.id) {
             fetch(`/api/auth_v2?t=${Date.now()}`, {
                 method: 'POST',
@@ -54,7 +54,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 .then(data => setReferralCount(data.referralCount || 0))
                 .catch(console.error);
 
-            // 加载积分
+            // Load points
             fetch(`/api/auth_v2?t=${Date.now()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -65,13 +65,13 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 .catch(console.error);
         }
 
-        // 检查是否有待确认的订单（包括从 Stripe 跳转回来的场景）
+        // Check for pending orders (including Stripe redirect scenarios)
         const savedOrderId = localStorage.getItem('pending_order_id');
         if (savedOrderId) {
             setPendingOrderId(savedOrderId);
         }
 
-        // 检查 URL 参数中的支付结果
+        // Check payment results from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const paymentResult = urlParams.get('payment');
         const orderIdFromUrl = urlParams.get('order_id');
@@ -79,9 +79,9 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             setPendingOrderId(orderIdFromUrl);
             localStorage.setItem('pending_order_id', orderIdFromUrl);
             setRechargeMessage('⏳ Confirming payment, please wait...');
-            // 清除 URL 参数
+            // Clear URL parameters
             window.history.replaceState({}, '', window.location.pathname);
-            // NOTE: 支付成功后自动确认订单，不需要用户手动点击
+            // NOTE: Auto-confirm order after successful payment, no manual check needed
             autoConfirmOrder(orderIdFromUrl);
         } else if (paymentResult === 'cancel') {
             setRechargeMessage('❌ Payment cancelled.');
@@ -91,7 +91,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
     const [syncTime, setSyncTime] = useState<string>(new Date().toLocaleTimeString());
 
-    // 刷新用户信息并同步到父组件
+    // Refresh user info and sync to parent component
     const refreshUser = async () => {
         setLoading(true);
         try {
@@ -103,7 +103,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             });
             const data = await res.json();
             if (data.user) {
-                // 通过回调同步更新父组件的 user 状态
+                // Sync parent user state via callback
                 onUserUpdate?.({ ...user, credits: data.user.credits });
                 setSyncTime(new Date().toLocaleTimeString());
                 console.log('[MemberView] Force synced credits:', data.user.credits);
@@ -115,7 +115,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // 兑换码兑换
+    // Redeem code
     const handleRedeem = async () => {
         if (!redeemCode.trim()) return;
         setLoading(true);
@@ -147,14 +147,14 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // 复制分享链接
+    // Copy share link
     const copyShareLink = () => {
         navigator.clipboard.writeText(getShareLink());
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // 积分兑换申请
+    // Points redemption request
     const handlePointsRedeem = async (pointsUsed: number, rewardAmount: number) => {
         if (userPoints < pointsUsed) {
             setPointsMessage('❌ Insufficient points');
@@ -184,7 +184,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // 处理充值
+    // Handle recharge
     const handleRecharge = async (amount: number, creditsToAdd: number) => {
         setRechargeMessage('Creating order...');
 
@@ -203,7 +203,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            // 保存订单ID用于返回后确认
+            // Save order ID for confirmation after redirect
             localStorage.setItem('pending_order_id', data.orderId);
             setPendingOrderId(data.orderId);
 
@@ -216,7 +216,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // NOTE: 支付成功后自动确认订单（无需用户手动点击）
+    // NOTE: Auto-confirm order after success (no manual check needed)
     const autoConfirmOrder = async (orderId: string) => {
         try {
             const res = await fetch('/api/airwallex', {
@@ -237,14 +237,14 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
             setRechargeMessage(`✅ Payment confirmed! ${data.credits} credits added. Refreshing...`);
             localStorage.removeItem('pending_order_id');
-            // NOTE: 强制刷新页面以获取最新额度数据
+            // NOTE: Force reload page to get latest credit data
             setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setRechargeMessage(`❌ Auto-confirm error: ${err.message}. Try clicking confirm below.`);
         }
     };
 
-    // 确认支付（手动备用方案）
+    // Confirm payment (manual backup solution)
     const confirmPayment = async () => {
         if (!pendingOrderId) return;
 
@@ -267,7 +267,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
             setRechargeMessage(`✅ ${data.message}, ${data.credits} credits added! Refreshing...`);
             localStorage.removeItem('pending_order_id');
-            // NOTE: 强制刷新页面以获取最新额度数据
+            // NOTE: Force reload page to get latest credit data
             setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
             setRechargeMessage('❌ ' + (err.message || 'Confirmation failed'));
@@ -284,7 +284,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             </div>
 
             <div className="space-y-4">
-                {/* 用户信息卡片 */}
+                {/* User Info Card */}
                 <div className="bg-gradient-to-r from-pink-400 to-purple-500 rounded-2xl p-4 text-white">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl">
@@ -303,7 +303,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     </div>
                 </div>
 
-                {/* 分享获客 */}
+                {/* Referral Program */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
                         <h4 className="font-bold">📤 Share & Earn Credits</h4>
@@ -328,7 +328,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     </div>
                 </div>
 
-                {/* 推荐奖励积分 */}
+                {/* Referral Points */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
                         <h4 className="font-bold">⭐ Referral Points</h4>
@@ -368,12 +368,12 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     )}
                 </div>
 
-                {/* 充值 (根据后台开关显示) */}
+                {/* Recharge (Shown based on config) */}
                 {config.recharge_enabled === 'true' && (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                         <h4 className="font-bold mb-3">💰 Buy Credits</h4>
 
-                        {/* 待确认订单提示 */}
+                        {/* Pending Order Notice */}
                         {pendingOrderId && (
                             <div className="mb-3 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
                                 <p className="text-sm text-yellow-700 mb-2">📌 You have a pending order</p>
@@ -409,7 +409,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     </div>
                 )}
 
-                {/* 兑换码 */}
+                {/* Redeem Code */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <h4 className="font-bold mb-2">🎁 Redeem Code</h4>
                     <p className="text-xs text-gray-400 mb-1">
@@ -442,7 +442,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     )}
                 </div>
 
-                {/* 退出登录 */}
+                {/* Log Out */}
                 <button
                     onClick={onLogout}
                     className="w-full h-12 border border-gray-200 rounded-2xl text-gray-500"

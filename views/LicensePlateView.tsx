@@ -6,58 +6,58 @@ interface LicensePlateViewProps {
     onDeductCredit?: () => Promise<void>;
 }
 
-// 时辰对照表
+// Chinese zodiac hour map (Shichen)
 const SHICHEN_MAP = [
-    { name: '子时', range: '23:00-00:59', hours: [23, 0] },
-    { name: '丑时', range: '01:00-02:59', hours: [1, 2] },
-    { name: '寅时', range: '03:00-04:59', hours: [3, 4] },
-    { name: '卯时', range: '05:00-06:59', hours: [5, 6] },
-    { name: '辰时', range: '07:00-08:59', hours: [7, 8] },
-    { name: '巳时', range: '09:00-10:59', hours: [9, 10] },
-    { name: '午时', range: '11:00-12:59', hours: [11, 12] },
-    { name: '未时', range: '13:00-14:59', hours: [13, 14] },
-    { name: '申时', range: '15:00-16:59', hours: [15, 16] },
-    { name: '酉时', range: '17:00-18:59', hours: [17, 18] },
-    { name: '戌时', range: '19:00-20:59', hours: [19, 20] },
-    { name: '亥时', range: '21:00-22:59', hours: [21, 22] },
+    { name: 'Zi (Rat)', range: '23:00-00:59', hours: [23, 0] },
+    { name: 'Chou (Ox)', range: '01:00-02:59', hours: [1, 2] },
+    { name: 'Yin (Tiger)', range: '03:00-04:59', hours: [3, 4] },
+    { name: 'Mao (Rabbit)', range: '05:00-06:59', hours: [5, 6] },
+    { name: 'Chen (Dragon)', range: '07:00-08:59', hours: [7, 8] },
+    { name: 'Si (Snake)', range: '09:00-10:59', hours: [9, 10] },
+    { name: 'Wu (Horse)', range: '11:00-12:59', hours: [11, 12] },
+    { name: 'Wei (Goat)', range: '13:00-14:59', hours: [13, 14] },
+    { name: 'Shen (Monkey)', range: '15:00-16:59', hours: [15, 16] },
+    { name: 'You (Rooster)', range: '17:00-18:59', hours: [17, 18] },
+    { name: 'Xu (Dog)', range: '19:00-20:59', hours: [19, 20] },
+    { name: 'Hai (Pig)', range: '21:00-22:59', hours: [21, 22] },
 ];
 
-// 车身颜色选项
+// Car color options
 const CAR_COLORS = [
-    { name: '白色', color: '#FFFFFF', border: true },
-    { name: '黑色', color: '#1a1a1a' },
-    { name: '银色', color: '#C0C0C0' },
-    { name: '灰色', color: '#808080' },
-    { name: '红色', color: '#DC143C' },
-    { name: '蓝色', color: '#1E90FF' },
-    { name: '绿色', color: '#228B22' },
-    { name: '黄色', color: '#FFD700' },
-    { name: '橙色', color: '#FF8C00' },
-    { name: '棕色', color: '#8B4513' },
-    { name: '紫色', color: '#9400D3' },
-    { name: '粉色', color: '#FF69B4' },
+    { name: 'White', color: '#FFFFFF', border: true },
+    { name: 'Black', color: '#1a1a1a' },
+    { name: 'Silver', color: '#C0C0C0' },
+    { name: 'Gray', color: '#808080' },
+    { name: 'Red', color: '#DC143C' },
+    { name: 'Blue', color: '#1E90FF' },
+    { name: 'Green', color: '#228B22' },
+    { name: 'Yellow', color: '#FFD700' },
+    { name: 'Orange', color: '#FF8C00' },
+    { name: 'Brown', color: '#8B4513' },
+    { name: 'Purple', color: '#9400D3' },
+    { name: 'Pink', color: '#FF69B4' },
 ];
 
 const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
-    // 表单状态
+    // Form state
     const [birthDate, setBirthDate] = useState('');
     const [birthTime, setBirthTime] = useState('');
     const [shichen, setShichen] = useState('');
     const [licensePlate, setLicensePlate] = useState('');
     const [carColor, setCarColor] = useState('');
 
-    // 分析状态
+    // Analysis state
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const [error, setError] = useState('');
 
-    // 根据具体时间自动计算时辰
+    // Automatically calculate shichen based on specific time
     const handleTimeChange = (time: string) => {
         setBirthTime(time);
         if (time) {
             const hour = parseInt(time.split(':')[0]);
             const matched = SHICHEN_MAP.find(s =>
-                s.hours.includes(hour) || (hour === 0 && s.name === '子时')
+                s.hours.includes(hour) || (hour === 0 && s.name === 'Zi (Rat)')
             );
             if (matched) {
                 setShichen(matched.name);
@@ -65,14 +65,14 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
         }
     };
 
-    // 开始分析
+    // Start analysis
     const handleAnalyze = async () => {
         if (!birthDate || !shichen || !licensePlate || !carColor) {
-            setError('请填写完整信息');
+            setError('Please fill in all information');
             return;
         }
 
-        // 检查额度
+        // Check credits
         const hasCredits = await onCheckCredits?.();
         if (!hasCredits) return;
 
@@ -81,50 +81,50 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
         setResult(null);
 
         try {
-            const prompt = `你是一位精通中国传统五行命理的大师。请根据以下信息进行详细的五行车牌分析：
+            const prompt = `You are a master of traditional Chinese Five Elements (Wu Xing) and numerology. Please provide a detailed analysis of the car's Five Elements based on the following information:
 
-**个人信息：**
-- 新历出生日期：${birthDate}
-- 出生时辰：${shichen}
-- 车牌号码：${licensePlate}
-- 车身颜色：${carColor}
+**Personal Information:**
+- Date of Birth: ${birthDate}
+- Hour of Birth (Shichen): ${shichen}
+- License Plate Number: ${licensePlate}
+- Car Color: ${carColor}
 
-**请按以下步骤进行分析：**
+**Please follow these steps for analysis:**
 
-1. **新历转农历**：将新历出生日期转换为农历日期
+1. **Lunar Calendar Conversion**: Convert the birth date to the Chinese Lunar Calendar.
 
-2. **生辰八字分析**：
-   - 计算年柱、月柱、日柱、时柱
-   - 分析五行分布（金木水火土各有多少）
-   - 指出五行中缺什么、补什么、泄什么
+2. **Eight Characters (Bazi) Analysis**:
+   - Calculate the Year, Month, Day, and Hour Pillars.
+   - Analyze the distribution of Five Elements (Gold, Wood, Water, Fire, Earth).
+   - Identify which elements are lacking, which need to be supplemented, and which are excessive.
 
-3. **命主喜忌分析**：
-   - 幸运数字（1-9中哪些数字有利）
-   - 应避开的数字
-   - 幸运颜色
-   - 应避开的颜色
+3. **User's Likes and Dislikes**:
+   - Lucky numbers (which numbers from 1-9 are favorable).
+   - Numbers to avoid.
+   - Lucky colors.
+   - Colors to avoid.
 
-4. **车牌五行分析**：
-   - 分析车牌号每个字符对应的五行属性
-   - 数字五行：1/6属水、2/7属火、3/8属木、4/9属金、5/0属土
-   - 字母五行：根据形状和笔画判断
+4. **License Plate Analysis**:
+   - Analyze the Five Elements attribute of each character in the license plate.
+   - Number attributes: 1/6 (Water), 2/7 (Fire), 3/8 (Wood), 4/9 (Gold), 5/0 (Earth).
+   - Letter attributes: Based on shape and stroke.
 
-5. **车身颜色五行**：
-   - 分析${carColor}对应的五行属性
-   - 是否与命主五行相合或相克
+5. **Car Color Analysis**:
+   - Analyze the Five Elements attribute of ${carColor}.
+   - Determine if it harmonizes with or conflicts with the user's elements.
 
-6. **综合评分**：
-   - 车牌与命主匹配度（0-100分）
-   - 车身颜色与命主匹配度（0-100分）
-   - 总体旺主指数（0-100分）
-   - 判断：旺车主还是损车主，程度如何
+6. **Comprehensive Score**:
+   - Match score between license plate and user (0-100).
+   - Match score between car color and user (0-100).
+   - Overall "Auspicious Index" (0-100).
+   - Conclusion: Is the car auspicious or inauspicious for the owner, and to what degree?
 
-7. **改善建议**：
-   - 如果车牌不利，给出化解方法
-   - 车内可以摆放什么物品增加运势
-   - 其他调整建议
+7. **Improvement Suggestions**:
+   - If the license plate is unfavorable, give remedies.
+   - Recommend items to place in the car to enhance luck.
+   - Other adjustment advice.
 
-请用通俗易懂的语言，使用emoji让内容更生动，用markdown格式输出。`;
+Please use easy-to-understand language, use emojis to make it lively, and output in markdown format. ALL content must be in English.`;
 
             const response = await fetch('/api/gemini', {
                 method: 'POST',
@@ -136,14 +136,14 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
             });
 
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || '分析失败');
+            if (!response.ok) throw new Error(data.error || 'Analysis failed');
 
             setResult(data.result || data.text);
 
-            // 成功后扣除额度
+            // Deduct credit after success
             await onDeductCredit?.();
         } catch (err: any) {
-            setError(err.message || '分析失败，请重试');
+            setError(err.message || 'Analysis failed, please try again');
         } finally {
             setLoading(false);
         }
@@ -153,13 +153,13 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
         <div className="p-6 pb-24">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={onBack} className="text-2xl">←</button>
-                <h2 className="text-xl font-bold">🚗 五行车牌</h2>
+                <h2 className="text-xl font-bold">🚗 Car Plate Analysis</h2>
             </div>
 
             <div className="space-y-4">
-                {/* 出生日期 */}
+                {/* Date of Birth */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <label className="block text-sm font-bold mb-2">📅 出生日期（新历）</label>
+                    <label className="block text-sm font-bold mb-2">📅 Date of Birth</label>
                     <input
                         type="date"
                         value={birthDate}
@@ -168,12 +168,12 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
                     />
                 </div>
 
-                {/* 出生时间/时辰 */}
+                {/* Birth Time/Shichen */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <label className="block text-sm font-bold mb-2">⏰ 出生时间</label>
+                    <label className="block text-sm font-bold mb-2">⏰ Birth Time</label>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                         <div>
-                            <p className="text-xs text-gray-500 mb-1">具体时间（可选）</p>
+                            <p className="text-xs text-gray-500 mb-1">Exact Time (Optional)</p>
                             <input
                                 type="time"
                                 value={birthTime}
@@ -182,13 +182,13 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
                             />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 mb-1">或选择时辰</p>
+                            <p className="text-xs text-gray-500 mb-1">Or Choose Shichen</p>
                             <select
                                 value={shichen}
                                 onChange={e => setShichen(e.target.value)}
                                 className="w-full h-10 px-3 rounded-xl border border-gray-200"
                             >
-                                <option value="">请选择</option>
+                                <option value="">Select</option>
                                 {SHICHEN_MAP.map(s => (
                                     <option key={s.name} value={s.name}>{s.name} ({s.range})</option>
                                 ))}
@@ -196,26 +196,26 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
                         </div>
                     </div>
                     {shichen && (
-                        <p className="text-xs text-cyan-600">已选择：{shichen}</p>
+                        <p className="text-xs text-cyan-600">Selected: {shichen}</p>
                     )}
                 </div>
 
-                {/* 车牌号码 */}
+                {/* License Plate Number */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <label className="block text-sm font-bold mb-2">🔢 车牌号码</label>
+                    <label className="block text-sm font-bold mb-2">🔢 License Plate Number</label>
                     <input
                         type="text"
                         value={licensePlate}
                         onChange={e => setLicensePlate(e.target.value.toUpperCase())}
-                        placeholder="例如：粤A12345"
+                        placeholder="e.g. ABC 123"
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 text-center text-lg font-bold tracking-widest"
-                        maxLength={10}
+                        maxLength={11}
                     />
                 </div>
 
-                {/* 车身颜色 */}
+                {/* Car Color */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <label className="block text-sm font-bold mb-2">🎨 车身颜色</label>
+                    <label className="block text-sm font-bold mb-2">🎨 Car Color</label>
                     <div className="grid grid-cols-6 gap-2">
                         {CAR_COLORS.map(c => (
                             <button
@@ -231,27 +231,27 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
                         ))}
                     </div>
                     {carColor && (
-                        <p className="text-xs text-cyan-600 mt-2">已选择：{carColor}</p>
+                        <p className="text-xs text-cyan-600 mt-2">Selected: {carColor}</p>
                     )}
                 </div>
 
-                {/* 分析按钮 */}
+                {/* Analysis Button */}
                 <button
                     onClick={handleAnalyze}
                     disabled={loading}
                     className="w-full h-14 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-2xl font-bold text-lg shadow-lg disabled:opacity-50"
                 >
-                    {loading ? '正在分析中...' : '🔮 开始五行分析'}
+                    {loading ? 'Analyzing...' : '🔮 Start Five Elements Analysis'}
                 </button>
 
                 {error && (
                     <p className="text-center text-red-500">{error}</p>
                 )}
 
-                {/* 分析结果 */}
+                {/* Analysis Result */}
                 {result && (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
-                        <h3 className="font-bold mb-3">📊 分析结果</h3>
+                        <h3 className="font-bold mb-3">📊 Analysis Result</h3>
                         <div
                             className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap"
                             dangerouslySetInnerHTML={{ __html: result.replace(/\n/g, '<br/>') }}

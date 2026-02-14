@@ -26,24 +26,24 @@ const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onD
   const handleAnalyze = async () => {
     if (!image) return;
 
-    // 检查额度
+    // Check credits
     const hasCredits = await onCheckCredits?.();
     if (!hasCredits) return;
 
     setLoading(true);
     try {
-      const res = await generateXHSStyleReport("摆设风水分析", [image], "分析图中办公桌或家居摆设的布局，给出风水评分和改进建议。");
+      const res = await generateXHSStyleReport("Feng Shui Analysis", [image], "Analyze the layout of the desk or home furniture in the photo, provide a Feng Shui score, and give improvement suggestions. ALL content must be in English.");
       if (res) {
         setReport(res);
-        // 成功后扣除额度
-        console.log('[FengShuiView] 分析成功，开始扣除额度');
+        // Deduct credit after success
+        console.log('[FengShuiView] Analysis success, deducting credit');
         await onDeductCredit?.();
       } else {
-        alert('分析失败');
+        alert('Analysis failed');
       }
     } catch (e) {
       console.error(e);
-      alert('分析失败');
+      alert('Analysis failed');
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onD
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
         <button onClick={onBack} className="text-2xl">←</button>
-        <h2 className="text-xl font-bold">家居摆设风水</h2>
+        <h2 className="text-xl font-bold">Furniture Feng Shui</h2>
       </div>
 
       <div className="mb-6">
@@ -63,7 +63,7 @@ const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onD
           ) : (
             <div className="text-center">
               <span className="text-4xl block mb-2">🪴</span>
-              <p className="text-sm text-gray-400">拍照上传办公桌或房间一角</p>
+              <p className="text-sm text-gray-400">Upload photo of your desk or room corner</p>
             </div>
           )}
           <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -75,7 +75,7 @@ const FengShuiView: React.FC<FengShuiViewProps> = ({ onBack, onCheckCredits, onD
         disabled={!image || loading}
         className="w-full h-14 bg-yellow-500 text-white rounded-2xl font-bold shadow-lg mb-6"
       >
-        {loading ? '风水大师分析中...' : '开始风水诊断'}
+        {loading ? 'Master is analyzing...' : 'Start Feng Shui Diagnosis'}
       </button>
 
       {report && (

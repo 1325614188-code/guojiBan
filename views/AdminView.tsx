@@ -15,7 +15,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [pointRedemptions, setPointRedemptions] = useState<any[]>([]);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
-    // 加载数据
+    // Load data
     useEffect(() => {
         loadData();
     }, []);
@@ -23,14 +23,14 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const loadData = async () => {
         setLoading(true);
         try {
-            // 初始化管理员
+            // Init Admin
             await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'initAdmin' })
             });
 
-            // 获取用户列表
+            // Get users
             const usersRes = await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -39,7 +39,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             const usersData = await usersRes.json();
             setUsers(usersData.users || []);
 
-            // 获取配置
+            // Get config
             const configRes = await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -48,7 +48,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             const configData = await configRes.json();
             setConfig(configData.config || {});
 
-            // 获取统计
+            // Get stats
             const statsRes = await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -57,7 +57,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             const statsData = await statsRes.json();
             setStats(statsData);
 
-            // 获取积分兑换申请
+            // Get point redemptions
             const redemptionsRes = await fetch('/api/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -72,7 +72,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         }
     };
 
-    // 更新配置
+    // Update config
     const updateConfig = async (key: string, value: string) => {
         try {
             await fetch('/api/admin', {
@@ -86,7 +86,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         }
     };
 
-    // 更新用户额度
+    // Update user credits
     const updateCredits = async (userId: string, amount: number) => {
         try {
             await fetch('/api/admin', {
@@ -101,7 +101,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         }
     };
 
-    // 更新用户积分
+    // Update user points
     const updatePoints = async (userId: string, amount: number) => {
         try {
             await fetch('/api/admin', {
@@ -116,7 +116,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         }
     };
 
-    // 处理积分兑换申请
+    // Process point redemption
     const processRedemption = async (redemptionId: string, approved: boolean) => {
         setProcessingId(redemptionId);
         try {
@@ -150,32 +150,32 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         <div className="p-6 max-w-4xl mx-auto">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={onBack} className="text-2xl">←</button>
-                <h2 className="text-xl font-bold">管理后台</h2>
+                <h2 className="text-xl font-bold">Admin Dashboard</h2>
             </div>
 
-            {/* 统计卡片 */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gradient-to-r from-pink-400 to-pink-500 rounded-2xl p-4 text-white">
-                    <div className="text-white/80 text-sm">注册用户</div>
+                    <div className="text-white/80 text-sm">Total Users</div>
                     <div className="text-3xl font-bold">{stats.totalUsers}</div>
                 </div>
                 <div className="bg-gradient-to-r from-purple-400 to-purple-500 rounded-2xl p-4 text-white">
-                    <div className="text-white/80 text-sm">付费订单</div>
+                    <div className="text-white/80 text-sm">Paid Orders</div>
                     <div className="text-3xl font-bold">{stats.totalOrders}</div>
                 </div>
             </div>
 
-            {/* 积分兑换申请 */}
+            {/* Point Redemptions */}
             {pointRedemptions.filter(r => r.status === 'pending').length > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-                    <h3 className="font-bold mb-4">🌟 积分兑换申请 <span className="text-pink-500">(待处理: {pointRedemptions.filter(r => r.status === 'pending').length})</span></h3>
+                    <h3 className="font-bold mb-4">🌟 Point Redemptions <span className="text-pink-500">(Pending: {pointRedemptions.filter(r => r.status === 'pending').length})</span></h3>
                     <div className="space-y-3">
                         {pointRedemptions.filter(r => r.status === 'pending').map(redemption => (
                             <div key={redemption.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
                                 <div>
                                     <p className="font-bold text-sm">{redemption.username}</p>
                                     <p className="text-xs text-gray-500">
-                                        {redemption.points_used}积分 → {redemption.reward_amount}元红包
+                                        {redemption.points_used} pts → ${redemption.reward_amount} Reward
                                     </p>
                                     <p className="text-xs text-gray-400">
                                         {new Date(redemption.created_at).toLocaleString()}
@@ -187,14 +187,14 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                         disabled={processingId === redemption.id}
                                         className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs"
                                     >
-                                        {processingId === redemption.id ? '...' : '批准'}
+                                        {processingId === redemption.id ? '...' : 'Approve'}
                                     </button>
                                     <button
                                         onClick={() => processRedemption(redemption.id, false)}
                                         disabled={processingId === redemption.id}
                                         className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs"
                                     >
-                                        拒绝
+                                        Reject
                                     </button>
                                 </div>
                             </div>
@@ -203,9 +203,9 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                 </div>
             )}
 
-            {/* 配置管理 */}
+            {/* Config Management */}
             <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-                <h3 className="font-bold mb-4">⚙️ 系统配置</h3>
+                <h3 className="font-bold mb-4">⚙️ System Config</h3>
                 <div className="space-y-3">
                     <div className="flex items-center gap-4">
                         <label className="w-28 text-sm text-gray-500 shrink-0">Contact Email</label>
@@ -218,12 +218,12 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                         />
                     </div>
                     <div className="flex items-center gap-4">
-                        <label className="w-28 text-sm text-gray-500 shrink-0">充值功能</label>
+                        <label className="w-28 text-sm text-gray-500 shrink-0">Buy Credits</label>
                         <button
                             onClick={() => updateConfig('recharge_enabled', config.recharge_enabled === 'true' ? 'false' : 'true')}
                             className={`px-4 py-2 rounded-xl ${config.recharge_enabled === 'true' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
                         >
-                            {config.recharge_enabled === 'true' ? '已开启' : '已关闭'}
+                            {config.recharge_enabled === 'true' ? 'Enabled' : 'Disabled'}
                         </button>
                     </div>
                 </div>
@@ -262,19 +262,19 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                 </div>
             </div>
 
-            {/* 用户列表 */}
+            {/* User List */}
             <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <h3 className="font-bold mb-4">👥 用户管理</h3>
+                <h3 className="font-bold mb-4">👥 User Management</h3>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left text-gray-500 border-b">
-                                <th className="pb-2">用户名</th>
-                                <th className="pb-2">昵称</th>
-                                <th className="pb-2">额度</th>
-                                <th className="pb-2">积分</th>
-                                <th className="pb-2">注册时间</th>
-                                <th className="pb-2">操作</th>
+                                <th className="pb-2">Username</th>
+                                <th className="pb-2">Nickname</th>
+                                <th className="pb-2">Credits</th>
+                                <th className="pb-2">Points</th>
+                                <th className="pb-2">Registered At</th>
+                                <th className="pb-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -295,7 +295,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                     onClick={() => updateCredits(user.id, editingCredits.amount - user.credits)}
                                                     className="px-2 h-8 bg-green-500 text-white rounded text-xs"
                                                 >
-                                                    保存
+                                                    Save
                                                 </button>
                                             </div>
                                         ) : (
@@ -315,7 +315,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                     onClick={() => updatePoints(user.id, editingPoints.amount - user.points)}
                                                     className="px-2 h-8 bg-purple-500 text-white rounded text-xs"
                                                 >
-                                                    保存
+                                                    Save
                                                 </button>
                                             </div>
                                         ) : (
@@ -331,13 +331,13 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                 onClick={() => setEditingCredits({ id: user.id, amount: user.credits })}
                                                 className="text-pink-500 text-xs text-left"
                                             >
-                                                修改额度
+                                                Edit Credits
                                             </button>
                                             <button
                                                 onClick={() => setEditingPoints({ id: user.id, amount: user.points || 0 })}
                                                 className="text-purple-500 text-xs text-left"
                                             >
-                                                修改积分
+                                                Edit Points
                                             </button>
                                         </div>
                                     </td>

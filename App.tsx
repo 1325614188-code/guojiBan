@@ -50,7 +50,7 @@ const App: React.FC = () => {
         setUser(parsedUser);
         console.log('[App] Local user loaded:', parsedUser.username, parsedUser.id);
 
-        // 强力获取最新数据
+        // Force fetch latest data
         const syncUser = async () => {
           try {
             const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
@@ -81,7 +81,7 @@ const App: React.FC = () => {
       }
     }
 
-    // 2. 检测 Stripe 支付成功回调
+    // 2. Detect Stripe payment success callback
     const urlParams = new URLSearchParams(window.location.search);
     const paymentResult = urlParams.get('payment');
     const orderIdFromUrl = urlParams.get('order_id');
@@ -106,7 +106,7 @@ const App: React.FC = () => {
 
           const targetUserId = parsedUser?.id || confirmData.userId;
           if (targetUserId) {
-            // 立即再次同步
+            // Sync again immediately
             fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -142,7 +142,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // 初始化设备ID
+  // Initialize device ID
   useEffect(() => {
     const initId = async () => {
       const storedId = localStorage.getItem('device_id');
@@ -246,15 +246,15 @@ const App: React.FC = () => {
       case AppSection.MAKEUP:
         return <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.BEAUTY_SCORE:
-        return <AnalysisView title="颜值打分" type="颜值打分" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title="Beauty Score" type="Beauty Score" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.COUPLE_FACE:
         return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.TONGUE_DIAGNOSIS:
-        return <AnalysisView title="趣味舌诊" type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText="Please upload a clear tongue photo." onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title="Tongue Analysis" type="Tongue" onBack={() => setCurrentSection(AppSection.HOME)} helpText="Please upload a clear tongue photo." onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FACE_COLOR:
-        return <AnalysisView title="面色分析" type="中医面色" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title="Face Color" type="TCM Face Color" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FACE_READING:
-        return <AnalysisView title="传统面相" type="传统相术" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title="Face Reading" type="Traditional Physiognomy" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FENG_SHUI:
         return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.LICENSE_PLATE:

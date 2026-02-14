@@ -98,28 +98,29 @@ export default async function handler(req: any, res: any) {
         switch (action) {
             case 'analyze': {
                 // 图像分析 (颜值打分、舌诊、面诊等)
-                const isBeautyScore = type === '颜值打分';
-                const isFengShui = type === '摆设风水分析';
+                const isBeautyScore = type === 'Beauty Score';
+                const isFengShui = type === 'Feng Shui Analysis';
 
                 let analysisStyle = '';
                 if (isFengShui) {
-                    analysisStyle = '按中国传统风水术语（如：明堂、青龙白虎位、煞气、避讳、聚气等）进行深度详解和布局建议。';
+                    analysisStyle = 'Use traditional Feng Shui terminology (e.g., Mingtang, Azure Dragon, White Tiger, Qi flow, taboos) for in-depth explanation and layout suggestions.';
                 } else {
-                    analysisStyle = '按五官（眼睛、鼻子、嘴巴、脸型、眉毛等）逐个进行美学或健康角度的详细分析。';
+                    analysisStyle = 'Analyze aesthetic or health aspects feature by feature (eyes, nose, mouth, face shape, eyebrows, etc.).';
                 }
 
                 const systemInstruction = `
-          你是一位资深${isFengShui ? '风水命理大师' : '美妆生活博主'}，语气采用典型的小红书风格（多用emoji、语气助词、感叹号，排版优美，分段清晰）。
-          请针对用户上传的图片进行深度分析。
-          要求：
-          1. 标题要吸引人，使用【】括起来。
-          ${isBeautyScore ? '2. 【重要】报告的第一行必须是分数，格式为：[SCORE:XX分]，其中 XX 是 0-100 之间的具体分数。' : ''}
+          You are a senior ${isFengShui ? 'Feng Shui Master' : 'Beauty & Lifestyle Influencer'}. Use a typical Instagram/Pinterest style (plenty of emojis, expressive language, beautiful layout, and clear paragraphs).
+          Please provide a deep analysis of the image(s) uploaded by the user.
+          Requirements:
+          1. Use an eye-catching title enclosed in 【】.
+          ${isBeautyScore ? '2. [IMPORTANT] The first line of the report MUST be the score in this format: [SCORE:XX], where XX is a specific score between 0-100.' : ''}
           ${isBeautyScore ? '3.' : '2.'} ${analysisStyle}
-          ${isBeautyScore ? '4.' : '3.'} 给出针对性的${isFengShui ? '改进建议或化解方案' : '变美建议、穿搭建议或健康调理方案'}。
-          ${isBeautyScore ? '5.' : '4.'} 结尾要有互动感。
-          ${isBeautyScore ? '6.' : '5.'} 报告内容详尽且专业，文字要贴心。
+          ${isBeautyScore ? '4.' : '3.'} Provide targeted ${isFengShui ? 'improvement suggestions or remedies' : 'beauty tips, outfit suggestions, or health/wellness advice'}.
+          ${isBeautyScore ? '5.' : '4.'} End with an engaging interactive closing.
+          ${isBeautyScore ? '6.' : '5.'} Content should be detailed, professional, and written in a warm, caring tone.
+          ALL content must be in English.
         `;
-                const prompt = `分析类型：${type}。${gender ? `性别：${gender}` : ''}`;
+                const prompt = `Analysis Type: ${type}. ${gender ? `Gender: ${gender}` : ''}`;
 
                 const result = await requestWithRetry(async (ai) => {
                     const contents = {
@@ -148,8 +149,8 @@ export default async function handler(req: any, res: any) {
                 // AI 试穿/试戴
                 const result = await requestWithRetry(async (ai) => {
                     const prompt = itemType === 'clothes'
-                        ? '将图中人物的衣服换成另一张图中的款式，保持人物面容和环境不变，生成高品质穿搭效果图。输出图片比例必须为9:16竖版。'
-                        : '在图中人物的耳朵上戴上另一张图中的耳坠。如果是正面，请在左右两侧耳朵都展示出来。效果要自然，光影和谐。';
+                        ? 'Swap the person\'s clothes in the image with the style from the other photo. Keep the person\'s face and environment unchanged. Generate high-quality fashion results. Output must be in 9:16 vertical aspect ratio.'
+                        : 'Add the earrings from the other photo to the person in the image. If facing forward, show them on both ears. The result should look natural with harmonious lighting and shadows.';
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
@@ -180,13 +181,13 @@ export default async function handler(req: any, res: any) {
                 const { hairstyleName, hairstyleDesc } = req.body;
 
                 const result = await requestWithRetry(async (ai) => {
-                    const prompt = `为图中这位${gender}性生成一种具体的时尚发型：${hairstyleName}。
-          ${hairstyleDesc ? `发型具体特征描述：${hairstyleDesc}` : ''}
-          要求：
-          1. 发型必须与原图中的脸型和五官完美融合。
-          2. 确保发型特征非常明显，与其他发型有显著区别。
-          3. 生成高品质、真实感强的效果图。
-          4. 仅仅改变发型，保持人脸特征不变。`;
+                    const prompt = `Generate a specific trendy hairstyle for this ${gender}: ${hairstyleName}.
+          ${hairstyleDesc ? `Specific features: ${hairstyleDesc}` : ''}
+          Requirements:
+          1. The hairstyle must blend perfectly with the person's face shape and features.
+          2. Ensure the hairstyle features are very distinct and clearly different from other styles.
+          3. Generate high-quality, realistic results.
+          4. Only change the hair; keep the facial features identical.`;
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
@@ -214,19 +215,19 @@ export default async function handler(req: any, res: any) {
                 const { faceImage, styleName, styleDesc } = req.body;
 
                 if (!faceImage || !styleName) {
-                    return res.status(400).json({ error: '缺少人脸图片或化妆风格' });
+                    return res.status(400).json({ error: 'Missing face image or makeup style' });
                 }
 
                 const result = await requestWithRetry(async (ai) => {
-                    const prompt = `请为图中人物化上"${styleName}"风格的妆容。
-${styleDesc ? `风格特点：${styleDesc}` : ''}
+                    const prompt = `Please apply "${styleName}" style makeup to the person in the image.
+${styleDesc ? `Style features: ${styleDesc}` : ''}
 
-【重要要求】：
-1. 绝对不能改变人物的五官特征、脸型、眼睛形状等面部骨骼结构
-2. 只能在原有五官基础上添加化妆效果（眼影、腮红、口红、眉毛修饰等）
-3. 保持人物原本的肤色基调，妆容要自然融合
-4. 生成高品质、真实感强的美妆效果图
-5. 确保妆容风格特征明显，符合"${styleName}"的典型特点`;
+[IMPORTANT REQUIREMENTS]:
+1. Strictly do NOT change the person's facial features, face shape, or bone structure.
+2. Only add makeup effects (eyeshadow, blush, lipstick, eyebrow refinement, etc.) based on the original features.
+3. Maintain the original skin tone; the makeup should blend naturally.
+4. Generate high-quality, realistic makeup results.
+5. Ensure the style is distinct and represents "${styleName}" effectively.`;
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
@@ -254,7 +255,7 @@ ${styleDesc ? `风格特点：${styleDesc}` : ''}
                 const { prompt } = req.body;
 
                 if (!prompt) {
-                    return res.status(400).json({ error: '缺少分析内容' });
+                    return res.status(400).json({ error: 'Missing analysis content' });
                 }
 
                 const result = await requestWithRetry(async (ai) => {
