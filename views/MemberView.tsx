@@ -184,16 +184,21 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // 处理充值 - 使用 Stripe Checkout
+    // 处理充值
+    const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'airwallex'>('airwallex'); // 默认为 airwallex
+
     const handleRecharge = async (amount: number, creditsToAdd: number) => {
         setRechargeMessage('Creating order...');
 
         try {
-            const res = await fetch('/api/stripe', {
+            const endpoint = paymentMethod === 'stripe' ? '/api/stripe' : '/api/airwallex';
+            const action = paymentMethod === 'stripe' ? 'createCheckoutSession' : 'createPaymentIntent';
+
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'createCheckoutSession',
+                    action,
                     userId: user.id,
                     amount,
                     credits: creditsToAdd
@@ -207,10 +212,16 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             localStorage.setItem('pending_order_id', data.orderId);
             setPendingOrderId(data.orderId);
 
-            setRechargeMessage('Redirecting to payment...');
-
-            // 跳转到 Stripe Checkout 页面
-            window.location.href = data.payUrl;
+            if (paymentMethod === 'stripe') {
+                setRechargeMessage('Redirecting to Stripe...');
+                window.location.href = data.payUrl;
+            } else {
+                setRechargeMessage('Redirecting to Airwallex...');
+                // Airwallex Hosted Checkout URL 构造方式 (根据配置可能有所不同，此处跳转到其托管收银台)
+                // 注意：生产环境下 URL 可能有差异，这里示例跳转逻辑
+                const checkoutUrl = `https://checkout.airwallex.com/checkout/${data.paymentIntentId}?client_secret=${data.clientSecret}`;
+                window.location.href = checkoutUrl;
+            }
         } catch (err: any) {
             setRechargeMessage('❌ ' + (err.message || 'Payment failed'));
         }
@@ -252,7 +263,9 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         setRechargeMessage('Confirming payment...');
 
         try {
-            const res = await fetch('/api/stripe', {
+            // 尝试从 Stripe 或 Airwallex 确认
+            const endpoint = pendingOrderId.startsWith('AW') ? '/api/airwallex' : '/api/stripe';
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -371,7 +384,23 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 {/* 充值 (根据后台开关显示) */}
                 {config.recharge_enabled === 'true' && (
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
-                        <h4 className="font-bold mb-2">💰 Buy Credits</h4>
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="font-bold">💰 Buy Credits</h4>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setPaymentMethod('airwallex')}
+                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${paymentMethod === 'airwallex' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}
+                                >
+                                    Airwallex
+                                </button>
+                                <button
+                                    onClick={() => setPaymentMethod('stripe')}
+                                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${paymentMethod === 'stripe' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}
+                                >
+                                    Stripe
+                                </button>
+                            </div>
+                        </div>
 
                         {/* 待确认订单提示 */}
                         {pendingOrderId && (
