@@ -4,7 +4,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const CREEM_API_KEY = process.env.CREEM_API_KEY || '';
+const CREEM_API_KEY = process.env.CREEM_API_KEY || 'creem_test_3BamgzNSWsnBXdek3GbvS1';
+const CREEM_PRODUCT_ID_5USD = process.env.CREEM_PRODUCT_ID_5USD || 'prod_3ZLKsrhpAv5ZgYcSEuNsLF';
+const CREEM_PRODUCT_ID_10USD = process.env.CREEM_PRODUCT_ID_10USD || 'prod_44pSRpkGZJlBVsIJ7rqkXJ';
+
 const API_BASE_URL = 'https://api.creem.io/v1';
 
 export default async function handler(req: any, res: any) {
