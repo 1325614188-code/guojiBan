@@ -53,16 +53,6 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         ))}
       </div>
 
-      <div className="mt-10 p-5 bg-white rounded-3xl border border-pink-100 shadow-sm">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white text-sm">❤️</div>
-          <p className="font-bold text-gray-800">Daily Tip</p>
-        </div>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          Confidence is the best outfit! Whatever the AI says, you are a unique masterpiece in this world. Remember to stay happy every day! 🦆
-        </p>
-      </div>
-
       <LegalFooter />
     </div>
   );
