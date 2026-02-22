@@ -2,6 +2,7 @@
 import React from 'react';
 import { AppSection } from '../types';
 import InstallPWA from '../components/InstallPWA';
+import LegalFooter from '../components/LegalFooter';
 
 interface HomeViewProps {
   onNavigate: (section: AppSection) => void;
@@ -61,6 +62,8 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           Confidence is the best outfit! Whatever the AI says, you are a unique masterpiece in this world. Remember to stay happy every day! 🦆
         </p>
       </div>
+
+      <LegalFooter />
     </div>
   );
 };
