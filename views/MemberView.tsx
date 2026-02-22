@@ -389,18 +389,18 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
                         <div className="grid grid-cols-2 gap-3">
                             <button
-                                onClick={() => handleRecharge(1.99, 12)}
+                                onClick={() => handleRecharge(5, 12)}
                                 className="h-20 rounded-xl border-2 border-pink-200 hover:border-pink-400 hover:bg-pink-50 transition-colors"
                             >
                                 <div className="text-2xl font-bold text-pink-500">12 Credits</div>
-                                <div className="text-sm text-gray-500">$1.99</div>
+                                <div className="text-sm text-gray-500">$5</div>
                             </button>
                             <button
-                                onClick={() => handleRecharge(3.99, 30)}
+                                onClick={() => handleRecharge(10, 30)}
                                 className="h-20 rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-colors"
                             >
                                 <div className="text-2xl font-bold text-purple-500">30 Credits</div>
-                                <div className="text-sm text-gray-500">$3.99</div>
+                                <div className="text-sm text-gray-500">$10</div>
                             </button>
                         </div>
                         {rechargeMessage && (
