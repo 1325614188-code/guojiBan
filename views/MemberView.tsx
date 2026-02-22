@@ -184,17 +184,23 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         }
     };
 
-    // Handle recharge
+    // Handle recharge (Creem)
     const handleRecharge = async (amount: number, creditsToAdd: number) => {
         setRechargeMessage('Creating order...');
 
         try {
-            const res = await fetch('/api/airwallex', {
+            // Get correct Product ID based on amount
+            const productId = amount === 5
+                ? 'prod_3ZLKsrhpAv5ZgYcSEuNsLF' // I'll use hardcoded IDs as fallback or if env not available in frontend
+                : 'prod_44pSRpkGZJlBVsIJ7rqkXJ';
+
+            const res = await fetch('/api/creem', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'createPaymentIntent',
+                    action: 'createCheckout',
                     userId: user.id,
+                    productId: productId,
                     amount,
                     credits: creditsToAdd
                 })
@@ -207,19 +213,18 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             localStorage.setItem('pending_order_id', data.orderId);
             setPendingOrderId(data.orderId);
 
-            setRechargeMessage('Redirecting to Airwallex...');
-            // Airwallex Hosted Checkout URL
-            const checkoutUrl = `https://checkout.airwallex.com/checkout/${data.paymentIntentId}?client_secret=${data.clientSecret}`;
-            window.location.href = checkoutUrl;
+            setRechargeMessage('Redirecting to Creem Checkout...');
+            // Redirect to Creem Checkout URL
+            window.location.href = data.checkoutUrl;
         } catch (err: any) {
             setRechargeMessage('❌ ' + (err.message || 'Payment failed'));
         }
     };
 
-    // NOTE: Auto-confirm order after success (no manual check needed)
+    // NOTE: Auto-confirm order after success
     const autoConfirmOrder = async (orderId: string) => {
         try {
-            const res = await fetch('/api/airwallex', {
+            const res = await fetch('/api/creem', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -235,10 +240,13 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 return;
             }
 
-            setRechargeMessage(`✅ Payment confirmed! ${data.credits} credits added. Refreshing...`);
-            localStorage.removeItem('pending_order_id');
-            // NOTE: Force reload page to get latest credit data
-            setTimeout(() => window.location.reload(), 1500);
+            if (data.success) {
+                setRechargeMessage(`✅ Payment confirmed! ${data.credits} credits added. Refreshing...`);
+                localStorage.removeItem('pending_order_id');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                setRechargeMessage(`⏳ ${data.message}`);
+            }
         } catch (err: any) {
             setRechargeMessage(`❌ Auto-confirm error: ${err.message}. Try clicking confirm below.`);
         }
@@ -249,10 +257,10 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         if (!pendingOrderId) return;
 
         setLoading(true);
-        setRechargeMessage('Confirming payment...');
+        setRechargeMessage('Checking payment status...');
 
         try {
-            const res = await fetch('/api/airwallex', {
+            const res = await fetch('/api/creem', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -265,10 +273,13 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setRechargeMessage(`✅ ${data.message}, ${data.credits} credits added! Refreshing...`);
-            localStorage.removeItem('pending_order_id');
-            // NOTE: Force reload page to get latest credit data
-            setTimeout(() => window.location.reload(), 1500);
+            if (data.success) {
+                setRechargeMessage(`✅ Payment confirmed! ${data.credits} credits added. Refreshing...`);
+                localStorage.removeItem('pending_order_id');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                setRechargeMessage(`⏳ ${data.message}`);
+            }
         } catch (err: any) {
             setRechargeMessage('❌ ' + (err.message || 'Confirmation failed'));
         } finally {
