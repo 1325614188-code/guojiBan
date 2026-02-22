@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS orders (
   credits INT NOT NULL,
   status TEXT DEFAULT 'pending',
   trade_no TEXT,
+  payment_method TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   paid_at TIMESTAMP WITH TIME ZONE
 );

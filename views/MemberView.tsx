@@ -191,8 +191,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         try {
             // Get correct Product ID based on amount
             const productId = amount === 5
-                ? 'prod_3ZLKsrhpAv5ZgYcSEuNsLF' // I'll use hardcoded IDs as fallback or if env not available in frontend
-                : 'prod_44pSRpkGZJlBVsIJ7rqkXJ';
+                ? 'prod_7jbvR7bVfcXC4LZVZ7nKCp' // Live ID
+                : 'prod_3QknshZWwWAE5HuwwnwBLi'; // Live ID
 
             const res = await fetch('/api/creem', {
                 method: 'POST',
