@@ -214,7 +214,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                             value={config.contact_email || ''}
                             onChange={e => updateConfig('contact_email', e.target.value)}
                             className="flex-1 h-10 px-3 rounded-xl border border-gray-200"
-                            placeholder="e.g. chanlindong9@gmail.com"
+                            placeholder="e.g. 408457641@qq.com"
                         />
                     </div>
                     <div className="flex items-center gap-4">

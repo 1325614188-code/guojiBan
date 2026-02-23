@@ -32,7 +32,7 @@ Our Refund Policy ensures a fair experience:
 1. Digital Goods: Since our service provides instant AI processing and digital credits, refunds are generally not provided once credits have been used.
 2. Technical Issues: If you encounter a technical failure where credits were deducted but no result was generated, please contact us for a manual credit adjustment.
 3. Satisfaction: If you are unsatisfied with the service, please reach out to our support team. We value your feedback and will handle requests on a case-by-case basis.
-4. Contact: For refund inquiries, please email us at chanlindong9@gmail.com.
+4. Contact: For refund inquiries, please email us at 408457641@qq.com.
       `
         }
     };
@@ -43,7 +43,7 @@ Our Refund Policy ensures a fair experience:
                 <button onClick={() => setModalContent(policies.terms)} className="hover:text-pink-500 transition-colors">Terms of Service</button>
                 <button onClick={() => setModalContent(policies.privacy)} className="hover:text-pink-500 transition-colors">Privacy Policy</button>
                 <button onClick={() => setModalContent(policies.refund)} className="hover:text-pink-500 transition-colors">Refund Policy</button>
-                <a href="mailto:chanlindong9@gmail.com" className="hover:text-pink-500 transition-colors">Contact Us</a>
+                <a href="mailto:408457641@qq.com" className="hover:text-pink-500 transition-colors">Contact Us</a>
             </div>
             <p className="text-center text-[10px] text-gray-300 mt-4 uppercase tracking-widest">
                 &copy; {new Date().getFullYear()} Beauty Lab AI. All Rights Reserved.

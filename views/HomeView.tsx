@@ -53,8 +53,63 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         ))}
       </div>
 
+      {/* Pricing & Rules Section */}
+      <div className="mt-12 mb-8 bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-pink-100 shadow-sm">
+        <h2 className="text-xl font-bold mb-6 text-center text-pink-600">💰 Pricing & Rules</h2>
+
+        <div className="space-y-6">
+          {/* Recharge Rules */}
+          <section>
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              Recharge Credits
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white p-3 rounded-2xl border border-gray-100 text-center">
+                <div className="text-lg font-bold text-pink-500">12 Credits</div>
+                <div className="text-xs text-gray-400">$5</div>
+              </div>
+              <div className="bg-white p-3 rounded-2xl border border-gray-100 text-center">
+                <div className="text-lg font-bold text-purple-500">30 Credits</div>
+                <div className="text-xs text-gray-400">$10</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Gift & Referral Rules */}
+          <section>
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              Free Gifts & Referrals
+            </h3>
+            <div className="space-y-2 text-xs text-gray-600 bg-white/80 p-4 rounded-2xl border border-pink-50">
+              <p className="flex items-start gap-2">
+                <span className="text-pink-500">🎁</span>
+                <span><b>Daily Gift:</b> Get 5 free credits monthly with a redeem code.</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-pink-500">📤</span>
+                <span><b>Share & Earn:</b> Earn 1 credit per friend registration (Mobile Browser Only).</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-pink-500">⭐</span>
+                <span><b>Referral Points:</b> Earn 1 point per referral. 50 pts → $4 reward, 100 pts → $10 reward.</span>
+              </p>
+            </div>
+          </section>
+
+          {/* Contact */}
+          <div className="pt-4 border-t border-dashed border-gray-200 text-center">
+            <p className="text-[10px] text-gray-400">
+              Need help? Contact us at: <span className="text-pink-400 font-medium">408457641@qq.com</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
       <LegalFooter />
     </div>
+
   );
 };
 

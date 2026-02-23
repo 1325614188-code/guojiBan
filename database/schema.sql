@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS app_config (
 
 -- 初始化配置数据
 INSERT INTO app_config (key, value) VALUES
-  ('contact_email', 'chanlindong9@gmail.com'),
+  ('contact_email', '408457641@qq.com'),
   ('recharge_enabled', 'true'),
   ('stripe_publishable_key', ''),
   ('stripe_webhook_secret', '')

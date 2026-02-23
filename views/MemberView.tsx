@@ -178,7 +178,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setPointsMessage(`🎉 ${data.message}. Please contact us at "${config.contact_email || 'chanlindong9@gmail.com'}" to complete the redemption.`);
+            setPointsMessage(`🎉 ${data.message}. Please contact us at "${config.contact_email || '408457641@qq.com'}" to complete the redemption.`);
         } catch (err: any) {
             setPointsMessage('❌ ' + err.message);
         }
@@ -352,7 +352,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         <p className="text-xs text-purple-700 mb-1">🎁 Rewards:</p>
                         <p className="text-xs text-purple-600">• 50 points → $4 reward &nbsp;&nbsp; • 100 points → $10 reward</p>
                         <p className="text-xs text-blue-500 mt-1">💡 Note: Only mobile browser registrations count.</p>
-                        <p className="text-xs text-orange-500 mt-2">⚠️ After clicking redeem, please contact "{config.contact_email || 'chanlindong9@gmail.com'}" to complete.</p>
+                        <p className="text-xs text-orange-500 mt-2">⚠️ After clicking redeem, please contact "{config.contact_email || '408457641@qq.com'}" to complete.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <button
@@ -427,7 +427,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         Each code gives you <span className="text-pink-500 font-bold">5 free</span> credits. One redemption per month.
                     </p>
                     <p className="text-xs text-gray-400 mb-3">
-                        Contact "<span className="text-pink-500">{config.contact_email || 'chanlindong9@gmail.com'}</span>" to get a free redeem code.
+                        Contact "<span className="text-pink-500">{config.contact_email || '408457641@qq.com'}</span>" to get a free redeem code.
                     </p>
                     <div className="flex gap-2">
                         <input
