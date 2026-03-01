@@ -15,6 +15,9 @@ import AdminView from './views/AdminView';
 import MakeupView from './views/MakeupView';
 import MBTITestView from './views/MBTITestView';
 import DepressionTestView from './views/DepressionTestView';
+import LoveFortuneView from './views/LoveFortuneView';
+import WealthFortuneView from './views/WealthFortuneView';
+import { useTranslation, Language } from './lib/i18n';
 
 // 版本标识，用于确认用户是否加载了最新代码
 const APP_VERSION = '20260214-V4-FORCE';
@@ -25,6 +28,7 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showMember, setShowMember] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const { t, lang, changeLanguage } = useTranslation();
 
   // 从 localStorage 恢复用户状态，并处理支付回调
   useEffect(() => {
@@ -142,7 +146,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Initialize device ID
+  // Initialize device ID and language detection
   useEffect(() => {
     const initId = async () => {
       const storedId = localStorage.getItem('device_id');
@@ -152,6 +156,34 @@ const App: React.FC = () => {
       }
     };
     initId();
+
+    // Auto-detect language if not set
+    const storedLang = localStorage.getItem('lang');
+    if (!storedLang) {
+      const detectLang = async () => {
+        try {
+          // Attempt to detect via IP or browser
+          const res = await fetch('https://ipapi.co/json/');
+          const data = await res.json();
+          const country = data.country_code; // e.g., 'VN', 'KR', 'JP', 'CN'
+          let detected: Language = 'en';
+          if (country === 'VN') detected = 'vi';
+          else if (country === 'KR') detected = 'ko';
+          else if (country === 'JP') detected = 'ja';
+          else if (country === 'CN') detected = 'zh';
+
+          changeLanguage(detected);
+        } catch (e) {
+          // Fallback to browser lang
+          const browserLang = navigator.language.split('-')[0];
+          const supported: Language[] = ['en', 'vi', 'ko', 'ja', 'zh'];
+          if (supported.includes(browserLang as any)) {
+            changeLanguage(browserLang as Language);
+          }
+        }
+      };
+      detectLang();
+    }
   }, []);
 
   const handleLogin = (loggedUser: any) => {
@@ -265,6 +297,10 @@ const App: React.FC = () => {
         return <MBTITestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.DEPRESSION_TEST:
         return <DepressionTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+      case AppSection.LOVE_FORTUNE:
+        return <LoveFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+      case AppSection.WEALTH_FORTUNE:
+        return <WealthFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       default:
         return <HomeView onNavigate={setCurrentSection} />;
     }
@@ -288,14 +324,14 @@ const App: React.FC = () => {
           className={`flex flex-col items-center gap-1 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
         >
           <span className="text-xl">🏠</span>
-          <span className="text-xs">Home</span>
+          <span className="text-xs">{t('home')}</span>
         </button>
         <button
           onClick={() => user ? setShowMember(true) : setShowLogin(true)}
           className="flex flex-col items-center gap-1 text-gray-500 hover:text-pink-500 transition-colors"
         >
           <span className="text-xl">{user ? '👤' : '🔐'}</span>
-          <span className="text-xs">{user ? 'Me' : 'Login'}</span>
+          <span className="text-xs">{user ? t('me') : t('login')}</span>
         </button>
         {user?.is_admin && (
           <button
@@ -303,7 +339,7 @@ const App: React.FC = () => {
             className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500 transition-colors"
           >
             <span className="text-xl">⚙️</span>
-            <span className="text-xs">Admin</span>
+            <span className="text-xs">{t('admin')}</span>
           </button>
         )}
       </div>

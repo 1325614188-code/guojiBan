@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   nickname TEXT,
   credits INT DEFAULT 5,
+  points INT DEFAULT 0,
+  commission_unsettled DECIMAL(10,2) DEFAULT 0.00,
   device_id TEXT,
   referrer_id UUID REFERENCES users(id),
   is_admin BOOLEAN DEFAULT FALSE,
@@ -38,6 +40,19 @@ CREATE TABLE IF NOT EXISTS referral_rewards (
   new_user_id UUID REFERENCES users(id),
   device_id TEXT NOT NULL,
   rewarded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 积分兑换申请表
+CREATE TABLE IF NOT EXISTS point_redemptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  username TEXT,
+  points_used INT NOT NULL,
+  reward_amount DECIMAL(10,2) NOT NULL,
+  status TEXT DEFAULT 'pending',  -- pending/approved/rejected
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  processed_at TIMESTAMP WITH TIME ZONE,
+  admin_note TEXT
 );
 
 -- 支付订单表
@@ -78,6 +93,7 @@ ALTER TABLE redemptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referral_rewards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE point_redemptions ENABLE ROW LEVEL SECURITY;
 
 -- RLS 策略：允许匿名用户通过 API 访问
 CREATE POLICY "Allow insert for anon" ON users FOR INSERT WITH CHECK (true);
@@ -89,3 +105,4 @@ CREATE POLICY "Allow all for redemptions" ON redemptions FOR ALL USING (true);
 CREATE POLICY "Allow all for referral_rewards" ON referral_rewards FOR ALL USING (true);
 CREATE POLICY "Allow all for orders" ON orders FOR ALL USING (true);
 CREATE POLICY "Allow all for app_config" ON app_config FOR ALL USING (true);
+CREATE POLICY "Allow all for point_redemptions" ON point_redemptions FOR ALL USING (true);

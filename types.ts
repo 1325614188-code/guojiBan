@@ -14,7 +14,9 @@ export enum AppSection {
   CALENDAR = 'calendar',
   LICENSE_PLATE = 'license-plate',
   MBTI_TEST = 'mbti-test',
-  DEPRESSION_TEST = 'depression-test'
+  DEPRESSION_TEST = 'depression-test',
+  LOVE_FORTUNE = 'love-fortune',
+  WEALTH_FORTUNE = 'wealth-fortune'
 }
 
 export interface AnalysisResult {

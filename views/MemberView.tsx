@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../lib/i18n';
 
 interface MemberViewProps {
     user: any;
@@ -8,6 +9,7 @@ interface MemberViewProps {
 }
 
 const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserUpdate }) => {
+    const { t } = useTranslation();
     // NOTE: Directly using user.credits, no longer maintaining independent local state to avoid state desynchronization.
     const [redeemCode, setRedeemCode] = useState('');
     const [loading, setLoading] = useState(false);
@@ -308,10 +310,30 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     </div>
                     <div className="mt-3 bg-black/10 rounded-xl px-3 py-2">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-white/80 text-sm">Remaining Credits</span>
+                            <span className="text-white/80 text-sm">{t('remaining_credits') || 'Remaining Credits'}</span>
                             <span className="text-white text-3xl font-bold">{user?.credits || 0}</span>
                         </div>
                     </div>
+                </div>
+
+                {/* Referral Commission (40%) */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-200 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">💰</span>
+                        <h4 className="font-bold text-orange-800">{t('referral_commission')}</h4>
+                    </div>
+                    <p className="text-xs text-orange-700 mb-3 leading-relaxed">
+                        <b>{t('earn_big') || 'Earn Big'}:</b> You get <span className="text-sm font-black">40%</span> of the recharge amount for ANY user who registers via your link.
+                    </p>
+                    <div className="bg-white/60 p-3 rounded-xl border border-orange-100 mb-2">
+                        <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-500">Unsettled Commission</span>
+                            <span className="font-bold text-orange-600">${user?.commission_unsettled || 0.00}</span>
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center italic">
+                        Commission is settled weekly. Contact support for withdrawal.
+                    </p>
                 </div>
 
                 {/* Referral Program */}
@@ -339,45 +361,48 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     </div>
                 </div>
 
-                {/* Referral Points */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-bold">⭐ Referral Points</h4>
-                        <span className="text-sm text-purple-500 font-bold">Points: {userPoints}</span>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-2">
-                        When friends register via your link in a <span className="text-pink-500 font-bold">mobile browser</span>, you earn <span className="text-purple-500 font-bold">1 point</span>. Points can be redeemed for rewards.
+                {pointsMessage && (
+                    <p className={`mt-3 text-sm text-center ${pointsMessage.includes('❌') ? 'text-red-500' : 'text-green-500'}`}>
+                        {pointsMessage}
                     </p>
-                    <div className="bg-purple-50 rounded-xl p-3 mb-3">
-                        <p className="text-xs text-purple-700 mb-1">🎁 Rewards:</p>
-                        <p className="text-xs text-purple-600">• 50 points → $4 reward &nbsp;&nbsp; • 100 points → $10 reward</p>
-                        <p className="text-xs text-blue-500 mt-1">💡 Note: Only mobile browser registrations count.</p>
-                        <p className="text-xs text-orange-500 mt-2">⚠️ After clicking redeem, please contact "{config.contact_email || '408457641@qq.com'}" to complete.</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            onClick={() => handlePointsRedeem(50, 4)}
-                            disabled={userPoints < 50}
-                            className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 50 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
-                        >
-                            <div className="text-lg font-bold text-purple-500">50 pts</div>
-                            <div className="text-xs text-gray-500">→ $4 reward</div>
-                        </button>
-                        <button
-                            onClick={() => handlePointsRedeem(100, 10)}
-                            disabled={userPoints < 100}
-                            className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 100 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
-                        >
-                            <div className="text-lg font-bold text-purple-500">100 pts</div>
-                            <div className="text-xs text-gray-500">→ $10 reward</div>
-                        </button>
-                    </div>
-                    {pointsMessage && (
-                        <p className={`mt-3 text-sm text-center ${pointsMessage.includes('❌') ? 'text-red-500' : 'text-green-500'}`}>
-                            {pointsMessage}
+                )}
+
+                {/* Referral Points (Conditional) */}
+                {config.referral_points_enabled === 'true' && (
+                    <div className="bg-white rounded-2xl p-4 shadow-sm">
+                        <div className="flex justify-between items-center mb-2">
+                            <h4 className="font-bold">⭐ {t('referral_reward_system') || 'Referral Points'}</h4>
+                            <span className="text-sm text-purple-500 font-bold">Points: {userPoints}</span>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-2">
+                            When friends register via your link in a <span className="text-pink-500 font-bold">mobile browser</span>, you earn <span className="text-purple-500 font-bold">1 point</span>. Points can be redeemed for rewards.
                         </p>
-                    )}
-                </div>
+                        <div className="bg-purple-50 rounded-xl p-3 mb-3">
+                            <p className="text-xs text-purple-700 mb-1">🎁 Rewards:</p>
+                            <p className="text-xs text-purple-600">• 50 points → $4 reward &nbsp;&nbsp; • 100 points → $10 reward</p>
+                            <p className="text-xs text-blue-500 mt-1">💡 Note: Only mobile browser registrations count.</p>
+                            <p className="text-xs text-orange-500 mt-2">⚠️ After clicking redeem, please contact "{config.contact_email || '408457641@qq.com'}" to complete.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => handlePointsRedeem(50, 4)}
+                                disabled={userPoints < 50}
+                                className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 50 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
+                            >
+                                <div className="text-lg font-bold text-purple-500">50 pts</div>
+                                <div className="text-xs text-gray-500">→ $4 reward</div>
+                            </button>
+                            <button
+                                onClick={() => handlePointsRedeem(100, 10)}
+                                disabled={userPoints < 100}
+                                className={`h-16 rounded-xl border-2 transition-colors ${userPoints >= 100 ? 'border-purple-300 hover:border-purple-500 hover:bg-purple-50' : 'border-gray-200 opacity-50 cursor-not-allowed'}`}
+                            >
+                                <div className="text-lg font-bold text-purple-500">100 pts</div>
+                                <div className="text-xs text-gray-500">→ $10 reward</div>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Recharge (Shown based on config) */}
                 {config.recharge_enabled === 'true' && (

@@ -226,6 +226,15 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                             {config.recharge_enabled === 'true' ? 'Enabled' : 'Disabled'}
                         </button>
                     </div>
+                    <div className="flex items-center gap-4">
+                        <label className="w-28 text-sm text-gray-500 shrink-0">Referral Points</label>
+                        <button
+                            onClick={() => updateConfig('referral_points_enabled', config.referral_points_enabled === 'true' ? 'false' : 'true')}
+                            className={`px-4 py-2 rounded-xl ${config.referral_points_enabled === 'true' ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+                        >
+                            {config.referral_points_enabled === 'true' ? 'Enabled' : 'Disabled'}
+                        </button>
+                    </div>
                 </div>
             </div>
 

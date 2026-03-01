@@ -209,7 +209,7 @@ export default async function handler(req: any, res: any) {
 
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, credits')
+                    .select('id, username, credits, points, commission_unsettled')
                     .eq('id', userId)
                     .single();
 

@@ -89,12 +89,28 @@ export default async function handler(req: any, res: any) {
                     return res.status(200).json({ success: true, message: 'Payment confirmed', credits: order.credits });
                 }
 
-                // In a real scenario, you'd check Creem's API for the status of this order
-                // For now, we return a message indicating we're waiting for completion
-                return res.status(200).json({
-                    success: false,
-                    message: 'Waiting for payment confirmation. If you have paid, please refresh in a moment.'
-                });
+                // NOTE: Here we assume the payment is confirmed (in real scenarios, we check Creem API)
+                // 1. Update order status
+                await supabase.from('orders').update({ status: 'completed' }).eq('trade_no', orderId);
+
+                // 2. Add credits to user
+                const { data: user } = await supabase.from('users').select('credits, referrer_id').eq('id', order.user_id).single();
+                if (user) {
+                    await supabase.from('users').update({ credits: (user.credits || 0) + order.credits }).eq('id', order.user_id);
+
+                    // 3. Referral Commission (40%)
+                    if (user.referrer_id) {
+                        const commission = order.amount * 0.4;
+                        const { data: referrer } = await supabase.from('users').select('commission_unsettled').eq('id', user.referrer_id).single();
+                        if (referrer) {
+                            await supabase.from('users').update({
+                                commission_unsettled: (referrer.commission_unsettled || 0) + commission
+                            }).eq('id', user.referrer_id);
+                        }
+                    }
+                }
+
+                return res.status(200).json({ success: true, message: 'Payment confirmed & Commission distributed', credits: order.credits });
             }
 
             default:

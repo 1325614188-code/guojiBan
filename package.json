@@ -1,5 +1,5 @@
 {
-  "name": "美力实验室---你的专属ai颜究院",
+  "name": "meilishiyanshi-intl",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,7 +12,8 @@
     "@google/genai": "^1.40.0",
     "@supabase/supabase-js": "^2.95.1",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
