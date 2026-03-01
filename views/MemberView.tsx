@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation, Language } from '../lib/i18n';
+import { API_BASE } from '../lib/config';
 
 interface MemberViewProps {
     user: any;
@@ -32,7 +33,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     };
 
     useEffect(() => {
-        fetch('/api/admin', {
+        fetch(`${API_BASE}/api/admin?t=${Date.now()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'getConfig' })
@@ -133,7 +134,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         setPointsMessage('...');
 
         try {
-            const res = await fetch('/api/auth_v2', {
+            const res = await fetch(`${API_BASE}/api/auth_v2`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -157,7 +158,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         setRechargeMessage('...');
         try {
             const productId = amount === 5 ? 'prod_7jbvR7bVfcXC4LZVZ7nKCp' : 'prod_3QknshZWwWAE5HuwwnwBLi';
-            const res = await fetch('/api/creem', {
+            const res = await fetch(`${API_BASE}/api/creem`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -183,7 +184,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         if (!pendingOrderId) return;
         setLoading(true);
         try {
-            const res = await fetch('/api/creem', {
+            const res = await fetch(`${API_BASE}/api/creem`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'confirmOrder', orderId: pendingOrderId, userId: user.id })

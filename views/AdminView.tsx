@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../lib/config';
 
 interface AdminViewProps {
     admin: any;
@@ -24,14 +25,14 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
         setLoading(true);
         try {
             // Init Admin
-            await fetch('/api/admin', {
+            await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'initAdmin' })
             });
 
             // Get users
-            const usersRes = await fetch('/api/admin', {
+            const usersRes = await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getUsers', adminId: admin.id })
@@ -40,7 +41,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             setUsers(usersData.users || []);
 
             // Get config
-            const configRes = await fetch('/api/admin', {
+            const configRes = await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getConfig', adminId: admin.id })
@@ -49,7 +50,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             setConfig(configData.config || {});
 
             // Get stats
-            const statsRes = await fetch('/api/admin', {
+            const statsRes = await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getStats', adminId: admin.id })
@@ -58,7 +59,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             setStats(statsData);
 
             // Get point redemptions
-            const redemptionsRes = await fetch('/api/admin', {
+            const redemptionsRes = await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'getPointRedemptions', adminId: admin.id })
@@ -75,7 +76,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     // Update config
     const updateConfig = async (key: string, value: string) => {
         try {
-            await fetch('/api/admin', {
+            await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'updateConfig', adminId: admin.id, key, value })
@@ -89,7 +90,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     // Update user credits
     const updateCredits = async (userId: string, amount: number) => {
         try {
-            await fetch('/api/admin', {
+            await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'updateCredits', adminId: admin.id, userId, amount })
@@ -104,7 +105,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     // Update user points
     const updatePoints = async (userId: string, amount: number) => {
         try {
-            await fetch('/api/admin', {
+            await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'updatePoints', adminId: admin.id, userId, amount })
@@ -120,7 +121,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const processRedemption = async (redemptionId: string, approved: boolean) => {
         setProcessingId(redemptionId);
         try {
-            await fetch('/api/admin', {
+            await fetch(`${API_BASE}/api/admin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

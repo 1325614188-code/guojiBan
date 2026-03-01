@@ -101,9 +101,9 @@ const InstallPWA: React.FC = () => {
                             <div className="text-center">
                                 <h3 className="text-xl font-bold mb-4">{t('add_to_home_screen')}</h3>
                                 <div className="space-y-4 text-left text-gray-600">
-                                    <p>1. {t('zh') === 'zh' ? '点击浏览器底部的 “分享” 按钮' : 'Click the "Share" button at the bottom'} ⬆️</p>
-                                    <p>2. {t('zh') === 'zh' ? '在菜单中选择 “添加到主屏幕”' : 'Select "Add to Home Screen" in menu'} ➕</p>
-                                    <p>3. {t('zh') === 'zh' ? '点击右上角的 “添加”' : 'Click "Add" in the top right corner'}</p>
+                                    <p>1. {t('ios_guide_step1')} ⬆️</p>
+                                    <p>2. {t('ios_guide_step2')} ➕</p>
+                                    <p>3. {t('ios_guide_step3')}</p>
                                 </div>
                                 <button onClick={() => setShowGuide(null)} className="mt-8 w-full py-3 bg-pink-500 text-white rounded-xl font-bold">{t('back')}</button>
                             </div>
@@ -111,7 +111,7 @@ const InstallPWA: React.FC = () => {
                             <div className="text-center">
                                 <h3 className="text-xl font-bold mb-4">{t('add_to_home_screen')}</h3>
                                 <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                                    {t('zh') === 'zh' ? '请点击右上角菜单，并选择 “在浏览器中打开”' : 'Please open in browser to continue!'} ✨
+                                    {t('social_guide_tip')} ✨
                                 </p>
                                 <button
                                     onClick={() => setShowGuide(null)}

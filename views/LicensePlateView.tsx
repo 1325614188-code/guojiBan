@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE } from '../lib/config';
 
 interface LicensePlateViewProps {
     onBack: () => void;
@@ -126,7 +127,7 @@ const LicensePlateView: React.FC<LicensePlateViewProps> = ({ onBack, onCheckCred
 
 Please use easy-to-understand language, use emojis to make it lively, and output in markdown format. ALL content must be in English.`;
 
-            const response = await fetch('/api/gemini', {
+            const response = await fetch(`${API_BASE}/api/gemini`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

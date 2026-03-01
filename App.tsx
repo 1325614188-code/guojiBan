@@ -18,9 +18,10 @@ import DepressionTestView from './views/DepressionTestView';
 import LoveFortuneView from './views/LoveFortuneView';
 import WealthFortuneView from './views/WealthFortuneView';
 import { useTranslation, Language } from './lib/i18n';
+import { API_BASE, isNative } from './lib/config';
 
 // 版本标识，用于确认用户是否加载了最新代码
-const APP_VERSION = '20260214-V4-FORCE';
+const APP_VERSION = '20260302-V2';
 
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
@@ -57,7 +58,7 @@ const App: React.FC = () => {
         // Force fetch latest data
         const syncUser = async () => {
           try {
-            const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
+            const res = await fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               cache: 'no-store',
@@ -94,7 +95,7 @@ const App: React.FC = () => {
       console.log('[Payment] Callback detected:', orderIdFromUrl);
       window.history.replaceState({}, '', window.location.pathname);
 
-      fetch(`/api/stripe?t=${Date.now()}&r=${Math.random()}`, {
+      fetch(`${API_BASE}/api/stripe?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,7 +208,7 @@ const App: React.FC = () => {
       return false;
     }
     try {
-      const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
+      const res = await fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'useCredit', userId: user.id })
@@ -230,7 +231,7 @@ const App: React.FC = () => {
   const deductCredit = async (): Promise<boolean> => {
     if (!user) return false;
     try {
-      const res = await fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
+      const res = await fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductCredit', userId: user.id })
@@ -248,6 +249,10 @@ const App: React.FC = () => {
       return false;
     }
   };
+
+  // 类型安全的包装器，解决 Lint 报错
+  const handleCheckCredits = async (): Promise<boolean> => { return await checkCredits(); };
+  const handleDeductCredit = async (): Promise<void> => { await deductCredit(); };
 
   if (showLogin) {
     return <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
@@ -270,37 +275,37 @@ const App: React.FC = () => {
       case AppSection.HOME:
         return <HomeView onNavigate={setCurrentSection} />;
       case AppSection.TRY_ON_CLOTHES:
-        return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.TRY_ON_ACCESSORIES:
-        return <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.HAIRSTYLE:
-        return <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.MAKEUP:
-        return <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.BEAUTY_SCORE:
-        return <AnalysisView title={t('beauty_score_title')} type="Beauty Score" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('beauty_score_title')} type="Beauty Score" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.COUPLE_FACE:
-        return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.TONGUE_DIAGNOSIS:
-        return <AnalysisView title={t('tongue_analysis_title')} type="Tongue" onBack={() => setCurrentSection(AppSection.HOME)} helpText={t('tongue_help')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('tongue_analysis_title')} type="Tongue" onBack={() => setCurrentSection(AppSection.HOME)} helpText={t('tongue_help')} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.FACE_COLOR:
-        return <AnalysisView title={t('face_color_title')} type="TCM Face Color" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('face_color_title')} type="TCM Face Color" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.FACE_READING:
-        return <AnalysisView title={t('face_reading_title')} type="Traditional Physiognomy" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('face_reading_title')} type="Traditional Physiognomy" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.FENG_SHUI:
-        return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.LICENSE_PLATE:
-        return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.CALENDAR:
-        return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.MBTI_TEST:
-        return <MBTITestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <MBTITestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.DEPRESSION_TEST:
-        return <DepressionTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <DepressionTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.LOVE_FORTUNE:
-        return <LoveFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <LoveFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.WEALTH_FORTUNE:
-        return <WealthFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <WealthFortuneView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       default:
         return <HomeView onNavigate={setCurrentSection} />;
     }
@@ -308,7 +313,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative overflow-hidden bg-pink-50 flex flex-col shadow-2xl">
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-24">
         {renderSection()}
       </div>
 
@@ -331,17 +336,17 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-20 bg-white/95 backdrop-blur-md border-t flex justify-around items-center px-4 z-50 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <button
           onClick={() => setCurrentSection(AppSection.HOME)}
-          className={`flex flex-col items-center gap-1 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
+          className={`flex flex-col items-center justify-center gap-1 h-full px-6 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
         >
           <span className="text-xl">🏠</span>
           <span className="text-xs">{t('home')}</span>
         </button>
         <button
           onClick={() => user ? setShowMember(true) : setShowLogin(true)}
-          className="flex flex-col items-center gap-1 text-gray-500 hover:text-pink-500 transition-colors"
+          className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-pink-500 transition-colors"
         >
           <span className="text-xl">{user ? '👤' : '🔐'}</span>
           <span className="text-xs">{user ? t('me') : t('login')}</span>
@@ -349,7 +354,7 @@ const App: React.FC = () => {
         {user?.is_admin && (
           <button
             onClick={() => setShowAdmin(true)}
-            className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500 transition-colors"
+            className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-purple-500 transition-colors"
           >
             <span className="text-xl">⚙️</span>
             <span className="text-xs">{t('admin')}</span>

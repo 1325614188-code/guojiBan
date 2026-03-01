@@ -1,9 +1,6 @@
-/**
- * 前端 Gemini 服务 - 通过后端 API 调用
- * 所有敏感的 API Key 逻辑已移至后端
- */
+import { API_BASE as BASE_URL } from '../lib/config';
 
-const API_BASE = '/api/gemini';
+const API_BASE = `${BASE_URL}/api/gemini`;
 
 /**
  * 调用后端 API

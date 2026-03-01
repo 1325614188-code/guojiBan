@@ -6,74 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>美力实验室</title>
 
-  <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#ff4d6d" />
   <meta name="description" content="你的专属AI颜究院 - 发现你的独属魅力" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="美力实验室" />
-  <link rel="apple-touch-icon" href="/icon.svg" />
 
-  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+KuaiLe&display=swap"
     rel="stylesheet">
+
   <style>
     body {
-      font-family: 'Noto+Sans+SC', sans-serif;
-      background-color: #fff5f7;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3C!-- Rose --%3E%3Cg opacity='0.08'%3E%3Ccircle cx='30' cy='40' r='8' fill='%23ff6b9d'/%3E%3Ccircle cx='25' cy='35' r='6' fill='%23ff8fab'/%3E%3Ccircle cx='35' cy='35' r='6' fill='%23ff8fab'/%3E%3Ccircle cx='30' cy='30' r='5' fill='%23ffc2d1'/%3E%3Cpath d='M30 48 Q28 55 30 65' stroke='%2390be6d' stroke-width='2' fill='none'/%3E%3C/g%3E%3C!-- Tulip --%3E%3Cg opacity='0.08'%3E%3Cellipse cx='150' cy='130' rx='6' ry='12' fill='%23ff6b9d'/%3E%3Cellipse cx='144' cy='132' rx='5' ry='10' fill='%23ff8fab'/%3E%3Cellipse cx='156' cy='132' rx='5' ry='10' fill='%23ff8fab'/%3E%3Cpath d='M150 142 Q148 155 150 170' stroke='%2390be6d' stroke-width='2' fill='none'/%3E%3Cpath d='M150 155 Q140 160 135 158' stroke='%2390be6d' stroke-width='1.5' fill='none'/%3E%3C/g%3E%3C!-- Small Rose --%3E%3Cg opacity='0.06'%3E%3Ccircle cx='170' cy='40' r='5' fill='%23ffc2d1'/%3E%3Ccircle cx='167' cy='37' r='4' fill='%23ffb3c6'/%3E%3Ccircle cx='173' cy='37' r='4' fill='%23ffb3c6'/%3E%3Cpath d='M170 45 Q169 50 170 58' stroke='%2390be6d' stroke-width='1' fill='none'/%3E%3C/g%3E%3C!-- Tulip 2 --%3E%3Cg opacity='0.06'%3E%3Cellipse cx='60' cy='160' rx='5' ry='9' fill='%23ffc2d1'/%3E%3Cellipse cx='55' cy='161' rx='4' ry='8' fill='%23ffb3c6'/%3E%3Cellipse cx='65' cy='161' rx='4' ry='8' fill='%23ffb3c6'/%3E%3Cpath d='M60 169 Q58 180 60 190' stroke='%2390be6d' stroke-width='1' fill='none'/%3E%3C/g%3E%3C/svg%3E");
       background-repeat: repeat;
     }
 
-    .xhs-gradient {
-      background: linear-gradient(135deg, #ff4d6d 0%, #ff8fa3 100%);
-    }
-
-    .glass-card {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    /* 艺术字标题样式 */
-    .art-title {
-      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', cursive;
-      background: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #ff6b9d 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 2px 2px 4px rgba(255, 107, 157, 0.3);
-      letter-spacing: 0.1em;
-      animation: shimmer 3s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-
-      0%,
-      100% {
-        filter: brightness(1);
-      }
-
-      50% {
-        filter: brightness(1.1);
-      }
+    #root:empty::before {
+      content: "Loading...";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ff4d6d;
+      font-weight: bold;
+      font-size: 20px;
     }
   </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
-  }
-}
-</script>
+  <link rel="icon" type="image/png" href="/favicon.png" />
 </head>
 
 <body>
   <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+  <script type="module" src="./index.tsx"></script>
 </body>
 
 </html>
