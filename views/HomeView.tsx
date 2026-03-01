@@ -33,19 +33,6 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   return (
     <div className="p-6">
       <header className="mb-8 text-center relative">
-        <div className="absolute top-0 right-0">
-          <select
-            value={lang}
-            onChange={(e) => changeLanguage(e.target.value as Language)}
-            className="bg-white/50 border border-pink-200 rounded-lg text-xs p-1 focus:outline-none"
-          >
-            <option value="en">English</option>
-            <option value="zh">简体中文</option>
-            <option value="vi">Tiếng Việt</option>
-            <option value="ko">한국어</option>
-            <option value="ja">日本語</option>
-          </select>
-        </div>
         <h1 className="text-4xl art-title mb-2">✨ Beauty Lab ✨</h1>
         <p className="text-gray-500 text-sm">✨ {t('discover_unique_charm') || 'Discover Your Unique Charm'} ✨</p>
       </header>

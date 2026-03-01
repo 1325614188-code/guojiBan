@@ -312,10 +312,23 @@ const App: React.FC = () => {
         {renderSection()}
       </div>
 
-      {/* Version Tag */}
-      {/* Version Tag */}
-      <div className="fixed top-2 right-2 text-[8px] text-gray-300 pointer-events-none z-50">
-        v{APP_VERSION}
+      {/* Global Language Selector */}
+      <div className="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-1">
+        <select
+          value={lang}
+          onChange={(e) => changeLanguage(e.target.value as Language)}
+          className="bg-white/80 backdrop-blur-md border border-pink-200 rounded-full text-xs py-1 px-3 focus:outline-none shadow-sm cursor-pointer hover:bg-white transition-all appearance-none pr-8 relative"
+          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23ec4899\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '16px' }}
+        >
+          <option value="en">English</option>
+          <option value="zh">简体中文</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="ko">한국어</option>
+          <option value="ja">日本語</option>
+        </select>
+        <div className="text-[10px] text-gray-300 pointer-events-none">
+          v{APP_VERSION}
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
