@@ -37,21 +37,17 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         <p className="text-gray-500 text-sm">✨ {t('discover_unique_charm') || 'Discover Your Unique Charm'} ✨</p>
       </header>
 
-      {/* Download APP Button */}
-      <div className="mb-6 flex justify-center">
+      {/* Download & Install Section */}
+      <div className="mb-6 grid grid-cols-2 gap-3">
         <button
           onClick={() => {
-            const event = new CustomEvent('prompt-pwa-install');
-            window.dispatchEvent(event);
+            // Point to the APK file in public directory
+            window.location.href = '/app-release.apk';
           }}
-          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 transform active:scale-95 transition-all"
+          className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 px-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 transform active:scale-95 transition-all text-sm"
         >
-          <span>📲</span> {t('download_app')}
+          <span>🤖</span> {t('download_apk')}
         </button>
-      </div>
-
-      {/* PWA Install Button */}
-      <div className="mb-6">
         <InstallPWA />
       </div>
 
