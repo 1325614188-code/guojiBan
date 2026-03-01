@@ -11,7 +11,7 @@ interface WealthFortuneViewProps {
 }
 
 const WealthFortuneView: React.FC<WealthFortuneViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [birthDate, setBirthDate] = useState('');
     const [birthTime, setBirthTime] = useState('');
     const [gender, setGender] = useState<'Male' | 'Female'>('Female');
@@ -36,21 +36,20 @@ const WealthFortuneView: React.FC<WealthFortuneViewProps> = ({ onBack, onCheckCr
         2. Based on Chinese Bazi (Eight Characters) and current/upcoming annual transits (flu years), predict the years with the best wealth luck.
         3. Recommend suitable industries or career paths based on the five elements (Wu Xing) balance.
         Style: Encouraging, detailed, and professional wealth advisor style.
-        Language: ALL content must be in English.
       `;
 
-            const res = await generateXHSStyleReport("Wealth & Bazi Analysis", [], prompt);
+            const res = await generateXHSStyleReport("Wealth & Bazi Analysis", [], prompt, lang);
 
             if (res) {
                 setReport(res);
                 // Deduct credit
                 await onDeductCredit?.();
             } else {
-                alert('Analysis failed');
+                alert(t('failed'));
             }
         } catch (e) {
             console.error(e);
-            alert('Error occurred during analysis');
+            alert(t('error'));
         } finally {
             setLoading(false);
         }

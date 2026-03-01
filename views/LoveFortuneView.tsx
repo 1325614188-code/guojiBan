@@ -11,7 +11,7 @@ interface LoveFortuneViewProps {
 }
 
 const LoveFortuneView: React.FC<LoveFortuneViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [birthDate, setBirthDate] = useState('');
     const [birthTime, setBirthTime] = useState('');
     const [gender, setGender] = useState<'Male' | 'Female'>('Female');
@@ -47,10 +47,9 @@ const LoveFortuneView: React.FC<LoveFortuneViewProps> = ({ onBack, onCheckCredit
         3. Describe the characteristics of this partner (approximate age, personality, physical features).
         ${image ? "4. Based on the uploaded face photo and traditional physiognomy (Xiangshu), describe the ideal partner's appearance in detail." : ""}
         Style: Professional yet engaging, like a traditional fortune teller combined with modern lifestyle coaching.
-        Language: ALL content must be in English.
       `;
 
-            const res = await generateXHSStyleReport("Love Destiny & Bazi Analysis", image ? [image] : [], prompt);
+            const res = await generateXHSStyleReport("Love Destiny & Bazi Analysis", image ? [image] : [], prompt, lang);
 
             if (res) {
                 setReport(res);
@@ -62,11 +61,11 @@ const LoveFortuneView: React.FC<LoveFortuneViewProps> = ({ onBack, onCheckCredit
                     await onDeductCredit?.();
                 }
             } else {
-                alert('Analysis failed');
+                alert(t('failed'));
             }
         } catch (e) {
             console.error(e);
-            alert('Error occurred during analysis');
+            alert(t('error'));
         } finally {
             setLoading(false);
         }

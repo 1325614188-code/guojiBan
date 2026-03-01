@@ -93,7 +93,16 @@ export default async function handler(req: any, res: any) {
     }
 
     try {
-        const { action, type, images, gender, baseImage, itemImage, itemType, faceImage } = req.body;
+        const { action, type, images, gender, baseImage, itemImage, itemType, faceImage, lang } = req.body;
+
+        const languageMap: Record<string, string> = {
+            'zh': 'Chinese (Simplified)',
+            'vi': 'Vietnamese',
+            'ko': 'Korean',
+            'ja': 'Japanese',
+            'en': 'English'
+        };
+        const targetLang = languageMap[lang] || 'English';
 
         switch (action) {
             case 'analyze': {
@@ -118,7 +127,7 @@ export default async function handler(req: any, res: any) {
           ${isBeautyScore ? '4.' : '3.'} Provide targeted ${isFengShui ? 'improvement suggestions or remedies' : 'beauty tips, outfit suggestions, or health/wellness advice'}.
           ${isBeautyScore ? '5.' : '4.'} End with an engaging interactive closing.
           ${isBeautyScore ? '6.' : '5.'} Content should be detailed, professional, and written in a warm, caring tone.
-          ALL content must be in English.
+          ALL content MUST be written in ${targetLang}.
         `;
                 const prompt = `Analysis Type: ${type}. ${gender ? `Gender: ${gender}` : ''}`;
 

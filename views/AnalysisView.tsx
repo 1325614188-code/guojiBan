@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { generateXHSStyleReport } from '../services/gemini';
-import ReactMarkdown from 'https://esm.sh/react-markdown';
+import ReactMarkdown from 'react-markdown';
+import { useTranslation, Language } from '../lib/i18n';
 
 interface AnalysisViewProps {
   title: string;
@@ -13,6 +14,7 @@ interface AnalysisViewProps {
 }
 
 const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpText, onCheckCredits, onDeductCredit }) => {
+  const { t, lang } = useTranslation();
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<string | null>(null);
@@ -36,7 +38,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
 
     setLoading(true);
     try {
-      const res = await generateXHSStyleReport(type, [image], gender ? `Gender: ${gender}` : "");
+      const res = await generateXHSStyleReport(type, [image], gender ? `Gender: ${gender}` : "", lang);
       if (res) {
         setReport(res);
         // Deduct credit after success
@@ -44,11 +46,11 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
         await onDeductCredit?.();
       } else {
         console.warn('[AnalysisView] Analysis failed, no result, credit not deducted');
-        alert('Analysis encountered some issues, please try again later');
+        alert(t('failed'));
       }
     } catch (e) {
       console.error(e);
-      alert('Analysis encountered some issues, please try again later');
+      alert(t('error'));
     } finally {
       setLoading(false);
     }
@@ -97,8 +99,8 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
           className="w-full h-14 xhs-gradient text-white rounded-2xl font-bold disabled:bg-gray-300 transition-all shadow-lg flex items-center justify-center gap-2"
         >
           {loading ? (
-            <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analyzing...</>
-          ) : 'Start Analysis'}
+            <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('analyzing')}</>
+          ) : t('start_analysis')}
         </button>
 
         {report && (() => {

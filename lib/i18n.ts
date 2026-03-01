@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type Language = 'en' | 'vi' | 'ko' | 'ja' | 'zh';
 
@@ -32,7 +32,45 @@ export const translations: Record<Language, any> = {
         daily_guide: 'Daily Guide',
         save: 'Save',
         on: 'ON',
-        off: 'OFF'
+        off: 'OFF',
+        virtual_try_on: 'Virtual Try-on',
+        accessories: 'Accessories',
+        hairstyle: 'Hairstyle',
+        ai_makeup: 'AI Makeup',
+        beauty_score: 'Beauty Score',
+        couple_face: 'Couple Face',
+        tongue_check: 'Tongue Check',
+        face_glow: 'Face Glow',
+        face_reading: 'Face Reading',
+        feng_shui: 'Feng Shui',
+        car_plate: 'Car Plate',
+        talent_test: 'Talent Test',
+        depression: 'Depression',
+        pricing_rules: 'Pricing & Rules',
+        recharge_credits: 'Recharge Credits',
+        free_gifts_referrals: 'Free Gifts & Referrals',
+        daily_gift: 'Daily Gift',
+        share_earn: 'Share & Earn',
+        need_help: 'Need help? Contact us at:',
+        discover_unique_charm: 'Discover Your Unique Charm',
+        analyzing: 'Analyzing...',
+        failed: 'Analysis failed',
+        error: 'Error occurred during analysis',
+        member_center: 'Member Center',
+        device_id: 'Device ID',
+        commission_tip: 'You get 40% commission from referral recharges.',
+        settlement_tip: 'Commission is settled weekly.',
+        copy: 'Copy',
+        copied: 'Copied',
+        share_link: 'Share your link to earn credits.',
+        share_earn_tip: 'Register via mobile browser to earn credits.',
+        points: 'Points',
+        rewards: 'Rewards',
+        contact_support: 'Contact support for help.',
+        logout: 'Log Out',
+        redeem_code: 'Redeem Code',
+        redeem_tip: 'Enter your code to get free credits.',
+        redeem: 'Redeem'
     },
     vi: {
         home: 'Trang chủ',
@@ -47,6 +85,9 @@ export const translations: Record<Language, any> = {
         insufficient_credits: 'Không đủ tín dụng. Vui lòng nạp thêm.',
         referral_reward_system: 'Hệ thống thưởng giới thiệu',
         referral_commission: 'Kiếm hoa hồng giới thiệu',
+        remaining_credits: 'Số dư tín dụng',
+        earn_big: 'Kiếm lớn',
+        unsettled_commission: 'Hoa hồng chưa kết toán',
         birth_date: 'Ngày sinh (Dương lịch)',
         birth_time: 'Giờ sinh',
         gender: 'Giới tính',
@@ -60,7 +101,45 @@ export const translations: Record<Language, any> = {
         daily_guide: 'Hướng dẫn hàng ngày',
         save: 'Lưu',
         on: 'BẬT',
-        off: 'TẮT'
+        off: 'TẮT',
+        virtual_try_on: 'Thử đồ ảo',
+        accessories: 'Phụ kiện',
+        hairstyle: 'Kiểu tóc',
+        ai_makeup: 'Trang điểm AI',
+        beauty_score: 'Chấm điểm sắc đẹp',
+        couple_face: 'Tướng phu thê',
+        tongue_check: 'Xem lưỡi',
+        face_glow: 'Sắc diện khuôn mặt',
+        face_reading: 'Xem tướng mặt',
+        feng_shui: 'Phong thủy',
+        car_plate: 'Biển số xe',
+        talent_test: 'Trắc nghiệm tài năng',
+        depression: 'Trầm cảm',
+        pricing_rules: 'Quy tắc & Giá cả',
+        recharge_credits: 'Nạp tín dụng',
+        free_gifts_referrals: 'Quà tặng & Giới thiệu',
+        daily_gift: 'Quà tặng hàng ngày',
+        share_earn: 'Chia sẻ & Kiếm tiền',
+        need_help: 'Cần hỗ trợ? Liên hệ:',
+        discover_unique_charm: 'Khám phá nét quyến rũ độc đáo của bạn',
+        analyzing: 'Đang phân tích...',
+        failed: 'Phân tích thất bại',
+        error: 'Đã xảy ra lỗi trong quá trình phân tích',
+        member_center: 'Trung tâm thành viên',
+        device_id: 'ID thiết bị',
+        commission_tip: 'Bạn nhận được 40% hoa hồng từ việc nạp tiền của người giới thiệu.',
+        settlement_tip: 'Hoa hồng được quyết toán hàng tuần.',
+        copy: 'Sao chép',
+        copied: 'Đã sao chép',
+        share_link: 'Chia sẻ liên kết của bạn để kiếm tín dụng.',
+        share_earn_tip: 'Đăng ký qua trình duyệt di động để nhận tín dụng.',
+        points: 'Điểm',
+        rewards: 'Phần thưởng',
+        contact_support: 'Liên hệ hỗ trợ để được giúp đỡ.',
+        logout: 'Đăng xuất',
+        redeem_code: 'Mã đổi quà',
+        redeem_tip: 'Nhập mã của bạn để nhận tín dụng miễn phí.',
+        redeem: 'Đổi quà'
     },
     ko: {
         home: '홈',
@@ -75,6 +154,9 @@ export const translations: Record<Language, any> = {
         insufficient_credits: '크레딧이 부족합니다. 충전해 주세요.',
         referral_reward_system: '추천 보너스 시스템',
         referral_commission: '추천 커미션 벌기',
+        remaining_credits: '잔여 크레딧',
+        earn_big: '큰 수익',
+        unsettled_commission: '미정산 커미션',
         birth_date: '생년월일 (양력)',
         birth_time: '태어난 시간',
         gender: '성별',
@@ -88,7 +170,45 @@ export const translations: Record<Language, any> = {
         daily_guide: '일일 가이드',
         save: '저장',
         on: '켜짐',
-        off: '꺼짐'
+        off: '꺼짐',
+        virtual_try_on: '가상 피팅',
+        accessories: '액세서리',
+        hairstyle: '헤어스타일',
+        ai_makeup: 'AI 메이크업',
+        beauty_score: '뷰티 스코어',
+        couple_face: '커플 페이스',
+        tongue_check: '설진',
+        face_glow: '안색 체크',
+        face_reading: '관상',
+        feng_shui: '풍수',
+        car_plate: '차량 번호판',
+        talent_test: '재능 테스트',
+        depression: '우울증',
+        pricing_rules: '가격 및 규칙',
+        recharge_credits: '크레딧 충전',
+        free_gifts_referrals: '무료 선물 및 추천',
+        daily_gift: '일일 선물',
+        share_earn: '공유하고 벌기',
+        need_help: '도움이 필요하신가요? 문의:',
+        discover_unique_charm: '당신만의 특별한 매력을 발견하세요',
+        analyzing: '분석 중...',
+        failed: '분석 실패',
+        error: '분석 중 오류가 발생했습니다',
+        member_center: '회원 센터',
+        device_id: '기기 ID',
+        commission_tip: '추천인 충전 시 40% 커미션을 받으실 수 있습니다.',
+        settlement_tip: '커미션은 매주 정산됩니다.',
+        copy: '복사',
+        copied: '복사됨',
+        share_link: '링크를 공유하고 크레딧을 받으세요.',
+        share_earn_tip: '모바일 브라우저를 통해 가입해야 크레딧이 적립됩니다.',
+        points: '포인트',
+        rewards: '보상',
+        contact_support: '도움이 필요하시면 고객센터로 문의하세요.',
+        logout: '로그아웃',
+        redeem_code: '리딤 코드',
+        redeem_tip: '코드를 입력하고 무료 크레딧을 받으세요.',
+        redeem: '리딤'
     },
     ja: {
         home: 'ホーム',
@@ -103,6 +223,9 @@ export const translations: Record<Language, any> = {
         insufficient_credits: 'クレジットが不足しています。チャージしてください。',
         referral_reward_system: '紹介報酬システム',
         referral_commission: '紹介コミッションを稼ぐ',
+        remaining_credits: '残りクレジット',
+        earn_big: '大きく稼ぐ',
+        unsettled_commission: '未精算コミッション',
         birth_date: '生年月日 (陽暦)',
         birth_time: '出生時間',
         gender: '性別',
@@ -116,7 +239,45 @@ export const translations: Record<Language, any> = {
         daily_guide: 'デイリーガイド',
         save: '保存',
         on: 'オン',
-        off: 'オフ'
+        off: 'オフ',
+        virtual_try_on: 'バーチャル試着',
+        accessories: 'アクセサリー',
+        hairstyle: 'ヘアスタイル',
+        ai_makeup: 'AIメイク',
+        beauty_score: '美しさスコア',
+        couple_face: 'カップルフェイス',
+        tongue_check: '舌診',
+        face_glow: '顔色チェック',
+        face_reading: '人相学',
+        feng_shui: '風水',
+        car_plate: 'ナンバープレート',
+        talent_test: '才能テスト',
+        depression: 'うつ',
+        pricing_rules: '料金とルール',
+        recharge_credits: 'クレジットチャージ',
+        free_gifts_referrals: '無料ギフトと紹介',
+        daily_gift: 'デイリーギフト',
+        share_earn: 'シェアして稼ぐ',
+        need_help: 'サポートが必要ですか？連絡先:',
+        discover_unique_charm: 'あなたの魅力を発見しましょう',
+        analyzing: '解析中...',
+        failed: '解析に失敗しました',
+        error: '解析中にエラーが発生しました',
+        member_center: 'メンバーセンター',
+        device_id: 'デバイス ID',
+        commission_tip: '紹介者のチャージ額の40%がコミッションとして支払われます。',
+        settlement_tip: 'コミッションは毎週精算されます。',
+        copy: 'コピー',
+        copied: 'コピーしました',
+        share_link: 'リンクをシェアしてクレジットを獲得しましょう。',
+        share_earn_tip: 'クレジットを獲得するには、モバイルブラウザから登録する必要があります。',
+        points: 'ポイント',
+        rewards: '報酬',
+        contact_support: 'サポートが必要な場合はお問い合わせください。',
+        logout: 'ログアウト',
+        redeem_code: 'ギフトコード',
+        redeem_tip: 'コードを入力して無料クレジットを受け取りましょう。',
+        redeem: '引き換え'
     },
     zh: {
         home: '首页',
@@ -131,6 +292,9 @@ export const translations: Record<Language, any> = {
         insufficient_credits: '余额不足，请充值。',
         referral_reward_system: '推荐奖励积分制度',
         referral_commission: '推荐赚佣金',
+        remaining_credits: '剩余额度',
+        earn_big: '赚大钱',
+        unsettled_commission: '未结算佣金',
         birth_date: '出生日期 (公历)',
         birth_time: '出生时辰',
         gender: '性别',
@@ -144,11 +308,57 @@ export const translations: Record<Language, any> = {
         daily_guide: '每日指南',
         save: '保存',
         on: '开启',
-        off: '关闭'
+        off: '关闭',
+        virtual_try_on: '虚拟试衣',
+        accessories: '珠宝配饰',
+        hairstyle: '发型试戴',
+        ai_makeup: 'AI 妆容',
+        beauty_score: '颜值打分',
+        couple_face: '夫妻相',
+        tongue_check: '舌诊',
+        face_glow: '面色分析',
+        face_reading: '传统面相',
+        feng_shui: '家居风水',
+        car_plate: '车牌吉凶',
+        talent_test: '天赋测评',
+        depression: '抑郁测评',
+        pricing_rules: '资费与规则',
+        recharge_credits: '额度充值',
+        free_gifts_referrals: '免费额度与推荐',
+        daily_gift: '每日赠送',
+        share_earn: '分享赚额度',
+        need_help: '需要帮助？联系我们：',
+        discover_unique_charm: '发现你的独特魅力',
+        analyzing: '正在分析...',
+        failed: '分析失败',
+        error: '分析过程中发生错误',
+        member_center: '会员中心',
+        device_id: '设备 ID',
+        commission_tip: '成功推荐好友充值，您将获得 40% 的现金返佣。',
+        settlement_tip: '佣金每周结算，联系客服提现。',
+        copy: '复制',
+        copied: '已复制',
+        share_link: '通过您的链接邀请好友注册，赚取额度。',
+        share_earn_tip: '必须通过手机浏览器注册才能获得奖励词条。',
+        points: '积分',
+        rewards: '奖励',
+        contact_support: '联系客服获取帮助。',
+        logout: '退出登录',
+        redeem_code: '兑换码',
+        redeem_tip: '输入兑换码获取免费额度。',
+        redeem: '兑换'
     }
 };
 
-export const useTranslation = () => {
+interface LanguageContextType {
+    lang: Language;
+    changeLanguage: (newLang: Language) => void;
+    t: (key: string) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [lang, setLang] = useState<Language>(() => {
         return (localStorage.getItem('lang') as Language) || 'en';
     });
@@ -162,5 +372,18 @@ export const useTranslation = () => {
         localStorage.setItem('lang', newLang);
     };
 
-    return { t, lang, changeLanguage };
+    return (
+        <LanguageContext.Provider value= {{ lang, changeLanguage, t }
+}>
+    { children }
+    </LanguageContext.Provider>
+    );
+};
+
+export const useTranslation = () => {
+    const context = useContext(LanguageContext);
+    if (!context) {
+        throw new Error('useTranslation must be used within a LanguageProvider');
+    }
+    return context;
 };

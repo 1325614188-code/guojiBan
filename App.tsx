@@ -215,7 +215,7 @@ const App: React.FC = () => {
       const data = await res.json();
       if (!res.ok) {
         if (data.needCredits) {
-          alert('Insufficient credits. Please recharge or use a redeem code.');
+          alert(t('insufficient_credits'));
           setShowMember(true);
         }
         return false;

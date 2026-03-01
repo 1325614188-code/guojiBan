@@ -26,12 +26,14 @@ async function callApi(body: Record<string, any>): Promise<any> {
 export const analyzeImage = async (
   prompt: string,
   images: string[],
-  systemInstruction?: string
+  systemInstruction?: string,
+  lang?: string
 ) => {
   const { result } = await callApi({
     action: 'analyze',
     type: prompt,
-    images
+    images,
+    lang
   });
   return result;
 };
@@ -39,7 +41,8 @@ export const analyzeImage = async (
 export const generateXHSStyleReport = async (
   type: string,
   images: string[],
-  additionalPrompt: string = ""
+  additionalPrompt: string = "",
+  lang: string = "en"
 ) => {
   // 从 additionalPrompt 中提取性别信息
   const genderMatch = additionalPrompt.match(/性别：(男|女)/);
@@ -49,7 +52,8 @@ export const generateXHSStyleReport = async (
     action: 'analyze',
     type,
     images,
-    gender
+    gender,
+    lang
   });
   return result;
 };
@@ -82,7 +86,7 @@ export const generateHairstyles = async (
     { name: '流动感中长发', desc: '文艺气息长碎发，强调自然流动，长度在耳朵以下，发尾微卷，慵懒高级。' },
     { name: '现代英伦摩德头', desc: '层次丰富，刘海较长盖住部分额头，修饰高发际线和宽额头，不羁摇滚感。' },
     { name: '皮肤渐变圆寸', desc: '侧边剃到彻底见皮肤 (Skin Fade)，带有一两条简洁几何线条。' },
-    { name: '刘海中分头', desc: '刘海向内弯曲像一个逗号，比普通中分更具设计感，刘海在眉毛上方急剧向内弯曲，剪裁干净，五官突出。' },
+    { name: '流动感碎短发', desc: '清爽自然的短碎发，适合各种脸型，充满活力。' },
     { name: '侧分背头', desc: '现代侧分，轻盈造型品，保留自然光泽，侧边有长度渐变，温润专业。' },
     { name: '凌乱碎盖', desc: '头顶头发较长且覆盖额头，通过打薄营造凌乱层次感，包容脸型，自带减龄效果。' }
   ];
