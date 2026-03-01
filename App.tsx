@@ -278,15 +278,15 @@ const App: React.FC = () => {
       case AppSection.MAKEUP:
         return <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.BEAUTY_SCORE:
-        return <AnalysisView title="Beauty Score" type="Beauty Score" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('beauty_score_title')} type="Beauty Score" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.COUPLE_FACE:
         return <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.TONGUE_DIAGNOSIS:
-        return <AnalysisView title="Tongue Analysis" type="Tongue" onBack={() => setCurrentSection(AppSection.HOME)} helpText="Please upload a clear tongue photo." onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('tongue_analysis_title')} type="Tongue" onBack={() => setCurrentSection(AppSection.HOME)} helpText={t('tongue_help')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FACE_COLOR:
-        return <AnalysisView title="Face Color" type="TCM Face Color" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('face_color_title')} type="TCM Face Color" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FACE_READING:
-        return <AnalysisView title="Face Reading" type="Traditional Physiognomy" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
+        return <AnalysisView title={t('face_reading_title')} type="Traditional Physiognomy" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.FENG_SHUI:
         return <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} />;
       case AppSection.LICENSE_PLATE:

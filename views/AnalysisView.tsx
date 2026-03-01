@@ -18,7 +18,9 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<string | null>(null);
-  const [gender, setGender] = useState<'Female' | 'Male' | null>(type === 'Beauty Score' ? 'Female' : null);
+  const [gender, setGender] = useState<'Female' | 'Male' | null>(
+    (type === 'Beauty Score' || type === '颜值打分') ? 'Female' : null
+  );
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,6 +58,14 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
     }
   };
 
+  const getScoreText = (score: number) => {
+    if (score >= 90) return t('stunning');
+    if (score >= 80) return t('gorgeous');
+    if (score >= 70) return t('refreshing');
+    if (score >= 60) return t('looking_good');
+    return t('hidden_gem');
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
@@ -70,25 +80,25 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
           ) : (
             <div className="text-center p-6">
               <span className="text-5xl block mb-2">📸</span>
-              <p className="text-sm text-gray-400">{helpText || 'Upload photo to start analysis'}</p>
+              <p className="text-sm text-gray-400">{helpText || t('upload_to_start')}</p>
             </div>
           )}
           <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
         </label>
 
-        {type === '颜值打分' && (
+        {(type === '颜值打分' || type === 'Beauty Score') && (
           <div className="flex justify-center gap-4">
             <button
               onClick={() => setGender('Female')}
               className={`px-6 py-2 rounded-full font-bold ${gender === 'Female' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500'}`}
             >
-              Female
+              {t('female')}
             </button>
             <button
               onClick={() => setGender('Male')}
               className={`px-6 py-2 rounded-full font-bold ${gender === 'Male' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500'}`}
             >
-              Male
+              {t('male')}
             </button>
           </div>
         )}
@@ -111,14 +121,14 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ title, type, onBack, helpTe
 
           return (
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-pink-50 prose prose-pink max-w-none">
-              {/* 颜值打分时显示分数卡片 */}
-              {type === '颜值打分' && score !== null && (
+              {/* 颜值打分时显示分数 card */}
+              {(type === '颜值打分' || type === 'Beauty Score') && score !== null && (
                 <div className="flex flex-col items-center mb-6 -mt-2">
                   <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-lg">
                     <span className="text-4xl font-bold text-white">{score}</span>
                   </div>
                   <p className="text-gray-500 text-sm mt-2">
-                    {score >= 90 ? '✨ Stunning!' : score >= 80 ? '🌟 Gorgeous!' : score >= 70 ? '💕 Refreshing~' : score >= 60 ? '😊 Looking Good' : '💪 Hidden Gem!'}
+                    {getScoreText(score)}
                   </p>
                 </div>
               )}

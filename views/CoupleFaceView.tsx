@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { generateXHSStyleReport } from '../services/gemini';
-import ReactMarkdown from 'https://esm.sh/react-markdown';
+import { useTranslation } from '../lib/i18n';
+import ReactMarkdown from 'react-markdown';
 
 interface CoupleFaceViewProps {
   onBack: () => void;
@@ -10,6 +11,7 @@ interface CoupleFaceViewProps {
 }
 
 const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
+  const { t, lang } = useTranslation();
   const [maleImg, setMaleImg] = useState<string | null>(null);
   const [femaleImg, setFemaleImg] = useState<string | null>(null);
   const [report, setReport] = useState<string | null>(null);
@@ -33,18 +35,19 @@ const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits,
 
     setLoading(true);
     try {
-      const res = await generateXHSStyleReport("Couple Face Analysis", [maleImg, femaleImg], "Analyze if the facial features of these two faces complement each other, provide a couple face score and emotional advice. ALL content must be in English.");
+      const res = await generateXHSStyleReport("Couple Face Analysis", [maleImg, femaleImg], "Analyze if the facial features of these two faces complement each other, provide a couple face score and emotional advice. Output in " + lang + " language.", lang);
       if (res) {
         setReport(res);
         // Deduct credit after success
         console.log('[CoupleFaceView] Analysis success, deducting credit');
         await onDeductCredit?.();
       } else {
-        alert('Analysis failed');
+        console.warn('[CoupleFaceView] Analysis failed, no result, credit not deducted');
+        alert(t('failed'));
       }
     } catch (e) {
       console.error(e);
-      alert('Analysis failed');
+      alert(t('error'));
     } finally {
       setLoading(false);
     }
@@ -54,17 +57,17 @@ const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits,
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
         <button onClick={onBack} className="text-2xl">←</button>
-        <h2 className="text-xl font-bold">Couple Face Lab</h2>
+        <h2 className="text-xl font-bold">{t('couple_face_title')}</h2>
       </div>
 
       <div className="flex gap-4 mb-6">
         <label className="flex-1 aspect-square rounded-2xl bg-white border-2 border-dashed border-blue-100 flex items-center justify-center overflow-hidden cursor-pointer">
-          {maleImg ? <img src={maleImg} className="w-full h-full object-cover" /> : <div className="text-center"><span className="text-3xl block">👨</span><span className="text-[10px] text-gray-400">Male Photo</span></div>}
+          {maleImg ? <img src={maleImg} className="w-full h-full object-cover" /> : <div className="text-center"><span className="text-3xl block">👨</span><span className="text-[10px] text-gray-400">{t('male_photo')}</span></div>}
           <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, setMaleImg)} />
         </label>
         <div className="flex items-center text-red-400 text-2xl font-bold">❤️</div>
         <label className="flex-1 aspect-square rounded-2xl bg-white border-2 border-dashed border-pink-100 flex items-center justify-center overflow-hidden cursor-pointer">
-          {femaleImg ? <img src={femaleImg} className="w-full h-full object-cover" /> : <div className="text-center"><span className="text-3xl block">👩</span><span className="text-[10px] text-gray-400">Female Photo</span></div>}
+          {femaleImg ? <img src={femaleImg} className="w-full h-full object-cover" /> : <div className="text-center"><span className="text-3xl block">👩</span><span className="text-[10px] text-gray-400">{t('female_photo')}</span></div>}
           <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, setFemaleImg)} />
         </label>
       </div>
@@ -74,7 +77,7 @@ const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits,
         disabled={!maleImg || !femaleImg || loading}
         className="w-full h-14 bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-2xl font-bold disabled:bg-gray-300 shadow-lg mb-6"
       >
-        {loading ? 'AI Matchmaker is calculating...' : 'Check our Couple Face Score'}
+        {loading ? t('ai_calculating') : t('check_couple_score')}
       </button>
 
       {report && (

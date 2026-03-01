@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from '../lib/i18n';
 
 interface HairstyleViewProps {
   onBack: () => void;
@@ -7,40 +8,41 @@ interface HairstyleViewProps {
   onDeductCredit?: () => Promise<void>;
 }
 
-// Male hairstyle styles
-const MALE_HAIRSTYLES = [
-  { id: 'pompadour', name: 'Modern Pompadour', desc: 'A modern twist on the classic pompadour, using matte clay for natural volume', icon: '✈️' },
-  { id: 'wolf', name: 'Soft Wolf Cut', desc: 'Shortened back length, perfect for commuting, highlights youthful energy', icon: '🐺' },
-  { id: 'french', name: 'Classic Quiff', desc: 'Classic back-combed style, polished and neat, gentleman retro vibe', icon: '🎩' },
-  { id: 'fade', name: 'Skin Fade', desc: 'Gradient around the ears in a semi-circle, strong structure', icon: '💈' },
-  { id: 'medium', name: 'Flowy Mid-length', desc: 'Artistic long messy hair, slightly curled at the ends, lazy and high-end', icon: '🌊' },
-  { id: 'mod', name: 'Modern British Mod', desc: 'Rich layers, forehead-covering bangs, rebellious rock vibe', icon: '🎸' },
-  { id: 'buzz', name: 'High Skin Fade Buzz', desc: 'Thoroughly skin-faded sides with clean geometric lines', icon: '⚡' },
-  { id: 'comma', name: 'Comma Hair', desc: 'Bangs curved inward like a comma, highlighting facial features', icon: '🔥' },
-  { id: 'sideback', name: 'Side Part Slick Back', desc: 'Modern side part, maintaining natural shine, polished and professional', icon: '👔' },
-  { id: 'messy', name: 'Messy Textured Crop', desc: 'Covering the forehead, messy layers, natural age-reducing effect', icon: '😎' },
-];
-
-// Female hairstyle styles
-const FEMALE_HAIRSTYLES = [
-  { id: 'cub', name: 'Soft Cub Cut', desc: 'Short hair with soft curls, playful and cute', icon: '🐱' },
-  { id: 'butterfly', name: 'Butterfly Cut', desc: 'Distinct layers, fluffy and natural, romantic and soul-lifting', icon: '🦋' },
-  { id: 'birkin', name: 'Birkin Bangs', desc: 'Airy bangs, French effortless elegance', icon: '🇫🇷' },
-  { id: 'cloudbob', name: 'Cloud Bob', desc: 'Fluffy and full short hair, sweet and gentle', icon: '☁️' },
-  { id: 'collarbone', name: 'Collarbone Blunt Cut', desc: 'Shoulder-length, capable and intellectual', icon: '✨' },
-  { id: 'retro90', name: '90s Retro Layers', desc: 'Vintage layers, classic Hong Kong style vibe', icon: '📼' },
-  { id: 'mullet', name: 'Modern Mullet', desc: 'Short front and long back, bold and individualistic', icon: '🔥' },
-  { id: 'mermaid', name: 'Mermaid Cut', desc: 'Long wavy hair, ethereal and fairy-like', icon: '🧜‍♀️' },
-  { id: 'pixie', name: 'Soft Pixie Cut', desc: 'Extra short face-framing, clean and crisp', icon: '🧚' },
-  { id: 'curtain', name: 'Curtain Bangs Shag', desc: 'Side-swept bangs for a smaller face, gentle and sweet', icon: '🌸' },
-];
-
 const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
+  const { t } = useTranslation();
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [gender, setGender] = useState<'Female' | 'Male'>('Female');
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Male hairstyle styles
+  const MALE_HAIRSTYLES = [
+    { id: 'pompadour', name: t('hs_pompadour'), desc: t('hs_pompadour_desc'), icon: '✈️' },
+    { id: 'wolf', name: t('hs_wolf'), desc: t('hs_wolf_desc'), icon: '🐺' },
+    { id: 'french', name: t('hs_french'), desc: t('hs_french_desc'), icon: '🎩' },
+    { id: 'fade', name: t('hs_fade'), desc: t('hs_fade_desc'), icon: '💈' },
+    { id: 'medium', name: t('hs_medium'), desc: t('hs_medium_desc'), icon: '🌊' },
+    { id: 'mod', name: t('hs_mod'), desc: t('hs_mod_desc'), icon: '🎸' },
+    { id: 'buzz', name: t('hs_buzz'), desc: t('hs_buzz_desc'), icon: '⚡' },
+    { id: 'comma', name: t('hs_comma'), desc: t('hs_comma_desc'), icon: '🔥' },
+    { id: 'sideback', name: t('hs_sideback'), desc: t('hs_sideback_desc'), icon: '👔' },
+    { id: 'messy', name: t('hs_messy'), desc: t('hs_messy_desc'), icon: '😎' },
+  ];
+
+  // Female hairstyle styles
+  const FEMALE_HAIRSTYLES = [
+    { id: 'cub', name: t('hs_cub'), desc: t('hs_cub_desc'), icon: '🐱' },
+    { id: 'butterfly', name: t('hs_butterfly'), desc: t('hs_butterfly_desc'), icon: '🦋' },
+    { id: 'birkin', name: t('hs_birkin'), desc: t('hs_birkin_desc'), icon: '🇫🇷' },
+    { id: 'cloudbob', name: t('hs_cloudbob'), desc: t('hs_cloudbob_desc'), icon: '☁️' },
+    { id: 'collarbone', name: t('hs_collarbone'), desc: t('hs_collarbone_desc'), icon: '✨' },
+    { id: 'retro90', name: t('hs_retro90'), desc: t('hs_retro90_desc'), icon: '📼' },
+    { id: 'mullet', name: t('hs_mullet'), desc: t('hs_mullet_desc'), icon: '🔥' },
+    { id: 'mermaid', name: t('hs_mermaid'), desc: t('hs_mermaid_desc'), icon: '🧜‍♀️' },
+    { id: 'pixie', name: t('hs_pixie'), desc: t('hs_pixie_desc'), icon: '🧚' },
+    { id: 'curtain', name: t('hs_curtain'), desc: t('hs_curtain_desc'), icon: '🌸' },
+  ];
 
   const hairstyles = gender === 'Male' ? MALE_HAIRSTYLES : FEMALE_HAIRSTYLES;
 
@@ -85,11 +87,11 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
         await onDeductCredit?.();
       } else {
         console.warn('[HairstyleView] Generation failed, no result');
-        alert('Generation failed, please try again later');
+        alert(t('failed'));
       }
     } catch (e) {
       console.error(e);
-      alert('Generation failed, please try again later');
+      alert(t('failed'));
     } finally {
       setLoading(false);
     }
@@ -99,19 +101,19 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
     <div className="p-6 flex flex-col gap-6">
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="text-2xl">←</button>
-        <h2 className="text-xl font-bold">Hairstyle Reference</h2>
+        <h2 className="text-xl font-bold">{t('hairstyle_title')}</h2>
       </div>
 
       {/* Upload Photo */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-bold text-gray-500">1. Upload a front face photo</p>
+        <p className="text-xs font-bold text-gray-500">{t('step_upload_face')}</p>
         <label className="aspect-[3/4] max-w-[200px] mx-auto rounded-2xl bg-white border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer">
           {faceImage ? (
             <img src={faceImage} className="w-full h-full object-cover" />
           ) : (
             <>
               <span className="text-4xl">📸</span>
-              <span className="text-xs text-gray-400 mt-2 px-2 text-center">Please upload a clear front face photo</span>
+              <span className="text-xs text-gray-400 mt-2 px-2 text-center">{t('upload_clear_face')}</span>
             </>
           )}
           <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -120,26 +122,26 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
 
       {/* Choose Gender */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-bold text-gray-500">2. Select Gender</p>
+        <p className="text-xs font-bold text-gray-500">{t('step_select_gender')}</p>
         <div className="flex justify-center gap-4">
           <button
             onClick={() => { setGender('Female'); setSelectedStyle(null); }}
             className={`px-6 py-2 rounded-full font-bold transition-all ${gender === 'Female' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500 border border-gray-200'}`}
           >
-            👩 Female
+            👩 {t('female')}
           </button>
           <button
             onClick={() => { setGender('Male'); setSelectedStyle(null); }}
             className={`px-6 py-2 rounded-full font-bold transition-all ${gender === 'Male' ? 'bg-blue-500 text-white' : 'bg-white text-gray-500 border border-gray-200'}`}
           >
-            👨 Male
+            👨 {t('male')}
           </button>
         </div>
       </div>
 
       {/* Select Hairstyle Style */}
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-bold text-gray-500">3. Select Hairstyle Style</p>
+        <p className="text-xs font-bold text-gray-500">{t('step_select_style')}</p>
         <div className="grid grid-cols-2 gap-3">
           {hairstyles.map((style) => (
             <button
@@ -167,14 +169,14 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
         className="w-full h-14 bg-rose-500 text-white rounded-2xl font-bold disabled:bg-gray-300 transition-all flex items-center justify-center gap-2"
       >
         {loading ? (
-          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
-        ) : 'Generate Hairstyle 💇'}
+          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('processing')}</>
+        ) : t('generate_hairstyle')}
       </button>
 
       {/* 结果展示 */}
       {resultImage && (
         <div className="mt-4 flex flex-col gap-4">
-          <p className="text-center font-bold text-gray-700">💇 Here is your hairstyle result:</p>
+          <p className="text-center font-bold text-gray-700">{t('hairstyle_result_tip')}</p>
           <div className="rounded-3xl overflow-hidden shadow-xl">
             <img src={resultImage} className="w-full" />
           </div>
@@ -187,7 +189,7 @@ const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, o
             }}
             className="text-rose-500 font-bold border-2 border-rose-500 rounded-xl p-3"
           >
-            Save to Album
+            {t('save_to_album')}
           </button>
         </div>
       )}

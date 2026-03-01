@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { generateTryOnImage } from '../services/gemini';
+import { useTranslation } from '../lib/i18n';
 
 interface TryOnViewProps {
   type: 'clothes' | 'accessories';
@@ -10,6 +10,7 @@ interface TryOnViewProps {
 }
 
 const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onDeductCredit }) => {
+  const { t } = useTranslation();
   const [faceImage, setFaceImage] = useState<string | null>(null);
   const [itemImage, setItemImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
@@ -41,11 +42,11 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
         await onDeductCredit?.();
       } else {
         console.warn('[TryOnView] Generation failed, no result, credit not deducted');
-        alert('Generation failed, please try again later');
+        alert(t('failed'));
       }
     } catch (e) {
       console.error(e);
-      alert('Generation failed, please try again later');
+      alert(t('error'));
     } finally {
       setLoading(false);
     }
@@ -55,19 +56,21 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
     <div className="p-6 flex flex-col gap-6">
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="text-2xl">←</button>
-        <h2 className="text-xl font-bold">{type === 'clothes' ? 'Virtual Try-on' : 'Accessories Try-on'}</h2>
+        <h2 className="text-xl font-bold">
+          {type === 'clothes' ? t('virtual_tryon_title') : t('accessories_tryon_title')}
+        </h2>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold text-gray-500">1. Upload your face photo</p>
+          <p className="text-xs font-bold text-gray-500">{t('step_upload_face')}</p>
           <label className="aspect-[3/4] rounded-2xl bg-white border-2 border-dashed border-gray-200 flex flex-col items-center justify-center overflow-hidden cursor-pointer">
             {faceImage ? (
               <img src={faceImage} className="w-full h-full object-cover" />
             ) : (
               <>
                 <span className="text-3xl">👤</span>
-                <span className="text-xs text-gray-400 mt-2 px-2 text-center">Please upload a clear face photo</span>
+                <span className="text-xs text-gray-400 mt-2 px-2 text-center">{t('upload_clear_face')}</span>
               </>
             )}
             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, setFaceImage)} />
@@ -75,7 +78,9 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
         </div>
 
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-bold text-gray-500">2. Upload {type === 'clothes' ? 'Clothing' : 'Earrings'} photo</p>
+          <p className="text-xs font-bold text-gray-500">
+            {t('step_upload_item').replace('{item}', type === 'clothes' ? t('clothing') : t('earrings'))}
+          </p>
           <label className="aspect-[3/4] rounded-2xl bg-white border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer">
             {itemImage ? (
               <img src={itemImage} className="w-full h-full object-cover" />
@@ -93,13 +98,13 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
         className="w-full h-14 bg-pink-500 text-white rounded-2xl font-bold disabled:bg-gray-300 transition-all flex items-center justify-center gap-2"
       >
         {loading ? (
-          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
-        ) : 'Start Magic Generation ✨'}
+          <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('processing')}</>
+        ) : t('start_magic')}
       </button>
 
       {resultImage && (
         <div className="mt-4 flex flex-col gap-4">
-          <p className="text-center font-bold text-gray-700">Tada! Here is your result:</p>
+          <p className="text-center font-bold text-gray-700">{t('result_tada')}</p>
           <div className="rounded-3xl overflow-hidden shadow-xl">
             <img src={resultImage} className="w-full" />
           </div>
@@ -112,7 +117,7 @@ const TryOnView: React.FC<TryOnViewProps> = ({ type, onBack, onCheckCredits, onD
             }}
             className="text-pink-500 font-bold border-2 border-pink-500 rounded-xl p-3"
           >
-            Save to Album
+            {t('save_result')}
           </button>
         </div>
       )}
