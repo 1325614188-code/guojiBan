@@ -169,14 +169,22 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             {/* Point Redemptions */}
             {pointRedemptions.filter(r => r.status === 'pending').length > 0 && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-                    <h3 className="font-bold mb-4">🌟 Point Redemptions <span className="text-pink-500">(Pending: {pointRedemptions.filter(r => r.status === 'pending').length})</span></h3>
+                    <h3 className="font-bold mb-4">💰 待处理申请 (积分/提现) <span className="text-pink-500">(待办: {pointRedemptions.filter(r => r.status === 'pending').length})</span></h3>
                     <div className="space-y-3">
                         {pointRedemptions.filter(r => r.status === 'pending').map(redemption => (
                             <div key={redemption.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
                                 <div>
-                                    <p className="font-bold text-sm">{redemption.username}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-sm">{redemption.username}</p>
+                                        {redemption.admin_note === 'CASH_WITHDRAWAL' && (
+                                            <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-md">提现申请</span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-gray-500">
-                                        {redemption.points_used} pts → ${redemption.reward_amount} Reward
+                                        {redemption.admin_note === 'CASH_WITHDRAWAL'
+                                            ? `提现金额: $${redemption.reward_amount}`
+                                            : `${redemption.points_used} pts → $${redemption.reward_amount} Reward`
+                                        }
                                     </p>
                                     <p className="text-xs text-gray-400">
                                         {new Date(redemption.created_at).toLocaleString()}
@@ -188,7 +196,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                         disabled={processingId === redemption.id}
                                         className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs"
                                     >
-                                        {processingId === redemption.id ? '...' : 'Approve'}
+                                        {processingId === redemption.id ? '...' : (redemption.admin_note === 'CASH_WITHDRAWAL' ? '已通过并清零' : 'Approve')}
                                     </button>
                                     <button
                                         onClick={() => processRedemption(redemption.id, false)}

@@ -28,7 +28,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     };
 
     const getShareLink = (): string => {
-        const baseUrl = window.location.origin;
+        const baseUrl = 'https://www.sysmm.xyz';
         return `${baseUrl}?ref=${user?.id}&d=${getDeviceIdSuffix()}`;
     };
 
@@ -123,6 +123,38 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         navigator.clipboard.writeText(getShareLink());
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleWithdrawal = async () => {
+        if ((user?.commission_unsettled || 0) < 20) {
+            setMessage('❌ ' + t('min_withdrawal_tip'));
+            return;
+        }
+
+        setLoading(true);
+        setMessage('...');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/auth_v2`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'requestWithdrawal',
+                    userId: user.id,
+                    amount: user.commission_unsettled
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setMessage('🎉 ' + t('withdrawal_success'));
+            // Optional: refresh user to see pending status if implemented
+        } catch (err: any) {
+            setMessage('❌ ' + err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handlePointsRedeem = async (pointsUsed: number, rewardAmount: number) => {
@@ -230,12 +262,25 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         <span className="text-xl">💰</span>
                         <h4 className="font-bold text-orange-900">{t('referral_commission')}</h4>
                     </div>
-                    <p className="text-xs text-orange-800/80 mb-4">{t('commission_tip')}</p>
-                    <div className="bg-white/80 rounded-2xl p-4 flex justify-between items-center border border-orange-200 shadow-inner">
-                        <span className="text-gray-500 text-xs">{t('unsettled_commission')}</span>
-                        <span className="text-xl font-black text-orange-600">${user?.commission_unsettled || '0.00'}</span>
+                    <div className="text-[11px] text-orange-800/80 mb-4 space-y-1">
+                        <p>{t('referral_step1')}</p>
+                        <p>{t('referral_step2')}</p>
+                        <p>{t('referral_step3')}</p>
                     </div>
-                    <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('settlement_tip')}</p>
+                    <div className="bg-white/80 rounded-2xl p-4 flex flex-col gap-3 border border-orange-200 shadow-inner">
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-500 text-xs">{t('unsettled_commission')}</span>
+                            <span className="text-xl font-black text-orange-600">${user?.commission_unsettled || '0.00'}</span>
+                        </div>
+                        <button
+                            onClick={handleWithdrawal}
+                            disabled={loading || (user?.commission_unsettled || 0) < 20}
+                            className="w-full py-2 bg-orange-500 text-white rounded-xl text-sm font-bold disabled:opacity-50 active:scale-95 transition-all shadow-md"
+                        >
+                            {t('withdraw')}
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('min_withdrawal_tip')}</p>
                 </div>
 
                 {/* Share & Earn */}

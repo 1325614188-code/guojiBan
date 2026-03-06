@@ -180,6 +180,14 @@ export default async function handler(req: any, res: any) {
                             admin_note: adminNote || '已批准'
                         })
                         .eq('id', redemptionId);
+
+                    // 如果是现金提现申请 (CASH_WITHDRAWAL)，则清零用户佣金
+                    if (redemption.admin_note === 'CASH_WITHDRAWAL') {
+                        await supabase
+                            .from('users')
+                            .update({ commission_unsettled: 0 })
+                            .eq('id', redemption.user_id);
+                    }
                 } else {
                     // 拒绝：不扣除积分，仅更新状态
                     await supabase

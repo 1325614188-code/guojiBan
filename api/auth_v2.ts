@@ -375,6 +375,45 @@ export default async function handler(req: any, res: any) {
                 return res.status(200).json({ success: true, message: '兑换申请已提交' });
             }
 
+            case 'requestWithdrawal': {
+                const { userId, amount } = data;
+
+                if (!userId || !amount || amount < 20) {
+                    return res.status(400).json({ error: '无效请求或金额不足 $20' });
+                }
+
+                // 1. 获取并检查余额
+                const { data: user, error: userErr } = await supabase
+                    .from('users')
+                    .select('commission_unsettled, username')
+                    .eq('id', userId)
+                    .single();
+
+                if (userErr || !user || user.commission_unsettled < amount) {
+                    return res.status(400).json({ error: '余额不足' });
+                }
+
+                // 2. 插入申请记录（重用 point_redemptions 表，通过 type 区分或备注区分）
+                // 为了兼容现有后台，我们使用 point_redemptions 表，但标记为 withdrawal
+                const { error: insertErr } = await supabase
+                    .from('point_redemptions')
+                    .insert({
+                        user_id: userId,
+                        points_used: 0, // 提现不扣积分
+                        reward_amount: amount,
+                        status: 'pending',
+                        admin_note: 'CASH_WITHDRAWAL' // 特殊标记
+                    });
+
+                if (insertErr) throw insertErr;
+
+                // 3. 实时扣除（或者等管理员审核后清零，这里选择实时扣除到预扣字段，
+                // 但为了简单，用户要求管理员后台清零，所以我们这里先不做实时扣除，仅记录申请）
+                // 修正：用户要求管理员清零，所以此处不扣除。
+
+                return res.status(200).json({ success: true });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }

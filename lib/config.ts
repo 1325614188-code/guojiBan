@@ -11,6 +11,6 @@ export const isNative =
     !window.location.hostname.includes('sysmm.xyz');
 
 // 原生环境下 API 需使用生产环境绝对路径，Web 环境下使用相对路径（开发模式代理或生产环境同源）
-export const API_BASE = isNative ? 'https://www.sysmm.xyz' : '';
+export const API_BASE = 'https://www.sysmm.xyz';
 
 console.log(`[Config] Platform: ${isNative ? 'Native' : 'Web'}, API_BASE: ${API_BASE}`);
