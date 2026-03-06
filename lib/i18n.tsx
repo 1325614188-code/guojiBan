@@ -86,7 +86,7 @@ export const translations: Record<Language, any> = {
         referral_step3: '3. Earn Commission: Friend recharges, you get 40% commission.',
         withdrawal_management: 'Withdrawal Management',
         paid: 'Paid',
-        processing_withdrawal: 'Processing...',,
+        processing_withdrawal: 'Processing...',
         // New UI translations
         upload_to_start: 'Upload photo to start analysis',
         stunning: '✨ Stunning!',
@@ -246,7 +246,7 @@ export const translations: Record<Language, any> = {
         referral_step3: '3. Nhận hoa hồng: Bạn bè nạp tiền, bạn nhận 40% hoa hồng.',
         withdrawal_management: 'Quản lý rút tiền',
         paid: 'Đã thanh toán',
-        processing_withdrawal: 'Đang xử lý...',,
+        processing_withdrawal: 'Đang xử lý...',
         // New translations
         upload_to_start: 'Tải ảnh lên để bắt đầu phân tích',
         stunning: '✨ Tuyệt vời!',
@@ -405,7 +405,7 @@ export const translations: Record<Language, any> = {
         referral_step3: '3. 커미션 적립: 친구가 충전하면 40% 커미션을 받습니다.',
         withdrawal_management: '출금 관리',
         paid: '지급 완료',
-        processing_withdrawal: '처리 중...',,
+        processing_withdrawal: '처리 중...',
         // New translations
         upload_to_start: '분석을 시작하려면 사진을 업로드하세요',
         stunning: '✨ 놀라워요!',
@@ -564,7 +564,7 @@ export const translations: Record<Language, any> = {
         referral_step3: '3. 報酬を獲得：友達がチャージすると、40%の報酬を獲得できます。',
         withdrawal_management: '出金管理',
         paid: '支払い済み',
-        processing_withdrawal: '処理中...',,
+        processing_withdrawal: '処理中...',
         // New translations
         upload_to_start: '解析を開始するには写真をアップロードしてください',
         stunning: '✨ 素晴らしい！',
@@ -723,7 +723,7 @@ export const translations: Record<Language, any> = {
         referral_step3: '3. 获得佣金：好友充值，你得 40% 分佣。',
         withdrawal_management: '提现管理',
         paid: '已兑付',
-        processing_withdrawal: '处理中...',,
+        processing_withdrawal: '处理中...',
         // New translations
         upload_to_start: '上传照片开始分析',
         stunning: '✨ 惊艳绝伦！',
