@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showMember, setShowMember] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(false);
   const { t, lang, changeLanguage } = useTranslation();
 
   // 从 localStorage 恢复用户状态，并处理支付回调
@@ -44,6 +45,27 @@ const App: React.FC = () => {
         }
       });
     }
+
+    // 0. 检查系统是否要求强制更新 (比较最低版本号)
+    const checkForceUpdate = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ action: 'getConfig' })
+        });
+        const data = await res.json();
+        const minVersion = data?.config?.min_app_version;
+        if (minVersion && isNative && APP_VERSION < minVersion) {
+          console.warn(`[App] Force update required! Current: ${APP_VERSION}, Min: ${minVersion}`);
+          setForceUpdate(true);
+        }
+      } catch (e) {
+        console.error('[App] Failed to check force update:', e);
+      }
+    };
+    checkForceUpdate();
 
     // 1. 恢复用户状态
     const savedUser = localStorage.getItem('user');
@@ -312,55 +334,96 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-md mx-auto relative overflow-hidden bg-pink-50 flex flex-col shadow-2xl">
-      <div className="flex-1 overflow-y-auto pb-24">
-        {renderSection()}
-      </div>
-
-      {/* Global Language Selector */}
-      <div className="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-1">
-        <select
-          value={lang}
-          onChange={(e) => changeLanguage(e.target.value as Language)}
-          className="bg-white/80 backdrop-blur-md border border-pink-200 rounded-full text-xs py-1 px-3 focus:outline-none shadow-sm cursor-pointer hover:bg-white transition-all appearance-none pr-8 relative"
-          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23ec4899\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '16px' }}
-        >
-          <option value="en">English</option>
-          <option value="zh">简体中文</option>
-          <option value="vi">Tiếng Việt</option>
-          <option value="ko">한국어</option>
-          <option value="ja">日本語</option>
-        </select>
-        <div className="text-[10px] text-gray-300 pointer-events-none">
-          v{APP_VERSION}
+    <div className="min-h-screen bg-transparent relative flex flex-col justify-center -webkit-user-select-none select-none max-w-md mx-auto overflow-hidden bg-pink-50 shadow-2xl">
+      {forceUpdate ? (
+        // 强制更新拦截蒙层
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 overflow-hidden">
+          <div className="bg-white max-w-sm w-full rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl transform transition-all">
+            <div className="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mb-6">
+              <span className="text-4xl">🚀</span>
+            </div>
+            <h2 className="text-2xl font-black text-gray-800 mb-3">发现新版本</h2>
+            <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+              为了给您提供更丰富的功能和更好的体验，我们发布了全新的版本。请立即前往下载更新！
+            </p>
+            <button
+              onClick={() => window.location.href = 'https://www.sysmm.xyz/app-release.apk'}
+              className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform"
+            >
+              立即前往下载
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pb-24">
+            {renderSection()}
+          </div>
 
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-20 bg-white/95 backdrop-blur-md border-t flex justify-around items-center px-4 z-50 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <button
-          onClick={() => setCurrentSection(AppSection.HOME)}
-          className={`flex flex-col items-center justify-center gap-1 h-full px-6 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
-        >
-          <span className="text-xl">🏠</span>
-          <span className="text-xs">{t('home')}</span>
-        </button>
-        <button
-          onClick={() => user ? setShowMember(true) : setShowLogin(true)}
-          className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-pink-500 transition-colors"
-        >
-          <span className="text-xl">{user ? '👤' : '🔐'}</span>
-          <span className="text-xs">{user ? t('me') : t('login')}</span>
-        </button>
-        {user?.is_admin && (
-          <button
-            onClick={() => setShowAdmin(true)}
-            className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-purple-500 transition-colors"
-          >
-            <span className="text-xl">⚙️</span>
-            <span className="text-xs">{t('admin')}</span>
-          </button>
-        )}
-      </div>
+          {/* Global Language Selector */}
+          <div className="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-1">
+            <select
+              value={lang}
+              onChange={(e) => changeLanguage(e.target.value as Language)}
+              className="bg-white/80 backdrop-blur-md border border-pink-200 rounded-full text-xs py-1 px-3 focus:outline-none shadow-sm cursor-pointer hover:bg-white transition-all appearance-none pr-8 relative"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23ec4899\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\' /%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '16px' }}
+            >
+              <option value="en">English</option>
+              <option value="zh">简体中文</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="ko">한국어</option>
+              <option value="ja">日本語</option>
+            </select>
+            <div className="text-[10px] text-gray-300 pointer-events-none">
+              v{APP_VERSION}
+            </div>
+          </div>
+
+          <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-20 bg-white/95 backdrop-blur-md border-t flex justify-around items-center px-4 z-50 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <button
+              onClick={() => setCurrentSection(AppSection.HOME)}
+              className={`flex flex-col items-center justify-center gap-1 h-full px-6 transition-colors ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}
+            >
+              <span className="text-xl">🏠</span>
+              <span className="text-xs">{t('home')}</span>
+            </button>
+            <button
+              onClick={() => user ? setShowMember(true) : setShowLogin(true)}
+              className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-pink-500 transition-colors"
+            >
+              <span className="text-xl">{user ? '👤' : '🔐'}</span>
+              <span className="text-xs">{user ? t('me') : t('login')}</span>
+            </button>
+            {user?.is_admin && (
+              <button
+                onClick={() => setShowAdmin(true)}
+                className="flex flex-col items-center justify-center gap-1 h-full px-6 text-gray-500 hover:text-purple-500 transition-colors"
+              >
+                <span className="text-xl">⚙️</span>
+                <span className="text-xs">{t('admin')}</span>
+              </button>
+            )}
+          </div>
+
+          {showLogin && (
+            <div className="fixed inset-0 z-50">
+              <LoginView onClose={() => setShowLogin(false)} onSuccess={() => setShowLogin(false)} />
+            </div>
+          )}
+
+          {showMember && (
+            <div className="fixed inset-0 z-50">
+              <MemberView user={user} onBack={() => setShowMember(false)} onUpgrade={() => { setShowMember(false); setCurrentSection(AppSection.HOME); }} />
+            </div>
+          )}
+
+          {showAdmin && (
+            <div className="fixed inset-0 z-50">
+              <AdminView admin={user} onBack={() => setShowAdmin(false)} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

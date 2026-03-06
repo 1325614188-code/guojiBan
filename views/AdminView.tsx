@@ -245,6 +245,26 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                         </button>
                     </div>
                 </div>
+
+                <div className="mt-6 p-4 bg-orange-50 rounded-xl border border-orange-100">
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Minimum App Version (Forced Update)</label>
+                    <div className="flex gap-2 mb-2">
+                        <input
+                            type="text"
+                            placeholder="e.g. 20260306-V1"
+                            value={config.min_app_version || ''}
+                            onChange={e => setConfig({ ...config, min_app_version: e.target.value })}
+                            className="flex-1 bg-white border border-orange-200 px-4 py-2 rounded-xl text-sm"
+                        />
+                        <button
+                            onClick={() => updateConfig('min_app_version', config.min_app_version)}
+                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-bold transition-colors"
+                        >
+                            Save
+                        </button>
+                    </div>
+                    <p className="text-[11px] text-gray-500 leading-tight">If a user's app version is lower than this value, they will be blocked by a full-screen prompt and forced to download the new APK. Leave empty or set to an old version to disable.</p>
+                </div>
             </div>
 
             {/* Stripe 配置 */}

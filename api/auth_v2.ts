@@ -414,6 +414,22 @@ export default async function handler(req: any, res: any) {
                 return res.status(200).json({ success: true });
             }
 
+            case 'getConfig': {
+                // 公开接口，获取系统配置（如最低版本号、公告等），不包含敏感信息
+                const { data: configs, error } = await supabase
+                    .from('app_config')
+                    .select('key, value');
+
+                if (error) {
+                    return res.status(500).json({ error: '无法获取配置' });
+                }
+
+                const configMap: Record<string, string> = {};
+                configs?.forEach(c => { configMap[c.key] = c.value; });
+
+                return res.status(200).json({ config: configMap });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }
