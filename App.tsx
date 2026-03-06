@@ -21,7 +21,7 @@ import { useTranslation, Language } from './lib/i18n';
 import { API_BASE, isNative } from './lib/config';
 
 // 版本标识，用于确认用户是否加载了最新代码
-const APP_VERSION = '20260302-V2';
+const APP_VERSION = '20260306-V1';
 
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
