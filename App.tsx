@@ -22,7 +22,7 @@ import { useTranslation, Language } from './lib/i18n';
 import { API_BASE, isNative } from './lib/config';
 
 // 版本标识，用于确认用户是否加载了最新代码
-const APP_VERSION = '20260312-V1';
+const APP_VERSION = '20260312-V2';
 
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
@@ -351,7 +351,7 @@ const App: React.FC = () => {
               为了给您提供更丰富的功能和更好的体验，我们发布了全新的版本。请立即前往下载更新！
             </p>
             <button
-              onClick={() => window.location.href = 'https://www.sysmm.xyz/app-release.apk'}
+              onClick={() => window.location.href = '/app-release.apk'}
               className="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-transform"
             >
               立即前往下载
