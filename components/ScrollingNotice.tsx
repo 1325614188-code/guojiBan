@@ -35,24 +35,25 @@ const ScrollingNotice: React.FC = () => {
     return () => clearInterval(interval);
   }, [lang]);
 
-  if (loading || !notice) return <div className="h-8" />;
+  if (loading) return <div className="h-8" />;
+  if (!notice) return null;
 
   return (
-    <div className="w-full bg-pink-50/50 border-y border-pink-100 overflow-hidden py-1 mb-4 h-8 flex items-center">
-      <div className="whitespace-nowrap inline-block animate-marquee text-pink-600 text-sm font-medium">
-        {notice}
-        <span className="mx-16">{notice}</span>
-        <span className="mx-16">{notice}</span>
+    <div className="w-full bg-pink-50/80 backdrop-blur-sm border-y border-pink-100 overflow-hidden py-1.5 mb-2 h-9 flex items-center shadow-sm">
+      <div className="whitespace-nowrap flex animate-marquee text-pink-500 text-[13px] font-bold">
+        <span className="px-4">📢 {notice}</span>
+        <span className="px-4">📢 {notice}</span>
+        <span className="px-4">📢 {notice}</span>
+        <span className="px-4">📢 {notice}</span>
       </div>
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); }
+          100% { transform: translateX(-25%); }
         }
         .animate-marquee {
-          display: inline-block;
-          padding-left: 100%;
-          animation: marquee 20s linear infinite;
+          animation: marquee 30s linear infinite;
+          min-width: 100%;
         }
         .animate-marquee:hover {
           animation-play-state: paused;
