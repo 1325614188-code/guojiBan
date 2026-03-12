@@ -100,6 +100,7 @@ export default async function handler(req: any, res: any) {
             'vi': 'Vietnamese',
             'ko': 'Korean',
             'ja': 'Japanese',
+            'es': 'Spanish',
             'en': 'English'
         };
         const targetLang = languageMap[lang] || 'English';
@@ -274,6 +275,32 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
                         config: { temperature: 0.7 }
                     });
                     return response.text;
+                });
+
+                return res.status(200).json({ result });
+            }
+            case 'translateAnnouncement': {
+                const { text } = req.body;
+                if (!text) return res.status(400).json({ error: 'Missing text' });
+
+                const systemInstruction = `
+          You are a professional translator. Translate the following text into English, Vietnamese, Korean, Japanese, and Spanish.
+          Output MUST be a JSON object with keys: en, vi, ko, ja, es.
+          The translation should be natural, concise, and suitable for a scrolling announcement bar in a beauty/lifestyle app.
+          Maintain emojis if present.
+        `;
+
+                const result = await requestWithRetry(async (ai) => {
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-1.5-flash',
+                        contents: [{ role: 'user', parts: [{ text }] }],
+                        generationConfig: {
+                            responseMimeType: 'application/json',
+                            temperature: 0.3
+                        } as any,
+                        config: { systemInstruction }
+                    } as any);
+                    return JSON.parse(response.text);
                 });
 
                 return res.status(200).json({ result });

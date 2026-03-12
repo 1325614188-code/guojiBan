@@ -194,12 +194,13 @@ const App: React.FC = () => {
           else if (country === 'KR') detected = 'ko';
           else if (country === 'JP') detected = 'ja';
           else if (country === 'CN') detected = 'zh';
+          else if (['ES', 'MX', 'AR', 'CO', 'CL', 'PE'].includes(country)) detected = 'es';
 
           changeLanguage(detected);
         } catch (e) {
           // Fallback to browser lang
           const browserLang = navigator.language.split('-')[0];
-          const supported: Language[] = ['en', 'vi', 'ko', 'ja', 'zh'];
+          const supported: Language[] = ['en', 'vi', 'ko', 'ja', 'zh', 'es'];
           if (supported.includes(browserLang as any)) {
             changeLanguage(browserLang as Language);
           }
@@ -373,6 +374,7 @@ const App: React.FC = () => {
               <option value="vi">Tiếng Việt</option>
               <option value="ko">한국어</option>
               <option value="ja">日本語</option>
+              <option value="es">Español</option>
             </select>
             <div className="text-[10px] text-gray-300 pointer-events-none">
               v{APP_VERSION}
@@ -407,13 +409,13 @@ const App: React.FC = () => {
 
           {showLogin && (
             <div className="fixed inset-0 z-50">
-              <LoginView onClose={() => setShowLogin(false)} onSuccess={() => setShowLogin(false)} />
+              <LoginView onBack={() => setShowLogin(false)} onLogin={handleLogin} />
             </div>
           )}
 
           {showMember && (
             <div className="fixed inset-0 z-50">
-              <MemberView user={user} onBack={() => setShowMember(false)} onUpgrade={() => { setShowMember(false); setCurrentSection(AppSection.HOME); }} />
+              <MemberView user={user} onBack={() => setShowMember(false)} onLogout={handleLogout} />
             </div>
           )}
 

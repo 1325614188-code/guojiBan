@@ -4,6 +4,7 @@ import { AppSection } from '../types';
 import InstallPWA from '../components/InstallPWA';
 import LegalFooter from '../components/LegalFooter';
 import { useTranslation, Language } from '../lib/i18n';
+import ScrollingNotice from '../components/ScrollingNotice';
 
 interface HomeViewProps {
   onNavigate: (section: AppSection) => void;
@@ -32,10 +33,11 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
 
   return (
     <div className="p-6">
-      <header className="mb-8 text-center relative">
+      <header className="mb-4 text-center relative">
         <h1 className="text-4xl art-title mb-2">✨ Beauty Lab ✨</h1>
-        <p className="text-gray-500 text-sm">✨ {t('discover_unique_charm') || 'Discover Your Unique Charm'} ✨</p>
       </header>
+
+      <ScrollingNotice />
 
       {/* Download & Install Section */}
       <div className="mb-6 grid grid-cols-2 gap-3">

@@ -265,6 +265,77 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                     </div>
                     <p className="text-[11px] text-gray-500 leading-tight">If a user's app version is lower than this value, they will be blocked by a full-screen prompt and forced to download the new APK. Leave empty or set to an old version to disable.</p>
                 </div>
+
+                <div className="mt-8 pt-8 border-t border-gray-100">
+                    <h4 className="font-bold text-sm mb-4">📢 公告栏管理 (自动翻译支持: 中/英/越/韩/日/西)</h4>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs text-gray-400 mb-1">输入中文公告 (保存后将自动翻译为其他语言)</label>
+                            <textarea
+                                value={config.announcement_zh || ''}
+                                onChange={e => setConfig({ ...config, announcement_zh: e.target.value })}
+                                className="w-full h-20 px-3 py-2 rounded-xl border border-gray-200 text-sm"
+                                placeholder="输入想要展示的公告内容..."
+                            />
+                        </div>
+                        <button
+                            onClick={async () => {
+                                const text = config.announcement_zh;
+                                if (!text) return alert('请输入内容');
+                                setProcessingId('translating_notice');
+                                try {
+                                    // 1. 调用 Gemini 翻译
+                                    const res = await fetch(`${API_BASE}/api/gemini`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ action: 'translateAnnouncement', text })
+                                    });
+                                    const data = await res.json();
+                                    if (data.result) {
+                                        const translations = data.result;
+                                        // 2. 批量更新配置
+                                        const updates = [
+                                            { key: 'announcement_zh', value: text },
+                                            { key: 'announcement_en', value: translations.en },
+                                            { key: 'announcement_vi', value: translations.vi },
+                                            { key: 'announcement_ko', value: translations.ko },
+                                            { key: 'announcement_ja', value: translations.ja },
+                                            { key: 'announcement_es', value: translations.es },
+                                        ];
+
+                                        for (const update of updates) {
+                                            await fetch(`${API_BASE}/api/admin`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ action: 'updateConfig', adminId: admin.id, ...update })
+                                            });
+                                        }
+                                        alert('公告已更新并完成多语言翻译！');
+                                        loadData();
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                    alert('更新失败，请重试');
+                                } finally {
+                                    setProcessingId(null);
+                                }
+                            }}
+                            disabled={processingId === 'translating_notice'}
+                            className="w-full py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-200 disabled:opacity-50"
+                        >
+                            {processingId === 'translating_notice' ? '正在翻译并保存...' : '✨ 保存并一键自动翻译'}
+                        </button>
+                        
+                        <div className="grid grid-cols-2 gap-2 mt-4">
+                            {['en', 'vi', 'ko', 'ja', 'es'].map(lang => (
+                                <div key={lang} className="p-2 bg-gray-50 rounded-lg text-[11px]">
+                                    <span className="font-bold text-gray-400 uppercase mr-1">{lang}:</span>
+                                    <span className="text-gray-600">{config[`announcement_${lang}`] || '未覆盖'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Stripe 配置 */}
