@@ -1,6 +1,7 @@
 
 export enum AppSection {
   HOME = 'home',
+  JADE_APPRAISAL = 'jade-appraisal',
   TRY_ON_CLOTHES = 'try-on-clothes',
   TRY_ON_ACCESSORIES = 'try-on-accessories',
   HAIRSTYLE = 'hairstyle',
@@ -17,6 +18,22 @@ export enum AppSection {
   DEPRESSION_TEST = 'depression-test',
   LOVE_FORTUNE = 'love-fortune',
   WEALTH_FORTUNE = 'wealth-fortune'
+}
+
+export interface JadeAnalysisResult {
+  authenticity: {
+    conclusion: string;
+    reasons: string[];
+    riskLevel: 'low' | 'medium' | 'high';
+  };
+  quality: {
+    color: string;
+    transparency: string;
+    texture: string;
+    craftsmanship: string;
+    overallGrade: string;
+  };
+  detailedAnalysis: string;
 }
 
 export interface AnalysisResult {

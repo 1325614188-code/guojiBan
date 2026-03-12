@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 interface CoupleFaceViewProps {
   onBack: () => void;
   onCheckCredits?: () => Promise<boolean>;
-  onDeductCredit?: () => Promise<void>;
+  onDeductCredit?: () => Promise<boolean>;
 }
 
 const CoupleFaceView: React.FC<CoupleFaceViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {

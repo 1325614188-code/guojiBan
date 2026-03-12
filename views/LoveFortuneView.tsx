@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 interface LoveFortuneViewProps {
     onBack: () => void;
     onCheckCredits?: () => Promise<boolean>;
-    onDeductCredit?: () => Promise<void>;
+    onDeductCredit?: () => Promise<boolean>;
 }
 
 const LoveFortuneView: React.FC<LoveFortuneViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {

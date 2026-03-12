@@ -13,6 +13,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
   const { t, lang, changeLanguage } = useTranslation();
 
   const sections = [
+    { id: AppSection.JADE_APPRAISAL, title: t('jade_appraisal') || 'Jade Appraisal', icon: '💎', color: 'bg-emerald-100', border: 'border-emerald-300' },
     { id: AppSection.TRY_ON_CLOTHES, title: t('virtual_try_on') || 'Virtual Try-on', icon: '👗', color: 'bg-pink-100', border: 'border-pink-300' },
     { id: AppSection.TRY_ON_ACCESSORIES, title: t('accessories') || 'Accessories', icon: '💎', color: 'bg-purple-100', border: 'border-purple-300' },
     { id: AppSection.HAIRSTYLE, title: t('hairstyle') || 'Hairstyle', icon: '💇‍♀️', color: 'bg-rose-100', border: 'border-rose-300' },

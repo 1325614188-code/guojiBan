@@ -4,7 +4,7 @@ import { API_BASE } from '../lib/config';
 interface LicensePlateViewProps {
     onBack: () => void;
     onCheckCredits?: () => Promise<boolean>;
-    onDeductCredit?: () => Promise<void>;
+    onDeductCredit?: () => Promise<boolean>;
 }
 
 // Chinese zodiac hour map (Shichen)

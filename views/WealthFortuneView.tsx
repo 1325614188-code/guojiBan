@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 interface WealthFortuneViewProps {
     onBack: () => void;
     onCheckCredits?: () => Promise<boolean>;
-    onDeductCredit?: () => Promise<void>;
+    onDeductCredit?: () => Promise<boolean>;
 }
 
 const WealthFortuneView: React.FC<WealthFortuneViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {

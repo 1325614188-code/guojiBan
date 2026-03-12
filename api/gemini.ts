@@ -306,6 +306,72 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
                 return res.status(200).json({ result });
             }
 
+            case 'jadeAppraisal': {
+                // 翡翠深度鉴定
+                const systemInstruction = `You are a world-class Jadeite appraisal expert with decades of industry experience.
+Your task is to conduct a rigorous and objective appraisal based on the multi-angle Jadeite photos provided by the user.
+
+Appraisal dimensions must include:
+1. Authenticity: Observe whether there are "fly wings" (chui-xing), "orange peel effect", acid-washing patterns (B-grade features), or signs of dyeing (C-grade features).
+2. Texture & Transparency: Determine if it is Glassy, Icy, Glutinous, or Bean variety.
+3. Color: Evaluate the intensity, brightness, purity, and harmony of the color.
+4. Craftsmanship: Evaluate the fineness, proportion, and artistic value of the carving.
+5. Imperfections: Observe for cracks, cotton, black spots, etc.
+
+Please return the results in JSON format with the following structure:
+{
+  "authenticity": {
+    "conclusion": "Appraisal conclusion (e.g., Natural Jadeite Type A, Suspected Treated Jadeite, etc.)",
+    "reasons": ["Reason 1", "Reason 2"],
+    "riskLevel": "low | medium | high"
+  },
+  "quality": {
+    "color": "Color description",
+    "transparency": "Transparency description",
+    "texture": "Texture/Variety description",
+    "craftsmanship": "Craftsmanship description",
+    "overallGrade": "Overall grade/score"
+  },
+  "detailedAnalysis": "Detailed appraisal report in Markdown format, including professional terminology analysis."
+}
+
+ALL content MUST be written in ${targetLang}.`;
+
+                const result = await requestWithRetry(async (ai) => {
+                    const contents = {
+                        parts: [
+                            ...images.map((img: string) => ({
+                                inlineData: {
+                                    mimeType: 'image/jpeg',
+                                    data: img.split(',')[1] || img
+                                }
+                            })),
+                            { text: "Please conduct an in-depth appraisal of these Jadeite photos. Be rigorous. If the photo quality is insufficient to support a conclusion, please state so in the report." }
+                        ]
+                    };
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-1.5-flash', // Using 1.5-flash for cost/speed balance for vision tasks
+                        contents,
+                        generationConfig: {
+                            responseMimeType: 'application/json'
+                        } as any,
+                        config: {
+                            systemInstruction,
+                            temperature: 0.2
+                        }
+                    } as any);
+
+                    try {
+                        return JSON.parse(response.text);
+                    } catch (e) {
+                        console.error("[Jade API Parse Error]", response.text);
+                        return { error: "Failed to parse appraisal report", raw: response.text };
+                    }
+                });
+
+                return res.status(200).json({ result });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }

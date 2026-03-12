@@ -5,7 +5,7 @@ import { generateMakeupImage } from '../services/gemini';
 interface MakeupViewProps {
     onBack: () => void;
     onCheckCredits?: () => Promise<boolean>;
-    onDeductCredit?: () => Promise<void>;
+    onDeductCredit?: () => Promise<boolean>;
 }
 
 // 6 makeup styles

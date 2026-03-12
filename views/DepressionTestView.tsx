@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 interface DepressionTestViewProps {
     onBack: () => void;
     onCheckCredits?: () => Promise<boolean>;
-    onDeductCredit?: () => Promise<void>;
+    onDeductCredit?: () => Promise<boolean>;
 }
 
 // Depression self-test 80 questions (based on PHQ-9, BDI-II and other expanded scales)

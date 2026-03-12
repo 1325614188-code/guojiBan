@@ -17,6 +17,7 @@ import MBTITestView from './views/MBTITestView';
 import DepressionTestView from './views/DepressionTestView';
 import LoveFortuneView from './views/LoveFortuneView';
 import WealthFortuneView from './views/WealthFortuneView';
+import JadeAppraisalView from './views/JadeAppraisalView';
 import { useTranslation, Language } from './lib/i18n';
 import { API_BASE, isNative } from './lib/config';
 
@@ -275,7 +276,7 @@ const App: React.FC = () => {
 
   // 类型安全的包装器，解决 Lint 报错
   const handleCheckCredits = async (): Promise<boolean> => { return await checkCredits(); };
-  const handleDeductCredit = async (): Promise<void> => { await deductCredit(); };
+  const handleDeductCredit = async (): Promise<boolean> => { return await deductCredit(); };
 
   if (showLogin) {
     return <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
@@ -297,6 +298,8 @@ const App: React.FC = () => {
     switch (currentSection) {
       case AppSection.HOME:
         return <HomeView onNavigate={setCurrentSection} />;
+      case AppSection.JADE_APPRAISAL:
+        return <JadeAppraisalView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.TRY_ON_CLOTHES:
         return <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={handleCheckCredits} onDeductCredit={handleDeductCredit} />;
       case AppSection.TRY_ON_ACCESSORIES:

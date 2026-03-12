@@ -6,7 +6,7 @@ import { API_BASE } from '../lib/config';
 interface HairstyleViewProps {
   onBack: () => void;
   onCheckCredits?: () => Promise<boolean>;
-  onDeductCredit?: () => Promise<void>;
+  onDeductCredit?: () => Promise<boolean>;
 }
 
 const HairstyleView: React.FC<HairstyleViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {

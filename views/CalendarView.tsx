@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
 import { analyzeImage } from '../services/gemini';
-import ReactMarkdown from 'https://esm.sh/react-markdown';
+import ReactMarkdown from 'react-markdown';
 
 interface CalendarViewProps {
   onBack: () => void;
   onCheckCredits?: () => Promise<boolean>;
-  onDeductCredit?: () => Promise<void>;
+  onDeductCredit?: () => Promise<boolean>;
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ onBack, onCheckCredits, onDeductCredit }) => {
