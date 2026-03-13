@@ -126,14 +126,19 @@ export default async function handler(req: any, res: any) {
                     await supabase.from('users').update({ credits: (user.credits || 0) + order.credits }).eq('id', order.user_id);
 
                     // 3. Referral Commission (40%)
-                    if (user.referrer_id) {
-                        const commission = order.amount * 0.4;
-                        const { data: referrer } = await supabase.from('users').select('commission_unsettled').eq('id', user.referrer_id).single();
-                        if (referrer) {
-                            await supabase.from('users').update({
-                                commission_unsettled: (referrer.commission_unsettled || 0) + commission
-                            }).eq('id', user.referrer_id);
+                    try {
+                        if (user.referrer_id) {
+                            const commission = order.amount * 0.4;
+                            const { data: referrer } = await supabase.from('users').select('commission_unsettled').eq('id', user.referrer_id).single();
+                            if (referrer) {
+                                await supabase.from('users').update({
+                                    commission_unsettled: (referrer.commission_unsettled || 0) + commission
+                                }).eq('id', user.referrer_id);
+                            }
                         }
+                    } catch (referralErr) {
+                        console.error('[Creem Referral Error]:', referralErr);
+                        // Do not throw, keep main flow alive
                     }
                 }
 

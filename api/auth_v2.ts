@@ -208,7 +208,7 @@ export default async function handler(req: any, res: any) {
 
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, credits, commission_unsettled')
+                    .select('id, username, credits')
                     .eq('id', userId)
                     .single();
 
@@ -366,13 +366,16 @@ export default async function handler(req: any, res: any) {
                 // 1. 获取并检查余额
                 const { data: user, error: userErr } = await supabase
                     .from('users')
-                    .select('commission_unsettled, username')
+                    .select('username, credits')
                     .eq('id', userId)
                     .single();
 
-                if (userErr || !user || user.commission_unsettled < amount) {
-                    return res.status(400).json({ error: '余额不足' });
+                if (userErr || !user) {
+                    return res.status(400).json({ error: '用户不存在' });
                 }
+                
+                // commission_unsettled 缺失，暂时走手动记录流程或报错
+                return res.status(400).json({ error: '提现功能维护中' });
 
                 // 2. 插入申请记录（重用 point_redemptions 表，通过 type 区分或备注区分）
                 // 为了兼容现有后台，我们使用 point_redemptions 表，但标记为 withdrawal
