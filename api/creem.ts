@@ -56,11 +56,18 @@ export default async function handler(req: any, res: any) {
 
                 if (orderError) throw orderError;
 
-                // 2. Call Creem to create Checkout Session
                 const isTestMode = CREEM_API_KEY.startsWith('creem_test_');
                 const baseUrl = isTestMode ? API_BASE_URL_TEST : API_BASE_URL_PROD;
-                const origin = req.headers.origin || 'https://www.sysmm.xyz';
                 
+                // 构造带有尾部斜杠的成功跳转 URL
+                const origin = req.headers.origin || 'https://www.sysmm.xyz';
+                const successUrlObj = new URL(origin.endsWith('/') ? origin : `${origin}/`);
+                successUrlObj.searchParams.set('payment', 'success');
+                successUrlObj.searchParams.set('order_id', tradeNo);
+                const successUrl = successUrlObj.toString();
+                
+                console.log(`[Creem Debug] Success URL: ${successUrl}`);
+
                 const response = await fetch(`${baseUrl}/checkouts`, {
                     method: 'POST',
                     headers: {
@@ -69,7 +76,7 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        success_url: `${origin}?payment=success&order_id=${tradeNo}`,
+                        success_url: successUrl,
                         metadata: {
                             userId,
                             tradeNo,

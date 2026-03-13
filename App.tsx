@@ -140,7 +140,7 @@ const App: React.FC = () => {
           const targetUserId = parsedUser?.id || confirmData.userId;
           if (targetUserId) {
             // Sync again immediately
-            fetch(`/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
+            fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}&r=${Math.random()}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               cache: 'no-store',
