@@ -23,9 +23,24 @@ export default async function handler(req: any, res: any) {
 
         switch (action) {
             case 'createCheckout': {
-                const { userId, productId, amount, credits } = data;
+                const { userId, amount, credits } = data;
+                let { productId } = data;
 
                 if (!CREEM_API_KEY) throw new Error('CREEM_API_KEY is not configured');
+
+                // 诊断日志：记录 Key 的前缀和末尾（不泄露中间部分）
+                const keyPrefix = CREEM_API_KEY.substring(0, 11);
+                const keySuffix = CREEM_API_KEY.slice(-4);
+                console.log(`[Creem Debug] Using Key prefix: ${keyPrefix}...${keySuffix}`);
+
+                // 强制使用服务器端配置的 Product ID，防止前端传入错误的 ID（如生产/测试混用）
+                if (amount === 5) {
+                    productId = CREEM_PRODUCT_ID_5USD;
+                } else if (amount === 10) {
+                    productId = CREEM_PRODUCT_ID_10USD;
+                }
+                
+                console.log(`[Creem Debug] Processing checkout for amount: ${amount}, productId: ${productId}`);
 
                 const tradeNo = `CR${Date.now()}${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
