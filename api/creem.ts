@@ -59,6 +59,7 @@ export default async function handler(req: any, res: any) {
                 // 2. Call Creem to create Checkout Session
                 const isTestMode = CREEM_API_KEY.startsWith('creem_test_');
                 const baseUrl = isTestMode ? API_BASE_URL_TEST : API_BASE_URL_PROD;
+                const origin = req.headers.origin || 'https://www.sysmm.xyz';
                 
                 const response = await fetch(`${baseUrl}/checkouts`, {
                     method: 'POST',
@@ -68,6 +69,7 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
+                        success_url: `${origin}?payment=success&orderId=${tradeNo}`,
                         metadata: {
                             userId,
                             tradeNo,
