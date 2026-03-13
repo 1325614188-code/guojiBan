@@ -189,14 +189,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     const handleRecharge = async (amount: number, creditsToAdd: number) => {
         setRechargeMessage('...');
         try {
-            let productId = '';
-            if (amount === 0.5) {
-                productId = 'prod_test_05'; // 临时测试 ID
-            } else if (amount === 5) {
-                productId = 'prod_7jbvR7bVfcXC4LZVZ7nKCp';
-            } else {
-                productId = 'prod_3QknshZWwWAE5HuwwnwBLi';
-            }
+            const productId = amount === 5 ? 'prod_7jbvR7bVfcXC4LZVZ7nKCp' : 'prod_3QknshZWwWAE5HuwwnwBLi';
             const res = await fetch(`${API_BASE}/api/creem`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -308,11 +301,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                 {config.recharge_enabled === 'true' && (
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                         <h4 className="font-bold text-gray-800 mb-4">{t('recharge_credits')}</h4>
-                        <div className="grid grid-cols-3 gap-4">
-                            <button onClick={() => handleRecharge(0.5, 2)} className="p-4 rounded-2xl border-2 border-orange-50 hover:border-orange-200 transition-all text-center">
-                                <div className="text-xl font-black text-orange-500">2</div>
-                                <div className="text-xs text-gray-400">$0.5</div>
-                            </button>
+                        <div className="grid grid-cols-2 gap-4">
                             <button onClick={() => handleRecharge(5, 12)} className="p-4 rounded-2xl border-2 border-pink-50 hover:border-pink-200 transition-all text-center">
                                 <div className="text-xl font-black text-pink-500">12</div>
                                 <div className="text-xs text-gray-400">$5</div>
