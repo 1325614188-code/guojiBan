@@ -133,17 +133,15 @@ export default async function handler(req: any, res: any) {
                 const prompt = `Analysis Type: ${type}. ${gender ? `Gender: ${gender}` : ''}`;
 
                 const result = await requestWithRetry(async (ai) => {
-                    const contents = {
-                        parts: [
-                            ...images.map((img: string) => ({
-                                inlineData: {
-                                    mimeType: 'image/jpeg',
-                                    data: img.split(',')[1] || img
-                                }
-                            })),
-                            { text: prompt }
-                        ]
-                    };
+                    const contents = [
+                        ...images.map((img: string) => ({
+                            inlineData: {
+                                mimeType: 'image/jpeg',
+                                data: img.split(',')[1] || img
+                            }
+                        })),
+                        { text: prompt }
+                    ];
                     const response = await ai.models.generateContent({
                         model: 'gemini-3-flash-preview',
                         contents,
@@ -164,13 +162,11 @@ export default async function handler(req: any, res: any) {
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
-                        contents: {
-                            parts: [
-                                { inlineData: { mimeType: 'image/jpeg', data: baseImage.split(',')[1] } },
-                                { inlineData: { mimeType: 'image/jpeg', data: itemImage.split(',')[1] } },
-                                { text: prompt }
-                            ]
-                        },
+                        contents: [
+                            { inlineData: { mimeType: 'image/jpeg', data: baseImage.split(',')[1] } },
+                            { inlineData: { mimeType: 'image/jpeg', data: itemImage.split(',')[1] } },
+                            { text: prompt }
+                        ],
                         // 仅对试穿衣服使用 9:16 竖版比例
                         ...(itemType === 'clothes' ? { config: { outputOptions: { aspectRatio: '9:16' } } } : {})
                     } as any);
@@ -201,12 +197,10 @@ export default async function handler(req: any, res: any) {
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
-                        contents: {
-                            parts: [
-                                { inlineData: { mimeType: 'image/jpeg', data: faceImage.split(',')[1] } },
-                                { text: prompt }
-                            ]
-                        }
+                        contents: [
+                            { inlineData: { mimeType: 'image/jpeg', data: faceImage.split(',')[1] } },
+                            { text: prompt }
+                        ]
                     });
 
                     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -241,12 +235,10 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
 
                     const response = await ai.models.generateContent({
                         model: 'gemini-2.5-flash-image',
-                        contents: {
-                            parts: [
-                                { inlineData: { mimeType: 'image/jpeg', data: faceImage.split(',')[1] } },
-                                { text: prompt }
-                            ]
-                        }
+                        contents: [
+                            { inlineData: { mimeType: 'image/jpeg', data: faceImage.split(',')[1] } },
+                            { text: prompt }
+                        ]
                     } as any);
 
                     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -271,7 +263,7 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
                 const result = await requestWithRetry(async (ai) => {
                     const response = await ai.models.generateContent({
                         model: 'gemini-3-flash-preview',
-                        contents: { parts: [{ text: prompt }] },
+                        contents: [{ role: 'user', parts: [{ text: prompt }] }],
                         config: { temperature: 0.7 }
                     });
                     return response.text;
@@ -279,6 +271,7 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
 
                 return res.status(200).json({ result });
             }
+
             case 'translateAnnouncement': {
                 const { text } = req.body;
                 if (!text) return res.status(400).json({ error: 'Missing text' });
@@ -292,15 +285,15 @@ ${styleDesc ? `Style features: ${styleDesc}` : ''}
 
                 const result = await requestWithRetry(async (ai) => {
                     const response = await ai.models.generateContent({
-                        model: 'gemini-1.5-flash',
+                        model: 'gemini-3-flash-preview',
                         contents: [{ role: 'user', parts: [{ text }] }],
-                        generationConfig: {
+                        config: {
                             responseMimeType: 'application/json',
+                            systemInstruction,
                             temperature: 0.3
-                        } as any,
-                        config: { systemInstruction }
-                    } as any);
-                    return JSON.parse(response.text);
+                        }
+                    });
+                    return JSON.parse(response.text || '{}');
                 });
 
                 return res.status(200).json({ result });
@@ -338,31 +331,27 @@ Please return the results in JSON format with the following structure:
 ALL content MUST be written in ${targetLang}.`;
 
                 const result = await requestWithRetry(async (ai) => {
-                    const contents = {
-                        parts: [
-                            ...images.map((img: string) => ({
-                                inlineData: {
-                                    mimeType: 'image/jpeg',
-                                    data: img.split(',')[1] || img
-                                }
-                            })),
-                            { text: "Please conduct an in-depth appraisal of these Jadeite photos. Be rigorous. If the photo quality is insufficient to support a conclusion, please state so in the report." }
-                        ]
-                    };
+                    const contents = [
+                        ...images.map((img: string) => ({
+                            inlineData: {
+                                mimeType: 'image/jpeg',
+                                data: img.split(',')[1] || img
+                            }
+                        })),
+                        { text: "Please conduct an in-depth appraisal of these Jadeite photos. Be rigorous. If the photo quality is insufficient to support a conclusion, please state so in the report." }
+                    ];
                     const response = await ai.models.generateContent({
-                        model: 'gemini-1.5-flash', // Using 1.5-flash for cost/speed balance for vision tasks
+                        model: 'gemini-3-flash-preview',
                         contents,
-                        generationConfig: {
-                            responseMimeType: 'application/json'
-                        } as any,
                         config: {
+                            responseMimeType: 'application/json',
                             systemInstruction,
                             temperature: 0.2
                         }
-                    } as any);
+                    });
 
                     try {
-                        return JSON.parse(response.text);
+                        return JSON.parse(response.text || '{}');
                     } catch (e) {
                         console.error("[Jade API Parse Error]", response.text);
                         return { error: "Failed to parse appraisal report", raw: response.text };

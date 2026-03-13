@@ -421,13 +421,17 @@ export default async function handler(req: any, res: any) {
                     .select('key, value');
 
                 if (error) {
+                    console.error('[getConfig Error]', error);
                     return res.status(500).json({ error: '无法获取配置' });
                 }
 
                 const configMap: Record<string, string> = {};
                 configs?.forEach(c => { configMap[c.key] = c.value; });
 
-                return res.status(200).json({ config: configMap });
+                return res.status(200).json({ 
+                    config: configMap,
+                    _v: 'auth-v2-fixed-v1'
+                });
             }
 
             default:
