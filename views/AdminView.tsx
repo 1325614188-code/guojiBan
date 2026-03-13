@@ -16,6 +16,13 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [pointRedemptions, setPointRedemptions] = useState<any[]>([]);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
+    // Chat states
+    const [chatUsers, setChatUsers] = useState<any[]>([]);
+    const [activeChatUser, setActiveChatUser] = useState<any>(null);
+    const [adminMessages, setAdminMessages] = useState<any[]>([]);
+    const [adminChatInput, setAdminChatInput] = useState('');
+    const adminMessagesEndRef = React.useRef<HTMLDivElement>(null);
+
     // Load data
     useEffect(() => {
         loadData();
@@ -66,6 +73,10 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             });
             const redemptionsData = await redemptionsRes.json();
             setPointRedemptions(redemptionsData.redemptions || []);
+
+            // Get chat users
+            fetchChatUsers();
+            
         } catch (e) {
             console.error(e);
         } finally {
@@ -138,6 +149,111 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             setProcessingId(null);
         }
     };
+
+    // Chat functions
+    const fetchChatUsers = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getChatUsers', adminId: admin.id })
+            });
+            const data = await res.json();
+            setChatUsers(data.users || []);
+        } catch (e) {
+            console.error('Fetch chat users failed', e);
+        }
+    };
+
+    const fetchAdminMessages = async (userId: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/api/admin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getAdminMessages', adminId: admin.id, userId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setAdminMessages(data.messages || []);
+            }
+        } catch (e) {
+            console.error('Fetch admin messages failed', e);
+        }
+    };
+
+    const handleAdminSend = async () => {
+        if (!adminChatInput.trim() || !activeChatUser) return;
+        
+        const content = adminChatInput.trim();
+        setAdminChatInput('');
+
+        // Optimistic UI
+        const optimisticMsg = {
+            id: 'admin-temp-' + Date.now(),
+            user_id: activeChatUser.id,
+            sender_type: 'admin',
+            content,
+            created_at: new Date().toISOString(),
+            is_read: true
+        };
+        setAdminMessages(prev => [...prev, optimisticMsg]);
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'replyMessage', 
+                    adminId: admin.id, 
+                    userId: activeChatUser.id, 
+                    content 
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchAdminMessages(activeChatUser.id);
+            }
+        } catch (e) {
+            console.error('Admin send failed', e);
+        }
+    };
+
+    const handleClearAllMessages = async () => {
+        if (!window.confirm('WARNING: Are you sure you want to delete ALL customer service messages? This cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'clearMessages', adminId: admin.id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('All messages cleared successfully');
+                setChatUsers([]);
+                setActiveChatUser(null);
+                setAdminMessages([]);
+            }
+        } catch (e) {
+            console.error('Clear messages failed', e);
+            alert('Failed to clear messages');
+        }
+    };
+
+    useEffect(() => {
+        let interval: any;
+        if (activeChatUser) {
+            fetchAdminMessages(activeChatUser.id);
+            interval = setInterval(() => fetchAdminMessages(activeChatUser.id), 5000);
+        }
+        return () => clearInterval(interval);
+    }, [activeChatUser]);
+
+    useEffect(() => {
+        adminMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [adminMessages]);
 
     if (loading) {
         return (
@@ -368,6 +484,116 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                     <p className="text-xs text-gray-400">
                         ⚠️ Secret Key should be set via environment variable (STRIPE_SECRET_KEY) for security.
                     </p>
+                </div>
+            </div>
+
+            {/* 客服消息管理 (Customer Service) */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold flex items-center gap-2">
+                        <span className="text-xl">💬</span> 客服消息管理
+                    </h3>
+                    <button 
+                        onClick={handleClearAllMessages}
+                        className="px-4 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-xl text-xs font-bold transition-colors"
+                    >
+                        🗑️ 清空所有聊天记录 (释放空间)
+                    </button>
+                </div>
+                
+                <div className="flex border border-gray-200 rounded-xl overflow-hidden h-[500px]">
+                    {/* 左侧：用户列表 */}
+                    <div className="w-1/3 bg-gray-50 border-r border-gray-200 overflow-y-auto">
+                        <div className="p-3 font-bold text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200 sticky top-0 bg-gray-50">
+                            Recent Chats
+                        </div>
+                        {chatUsers.length === 0 ? (
+                            <div className="p-6 text-center text-sm text-gray-400">
+                                暂无客服信息
+                            </div>
+                        ) : (
+                            chatUsers.map(u => (
+                                <div 
+                                    key={u.id}
+                                    onClick={() => setActiveChatUser(u)}
+                                    className={`p-4 cursor-pointer border-b border-gray-100 transition-colors ${
+                                        activeChatUser?.id === u.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : 'hover:bg-white'
+                                    }`}
+                                >
+                                    <div className="font-bold text-sm text-gray-800">{u.nickname || u.username}</div>
+                                    <div className="text-[10px] text-gray-400">ID: {u.id.substring(0, 8)}...</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* 右侧：聊天窗口 */}
+                    <div className="flex-1 flex flex-col bg-white overflow-hidden">
+                        {activeChatUser ? (
+                            <>
+                                {/* Chat Header */}
+                                <div className="p-3 bg-white border-b border-gray-100 flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center font-bold">
+                                        {activeChatUser.nickname?.[0] || activeChatUser.username[0]}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-sm">{activeChatUser.nickname || activeChatUser.username}</div>
+                                        <div className="text-[10px] text-gray-400 font-mono">{activeChatUser.username}</div>
+                                    </div>
+                                </div>
+                                
+                                {/* Messages Container */}
+                                <div className="flex-1 p-4 overflow-y-auto bg-gray-50/50 space-y-4">
+                                    {adminMessages.length === 0 ? (
+                                        <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                                            暂无对话内容
+                                        </div>
+                                    ) : (
+                                        adminMessages.map(msg => {
+                                            const isAdmin = msg.sender_type === 'admin';
+                                            return (
+                                                <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`max-w-[75%] p-3 rounded-2xl text-sm shadow-sm ${
+                                                        isAdmin ? 'bg-blue-500 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                                                    }`}>
+                                                        <p className="whitespace-pre-wrap word-break-all">{msg.content}</p>
+                                                        <div className={`text-[10px] mt-1 text-right ${isAdmin ? 'text-blue-200' : 'text-gray-400'}`}>
+                                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                    )}
+                                    <div ref={adminMessagesEndRef} />
+                                </div>
+                                
+                                {/* Input Area */}
+                                <div className="p-3 bg-white border-t border-gray-100 flex gap-2">
+                                    <input 
+                                        type="text"
+                                        value={adminChatInput}
+                                        onChange={e => setAdminChatInput(e.target.value)}
+                                        onKeyPress={e => e.key === 'Enter' && handleAdminSend()}
+                                        placeholder={`回复 ${activeChatUser.nickname || activeChatUser.username}...`}
+                                        className="flex-1 bg-gray-50 px-4 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-blue-400 transition-colors"
+                                    />
+                                    <button 
+                                        onClick={handleAdminSend}
+                                        disabled={!adminChatInput.trim()}
+                                        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-200 transition-all disabled:opacity-50"
+                                    >
+                                        发送
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
+                                <span className="text-4xl mb-4">💬</span>
+                                <p>在左侧选择一个用户开始聊天</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

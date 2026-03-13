@@ -206,6 +206,105 @@ export default async function handler(req: any, res: any) {
                 });
             }
 
+            case 'getChatUsers': {
+                // Get a list of unique users who have sent messages
+                const { data: messages, error } = await supabase
+                    .from('messages')
+                    .select('user_id, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('[getChatUsers Error]', error);
+                    return res.status(500).json({ error: '获取聊天用户失败' });
+                }
+
+                // Group by user_id
+                const userIds = [...new Set(messages?.map(m => m.user_id) || [])];
+                
+                if (userIds.length === 0) {
+                     return res.status(200).json({ users: [] });
+                }
+
+                // Fetch user details for these IDs
+                const { data: usersDetail, error: userError } = await supabase
+                    .from('users')
+                    .select('id, username, nickname')
+                    .in('id', userIds);
+
+                if (userError) {
+                    return res.status(500).json({ error: '获取用户详情失败' });
+                }
+
+                return res.status(200).json({ users: usersDetail });
+            }
+
+            case 'getAdminMessages': {
+                const { userId } = data;
+                if (!userId) {
+                    return res.status(400).json({ error: '缺少userId' });
+                }
+
+                const { data: messages, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.error('[getAdminMessages Error]', error);
+                    return res.status(500).json({ error: '获取留言失败' });
+                }
+
+                // Mark messages from user as read
+                await supabase
+                    .from('messages')
+                    .update({ is_read: true })
+                    .eq('user_id', userId)
+                    .eq('sender_type', 'user')
+                    .eq('is_read', false);
+
+                return res.status(200).json({ success: true, messages });
+            }
+
+            case 'replyMessage': {
+                const { userId, content } = data;
+                if (!userId || !content) {
+                    return res.status(400).json({ error: '缺少必要参数' });
+                }
+
+                const { data: newMessage, error } = await supabase
+                    .from('messages')
+                    .insert({
+                        user_id: userId,
+                        sender_type: 'admin',
+                        content,
+                        is_read: false
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error('[replyMessage Error]', error);
+                    return res.status(500).json({ error: '回复失败' });
+                }
+
+                return res.status(200).json({ success: true, message: newMessage });
+            }
+
+            case 'clearMessages': {
+                const { error } = await supabase
+                    .from('messages')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+
+                if (error) {
+                    console.error('[clearMessages Error]', error);
+                    return res.status(500).json({ error: '清空聊天记录失败' });
+                }
+
+                return res.status(200).json({ success: true, message: '聊天记录已清空' });
+            }
+
             default:
                 return res.status(400).json({ error: 'Invalid action' });
         }

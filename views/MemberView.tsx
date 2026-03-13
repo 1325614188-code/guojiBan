@@ -21,6 +21,13 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     const [referralCount, setReferralCount] = useState(0);
     const [userPoints, setUserPoints] = useState(0);
     const [pointsMessage, setPointsMessage] = useState('');
+    
+    // 客服聊天状态
+    const [showChat, setShowChat] = useState(false);
+    const [chatMessages, setChatMessages] = useState<any[]>([]);
+    const [chatInput, setChatInput] = useState('');
+    const [chatLoading, setChatLoading] = useState(false);
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
     const getDeviceIdSuffix = (): string => {
         const deviceId = localStorage.getItem('device_id') || '';
@@ -66,7 +73,78 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
         if (savedOrderId) {
             setPendingOrderId(savedOrderId);
         }
-    }, []);
+    }, [user?.id]);
+
+    // 聊天消息拉取逻辑
+    const fetchMessages = async () => {
+        if (!user?.id) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/auth_v2?t=${Date.now()}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getMessages', userId: user.id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setChatMessages(data.messages);
+            }
+        } catch (err) {
+            console.error('Failed to fetch messages:', err);
+        }
+    };
+
+    // 监听聊天窗口打开时的轮询
+    useEffect(() => {
+        let interval: any;
+        if (showChat && user?.id) {
+            fetchMessages(); // 初始拉取
+            interval = setInterval(fetchMessages, 5000); // 每5秒轮询新消息
+        }
+        return () => clearInterval(interval);
+    }, [showChat, user?.id]);
+
+    // 滚动到最新消息
+    useEffect(() => {
+        if (showChat) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [chatMessages, showChat]);
+
+    const handleSendMessage = async () => {
+        if (!chatInput.trim() || !user?.id) return;
+        
+        const content = chatInput.trim();
+        setChatInput('');
+        setChatLoading(true);
+
+        // 乐观更新 UI
+        const optimisticMsg = {
+            id: 'temp-' + Date.now(),
+            user_id: user.id,
+            sender_type: 'user',
+            content,
+            created_at: new Date().toISOString(),
+            is_read: false
+        };
+        setChatMessages(prev => [...prev, optimisticMsg]);
+
+        try {
+            const res = await fetch(`${API_BASE}/api/auth_v2`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'sendMessage', userId: user.id, content })
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchMessages(); // 重新拉取确认真实数据
+            }
+        } catch (err) {
+            console.error('Failed to send message:', err);
+            // 这里可以加一个发送失败的提示
+        } finally {
+            setChatLoading(false);
+        }
+    };
 
     const refreshUser = async () => {
         setLoading(true);
@@ -322,6 +400,70 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                         <input type="text" value={redeemCode} onChange={e => setRedeemCode(e.target.value.toUpperCase())} className="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100" />
                         <button onClick={handleRedeem} disabled={loading} className="px-6 bg-gray-800 text-white rounded-xl font-bold disabled:opacity-50">{t('redeem')}</button>
                     </div>
+                </div>
+
+                {/* Customer Service / Chat */}
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden transition-all duration-300">
+                    <div 
+                        className="flex justify-between items-center cursor-pointer mb-2" 
+                        onClick={() => setShowChat(!showChat)}
+                    >
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl">💬</span>
+                            <h4 className="font-bold text-gray-800">联系客服 / Support</h4>
+                        </div>
+                        <span className={`transform transition-transform ${showChat ? 'rotate-180' : ''}`}>▼</span>
+                    </div>
+                    
+                    {showChat && (
+                        <div className="mt-4 flex flex-col h-[350px]">
+                            {/* Message List */}
+                            <div className="flex-1 bg-gray-50 rounded-2xl p-4 overflow-y-auto mb-4 border border-gray-100 space-y-3">
+                                {chatMessages.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
+                                        <p>有问题随时留言吧~</p>
+                                        <p className="text-xs mt-1">Leave a message if you need help.</p>
+                                    </div>
+                                ) : (
+                                    chatMessages.map((msg: any) => {
+                                        const isUser = msg.sender_type === 'user';
+                                        return (
+                                            <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${
+                                                    isUser ? 'bg-pink-500 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                                                }`}>
+                                                    <p className="whitespace-pre-wrap word-break-all">{msg.content}</p>
+                                                    <div className={`text-[10px] mt-1 text-right ${isUser ? 'text-pink-200' : 'text-gray-400'}`}>
+                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+                            
+                            {/* Input Area */}
+                            <div className="flex gap-2">
+                                <input 
+                                    type="text" 
+                                    value={chatInput} 
+                                    onChange={e => setChatInput(e.target.value)} 
+                                    onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+                                    placeholder="输入消息..."
+                                    className="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 focus:outline-none focus:border-pink-300 transition-colors" 
+                                />
+                                <button 
+                                    onClick={handleSendMessage} 
+                                    disabled={chatLoading || !chatInput.trim()} 
+                                    className="px-5 bg-pink-500 text-white rounded-xl font-bold disabled:opacity-50 active:scale-95 shadow-md flex items-center justify-center"
+                                >
+                                    发送
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <button onClick={onLogout} className="w-full py-4 text-gray-400 text-sm font-medium">{t('logout')}</button>

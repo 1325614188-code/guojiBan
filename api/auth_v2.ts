@@ -398,6 +398,51 @@ export default async function handler(req: any, res: any) {
                 return res.status(200).json({ success: true });
             }
 
+            case 'sendMessage': {
+                const { userId, content } = data;
+                if (!userId || !content) {
+                    return res.status(400).json({ error: '缺少必要参数' });
+                }
+
+                const { data: newMessage, error } = await supabase
+                    .from('messages')
+                    .insert({
+                        user_id: userId,
+                        sender_type: 'user',
+                        content,
+                        is_read: false
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error('[sendMessage Error]', error);
+                    return res.status(500).json({ error: '发送失败' });
+                }
+
+                return res.status(200).json({ success: true, message: newMessage });
+            }
+
+            case 'getMessages': {
+                const { userId } = data;
+                if (!userId) {
+                    return res.status(400).json({ error: '缺少userId' });
+                }
+
+                const { data: messages, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.error('[getMessages Error]', error);
+                    return res.status(500).json({ error: '获取留言失败' });
+                }
+
+                return res.status(200).json({ success: true, messages });
+            }
+
             case 'getConfig': {
                 // 公开接口，获取系统配置（如最低版本号、公告等），不包含敏感信息
                 const { data: configs, error } = await supabase
