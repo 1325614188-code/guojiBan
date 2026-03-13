@@ -67,7 +67,7 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        test_mode: isTestMode,
+                        testMode: isTestMode,
                         metadata: {
                             userId,
                             tradeNo,
