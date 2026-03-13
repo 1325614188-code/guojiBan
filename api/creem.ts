@@ -69,7 +69,7 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        success_url: `${origin}?payment=success&orderId=${tradeNo}`,
+                        success_url: `${origin}?payment=success&order_id=${tradeNo}`,
                         metadata: {
                             userId,
                             tradeNo,

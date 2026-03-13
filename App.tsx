@@ -118,7 +118,12 @@ const App: React.FC = () => {
       console.log('[Payment] Callback detected:', orderIdFromUrl);
       window.history.replaceState({}, '', window.location.pathname);
 
-      fetch(`${API_BASE}/api/stripe?t=${Date.now()}&r=${Math.random()}`, {
+      // Determine endpoint based on prefix
+      let endpoint = '/api/stripe';
+      if (orderIdFromUrl.startsWith('CR')) endpoint = '/api/creem';
+      else if (orderIdFromUrl.startsWith('AW')) endpoint = '/api/airwallex';
+
+      fetch(`${API_BASE}${endpoint}?t=${Date.now()}&r=${Math.random()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
