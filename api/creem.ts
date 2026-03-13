@@ -8,8 +8,8 @@ const CREEM_API_KEY = process.env.CREEM_API_KEY || 'creem_4ti9TuRNHMna3GP9hXxZO5
 const CREEM_PRODUCT_ID_5USD = process.env.CREEM_PRODUCT_ID_5USD || 'prod_7jbvR7bVfcXC4LZVZ7nKCp';
 const CREEM_PRODUCT_ID_10USD = process.env.CREEM_PRODUCT_ID_10USD || 'prod_3QknshZWwWAE5HuwwnwBLi';
 
-const API_BASE_URL = 'https://api.creem.io/v1';
-
+const API_BASE_URL_PROD = 'https://api.creem.io/v1';
+const API_BASE_URL_TEST = 'https://test-api.creem.io/v1';
 export default async function handler(req: any, res: any) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -58,8 +58,9 @@ export default async function handler(req: any, res: any) {
 
                 // 2. Call Creem to create Checkout Session
                 const isTestMode = CREEM_API_KEY.startsWith('creem_test_');
+                const baseUrl = isTestMode ? API_BASE_URL_TEST : API_BASE_URL_PROD;
                 
-                const response = await fetch(`${API_BASE_URL}/checkouts`, {
+                const response = await fetch(`${baseUrl}/checkouts`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -67,7 +68,6 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
-                        testMode: isTestMode,
                         metadata: {
                             userId,
                             tradeNo,
