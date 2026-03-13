@@ -175,7 +175,12 @@ export const translations: Record<Language, any> = {
         hs_pixie: 'Soft Pixie Cut',
         hs_pixie_desc: 'Extra short face-framing, clean and crisp',
         hs_curtain: 'Curtain Bangs Shag',
-        hs_curtain_desc: 'Side-swept bangs for a smaller face, gentle and sweet'
+        hs_curtain_desc: 'Side-swept bangs for a smaller face, gentle and sweet',
+        contact_support_chat: 'Contact Support',
+        chat_welcome: 'How can we help you?',
+        chat_welcome_sub: 'Leave a message and we will reply soon.',
+        chat_input_placeholder: 'Type a message...',
+        chat_send: 'Send'
     },
     vi: {
         home: 'Trang chủ',
@@ -348,7 +353,12 @@ export const translations: Record<Language, any> = {
         hs_pixie: 'Soft Pixie Cut',
         hs_pixie_desc: 'Tóc cực ngắn ôm sát mặt, gọn gàng và sắc sảo',
         hs_curtain: 'Curtain Bangs Shag',
-        hs_curtain_desc: 'Mái bay giúp mặt thon gọn hơn, dịu dàng và ngọt ngào'
+        hs_curtain_desc: 'Mái bay giúp mặt thon gọn hơn, dịu dàng và ngọt ngào',
+        contact_support_chat: 'Liên hệ hỗ trợ',
+        chat_welcome: 'Chúng tôi có thể giúp gì cho bạn?',
+        chat_welcome_sub: 'Hãy để lại lời nhắn, chúng tôi sẽ sớm phản hồi.',
+        chat_input_placeholder: 'Nhập tin nhắn...',
+        chat_send: 'Gửi'
     },
     ko: {
         home: '홈',
@@ -521,7 +531,12 @@ export const translations: Record<Language, any> = {
         hs_pixie: '소프트 픽시컷',
         hs_pixie_desc: '얼굴 라인을 강조하는 아주 짧은 머리, 깨끗하고 선명한 인상',
         hs_curtain: '커튼뱅 샤기컷',
-        hs_curtain_desc: '얼굴을 작아 보이게 하는 옆머리, 부드럽고 달콤한 스타일'
+        hs_curtain_desc: '얼굴을 작아 보이게 하는 옆머리, 부드럽고 달콤한 스타일',
+        contact_support_chat: '고객센터 문의',
+        chat_welcome: '무엇을 도와드릴까요?',
+        chat_welcome_sub: '메시지를 남겨주시면 곧 답변해 드리겠습니다.',
+        chat_input_placeholder: '메시지를 입력하세요...',
+        chat_send: '보내기'
     },
     ja: {
         home: 'ホーム',
@@ -692,9 +707,14 @@ export const translations: Record<Language, any> = {
         hs_mermaid: 'マーメードカット',
         hs_mermaid_desc: '透明感のあるウェーブロング、幻想的でフェアリーな雰囲気',
         hs_pixie: 'ソフトピクシーカット',
-        hs_pixie_desc: '顔周りをすっきり見せるベリーショート、清潔感のある印象',
+        hs_pixie_desc: '顔周りをすっきり見せるベリーショート, 清潔感のある印象',
         hs_curtain: 'カーテンバングシャギー',
-        hs_curtain_desc: '小顔効果のあるサイドバング、優しく甘いスタイル'
+        hs_curtain_desc: '小顔効果のあるサイドバング, 優しく甘いスタイル',
+        contact_support_chat: 'カスタマーサポート',
+        chat_welcome: '何かお困りですか？',
+        chat_welcome_sub: 'メッセージを残していただければ、すぐにお返事いたします。',
+        chat_input_placeholder: 'メッセージを入力...',
+        chat_send: '送信'
     },
     zh: {
         home: '首页',
@@ -866,7 +886,13 @@ export const translations: Record<Language, any> = {
         hs_mermaid_desc: '充满仙气的大波浪长发，空灵动人',
         hs_pixie: '精致精灵头',
         hs_pixie_desc: '极短的露耳短发，五官精致，清爽干练',
-        hs_curtain_desc: '完美修饰脸型的侧分刘海，从视觉上缩小脸部'
+        hs_curtain: '法式八字刘海',
+        hs_curtain_desc: '完美修饰脸型的侧分刘海，从视觉上缩小脸部',
+        contact_support_chat: '联系客服',
+        chat_welcome: '有问题随时留言吧~',
+        chat_welcome_sub: '我们会尽快为您解答。',
+        chat_input_placeholder: '输入消息...',
+        chat_send: '发送'
     },
     es: {
         home: 'Inicio',
@@ -1038,7 +1064,12 @@ export const translations: Record<Language, any> = {
         hs_pixie: 'Corte Pixie Suave',
         hs_pixie_desc: 'Corte extra corto que enmarca el rostro, limpio y fresco',
         hs_curtain: 'Shag con Flequillo de Cortina',
-        hs_curtain_desc: 'Flequillo hacia los lados para un rostro más pequeño, suave y dulce'
+        hs_curtain_desc: 'Flequillo hacia los lados para un rostro más pequeño, suave y dulce',
+        contact_support_chat: 'Soporte al cliente',
+        chat_welcome: '¿Cómo podemos ayudarte?',
+        chat_welcome_sub: 'Deja un mensaje y te responderemos pronto.',
+        chat_input_placeholder: 'Escribe un mensaje...',
+        chat_send: 'Enviar'
     }
 };
 

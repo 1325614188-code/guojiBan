@@ -410,7 +410,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                     >
                         <div className="flex items-center gap-2">
                             <span className="text-xl">💬</span>
-                            <h4 className="font-bold text-gray-800">联系客服 / Support</h4>
+                            <h4 className="font-bold text-gray-800">{t('contact_support_chat')}</h4>
                         </div>
                         <span className={`transform transition-transform ${showChat ? 'rotate-180' : ''}`}>▼</span>
                     </div>
@@ -421,8 +421,8 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                             <div className="flex-1 bg-gray-50 rounded-2xl p-4 overflow-y-auto mb-4 border border-gray-100 space-y-3">
                                 {chatMessages.length === 0 ? (
                                     <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
-                                        <p>有问题随时留言吧~</p>
-                                        <p className="text-xs mt-1">Leave a message if you need help.</p>
+                                        <p>{t('chat_welcome')}</p>
+                                        <p className="text-xs mt-1">{t('chat_welcome_sub')}</p>
                                     </div>
                                 ) : (
                                     chatMessages.map((msg: any) => {
@@ -451,7 +451,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                                     value={chatInput} 
                                     onChange={e => setChatInput(e.target.value)} 
                                     onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="输入消息..."
+                                    placeholder={t('chat_input_placeholder')}
                                     className="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 focus:outline-none focus:border-pink-300 transition-colors" 
                                 />
                                 <button 
@@ -459,7 +459,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
                                     disabled={chatLoading || !chatInput.trim()} 
                                     className="px-5 bg-pink-500 text-white rounded-xl font-bold disabled:opacity-50 active:scale-95 shadow-md flex items-center justify-center"
                                 >
-                                    发送
+                                    {t('chat_send')}
                                 </button>
                             </div>
                         </div>
