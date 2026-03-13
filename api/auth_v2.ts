@@ -152,8 +152,7 @@ export default async function handler(req: any, res: any) {
                                 await supabase
                                     .from('users')
                                     .update({
-                                        credits: (referrerData.credits || 0) + 1,
-                                        points: (referrerData.points || 0) + 1
+                                        credits: (referrerData.credits || 0) + 1
                                     })
                                     .eq('id', referrerId);
                             }
@@ -209,16 +208,17 @@ export default async function handler(req: any, res: any) {
 
                 const { data: user, error } = await supabase
                     .from('users')
-                    .select('id, username, credits, points, commission_unsettled')
+                    .select('id, username, credits, commission_unsettled')
                     .eq('id', userId)
                     .single();
 
                 if (error) {
                     console.error('[getUser Error]', error);
-                    return res.status(404).json({
-                        error: 'User not found',
+                    return res.status(500).json({
+                        error: 'Database error',
+                        details: error.message,
                         _db: supabaseUrl.split('//')[1]?.split('.')[0] || 'missing',
-                        _v: 'auth-v2-diag-v10'
+                        _v: 'auth-v2-fixed-v11'
                     });
                 }
 
@@ -345,32 +345,13 @@ export default async function handler(req: any, res: any) {
 
             case 'getPointsStats': {
                 const { userId } = data;
-                const { data: user } = await supabase
-                    .from('users')
-                    .select('points')
-                    .eq('id', userId)
-                    .single();
-
-                return res.status(200).json({ points: user?.points || 0 });
+                return res.status(200).json({ points: 0 }); // points column missing, returning 0
             }
 
             case 'redeemPoints': {
                 const { userId, pointsUsed, rewardAmount } = data;
 
-                const { data: user } = await supabase
-                    .from('users')
-                    .select('points')
-                    .eq('id', userId)
-                    .single();
-
-                if (!user || (user.points || 0) < pointsUsed) {
-                    return res.status(400).json({ error: '积分不足' });
-                }
-
-                await supabase
-                    .from('users')
-                    .update({ points: user.points - pointsUsed })
-                    .eq('id', userId);
+                return res.status(400).json({ error: '积分系统维护中' });
 
                 return res.status(200).json({ success: true, message: '兑换申请已提交' });
             }
