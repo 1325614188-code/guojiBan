@@ -57,6 +57,8 @@ export default async function handler(req: any, res: any) {
                 if (orderError) throw orderError;
 
                 // 2. Call Creem to create Checkout Session
+                const isTestMode = CREEM_API_KEY.startsWith('creem_test_');
+                
                 const response = await fetch(`${API_BASE_URL}/checkouts`, {
                     method: 'POST',
                     headers: {
@@ -65,6 +67,7 @@ export default async function handler(req: any, res: any) {
                     },
                     body: JSON.stringify({
                         product_id: productId,
+                        test_mode: isTestMode,
                         metadata: {
                             userId,
                             tradeNo,
