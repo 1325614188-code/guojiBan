@@ -117,7 +117,15 @@ export default async function handler(req: any, res: any) {
                 return res.status(400).json({ error: 'Invalid action' });
         }
     } catch (error: any) {
-        console.error('Creem handler error:', error);
-        return res.status(500).json({ error: error.message || 'Internal server error' });
+        console.error('[Creem Error Detail]:', {
+            message: error.message,
+            stack: error.stack,
+            body: req.body
+        });
+        return res.status(500).json({ 
+            error: error.message || 'Internal server error',
+            details: error.toString(),
+            _v: 'creem-debug-v1'
+        });
     }
 }
