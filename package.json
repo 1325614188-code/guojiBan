@@ -1,0 +1,45 @@
+{
+  "name": "美力实验室---你的专属ai颜究院",
+  "private": true,
+  "version": "1.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "sync-version": "node sync-version.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/app": "^8.0.1",
+    "@capacitor/camera": "^8.0.2",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/ios": "^8.1.0",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/toast": "^8.0.1",
+    "@google/genai": "^1.40.0",
+    "@supabase/supabase-js": "^2.95.1",
+    "google-auth-library": "^9.15.1",
+    "i18next": "^26.0.4",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "iztro": "^2.4.6",
+    "lucide-react": "^0.577.0",
+    "lunar-javascript": "^1.7.7",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-i18next": "^17.0.2",
+    "react-markdown": "^10.1.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "fs-extra": "^11.3.4",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-pwa": "^1.2.0"
+  }
+}
