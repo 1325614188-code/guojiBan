@@ -1,9 +1,11 @@
 /**
- * 前端 AI 服务 - 通过后端 Vertex AI API 调用
- * 目的：数据安全与费用管理（仅使用 GCP 赠金）
+ * 前端 Gemini 服务 - 通过后端 API 调用
+ * 所有敏感的 API Key 逻辑已移至后端
+ * 整合了国际化语言传递与多级图像压缩优化
  */
 
 import { getApiUrl } from '../lib/api-config';
+import { compressImage } from '../lib/image';
 import i18n from '../lib/i18n';
 
 const API_BASE = getApiUrl('/api/gemini');
@@ -15,7 +17,10 @@ async function callApi(body: Record<string, any>): Promise<any> {
   const response = await fetch(API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, lang: body.lang || i18n.language })
+    body: JSON.stringify({ 
+      ...body, 
+      lang: body.lang || i18n.language 
+    })
   });
 
   if (!response.ok) {
@@ -30,9 +35,11 @@ async function callApi(body: Record<string, any>): Promise<any> {
  * 检测照片是否合规（包含人脸和上半身）
  */
 export const detectPhotoContent = async (image: string): Promise<boolean> => {
+  // Tier A: Detection (Smallest) - 256px 以节省检测流量
+  const compressed = await compressImage(image, 256, 0.5);
   const { valid } = await callApi({
     action: 'detectPhotoContent',
-    image
+    image: compressed
   });
   return valid;
 };
@@ -42,10 +49,15 @@ export const analyzeImage = async (
   images: string[],
   systemInstruction?: string
 ) => {
+  // Tier B: Analysis (Balanced) - 512px 兼顾细节与成本
+  const compressedImages = await Promise.all(
+    images.map(img => compressImage(img, 512, 0.6))
+  );
+
   const { result } = await callApi({
     action: 'analyze',
     type: prompt,
-    images
+    images: compressedImages
   });
   return result;
 };
@@ -55,6 +67,11 @@ export const generateXHSStyleReport = async (
   images: string[],
   additionalPrompt: string = ""
 ) => {
+  // Tier B: Analysis (Balanced) - 512px
+  const compressedImages = await Promise.all(
+    images.map(img => compressImage(img, 512, 0.6))
+  );
+
   // 从 additionalPrompt 中提取性别信息
   const genderMatch = additionalPrompt.match(/性别：(男|女)/);
   const gender = genderMatch ? genderMatch[1] : null;
@@ -62,7 +79,7 @@ export const generateXHSStyleReport = async (
   const { result } = await callApi({
     action: 'analyze',
     type,
-    images,
+    images: compressedImages,
     gender
   });
   return result;
@@ -73,10 +90,14 @@ export const generateTryOnImage = async (
   itemImage: string,
   type: 'clothes' | 'earrings'
 ) => {
+  // Tier C: Generation (High quality) - 1024px 确保生成质量
+  const compressedBase = await compressImage(baseImage, 1024, 0.7);
+  const compressedItem = await compressImage(itemImage, 1024, 0.7);
+
   const { result } = await callApi({
     action: 'tryOn',
-    baseImage,
-    itemImage,
+    baseImage: compressedBase,
+    itemImage: compressedItem,
     itemType: type
   });
   return result;
@@ -87,18 +108,12 @@ export const generateHairstyles = async (
   gender: string,
   onProgress?: (current: number, total: number, result?: { name: string; imageUrl: string }) => void
 ): Promise<{ name: string; imageUrl: string }[]> => {
-  // 发型定义
+  // 发型定义 (复刻版配置)
   const maleHairstyles = [
     { name: '现代纹理飞机头', desc: '经典飞机头的升级版，哑光发泥打造自然的蓬松纹理，重点在于抓出来的空气感。' },
     { name: '软狼尾', desc: '缩短脑后长度，适合通勤，通过层次修剪增加顶部蓬松度，极具少年感。' },
     { name: '法式剪裁', desc: '头顶保留一定长度向前梳理，整齐或破碎短刘海，侧面配合高渐变 (High Fade)，硬朗深邃。' },
-    { name: '侧爆渐变', desc: '渐变仅围绕耳朵周围呈半圆状散开，让中间的发型更具结构感。' },
-    { name: '流动感中长发', desc: '文艺气息长碎发，强调自然流动，长度在耳朵以下，发尾微卷，慵懒高级。' },
-    { name: '现代英伦摩德头', desc: '层次丰富，刘海较长盖住部分额头，修饰高发际线和宽额头，不羁摇滚感。' },
-    { name: '皮肤渐变圆寸', desc: '侧边剃到彻底见皮肤 (Skin Fade)，带有一两条简洁几何线条。' },
-    { name: '刘海中分头', desc: '刘海向内弯曲像一个逗号，比普通中分更具设计感，刘海在眉毛上方急剧向内弯曲，剪裁干净，五官突出。' },
-    { name: '侧分背头', desc: '现代侧分，轻盈造型品，保留自然光泽，侧边有长度渐变，温润专业。' },
-    { name: '凌乱碎盖', desc: '头顶头发较长且覆盖额头，通过打薄营造凌乱层次感，包容脸型，自带减龄效果。' }
+    { name: '刘海中分头', desc: '刘海向内弯曲像一个逗号，比普通中分更具设计感。' }
   ];
 
   const femaleHairstyleNames = ['幼兽剪 (Cub Cut)', '蝴蝶剪 (Butterfly Cut)', '伯金刘海 (Birkin Bangs)', '浮云鲍伯 (Cloud Bob)', '锁骨直切 (Blunt Collarbone)', '90年代复古碎层', '现代鲻鱼头', '人鱼剪 (Mermaid Cut)', '软精灵短发', '窗帘刘海碎发'];
@@ -115,9 +130,12 @@ export const generateHairstyles = async (
     onProgress?.(i + 1, total);
 
     try {
+      // Tier C: Generation (High quality) - 1024px
+      const compressedFace = await compressImage(faceImage, 1024, 0.7);
+
       const { result } = await callApi({
         action: 'hairstyle',
-        faceImage,
+        faceImage: compressedFace,
         gender,
         hairstyleName: item.name,
         hairstyleDesc: item.desc
@@ -149,9 +167,12 @@ export const generateMakeupImage = async (
   styleName: string,
   styleDesc: string
 ): Promise<string | null> => {
+  // Tier C: Generation (High quality) - 1024px
+  const compressedFace = await compressImage(faceImage, 1024, 0.7);
+
   const { result } = await callApi({
     action: 'makeup',
-    faceImage,
+    faceImage: compressedFace,
     styleName,
     styleDesc
   });
@@ -168,11 +189,17 @@ export const analysisMarriage = async (birthInfo: string, gender: string) => {
 };
 
 export const generatePartnerImage = async (description: string, gender: string, userImage?: string) => {
+  // Tier C: Generation (High quality) - 1024px
+  let compressedUserImg = undefined;
+  if (userImage) {
+    compressedUserImg = await compressImage(userImage, 1024, 0.7);
+  }
+
   const { result } = await callApi({
     action: 'generatePartner',
     description,
     gender,
-    userImage
+    userImage: compressedUserImg
   });
   return result;
 };
@@ -191,6 +218,47 @@ export const analysisZiWei = async (birthInfo: string, gender: string) => {
     action: 'ziweiAnalysis',
     birthInfo,
     gender
+  });
+  return result;
+};
+
+export const analysisNaming = async (params: {
+  type: 'personal_recommend' | 'personal_score' | 'company_recommend' | 'company_score';
+  birthInfo: string;
+  gender?: string;
+  surname?: string;
+  expectations?: string;
+  nameToScore?: string;
+  ownerName?: string;
+  industry?: string;
+}) => {
+  const { result } = await callApi({
+    action: 'namingAnalysis',
+    ...params
+  });
+  return result;
+};
+
+export const analysisJade = async (images: string[]) => {
+  // Tier B: Analysis
+  const compressedImages = await Promise.all(
+    images.map(img => compressImage(img, 512, 0.6))
+  );
+  const { result } = await callApi({
+    action: 'jadeAppraisal',
+    images: compressedImages
+  });
+  return result;
+};
+
+export const analysisEye = async (images: string[]) => {
+  // Tier B: Analysis
+  const compressedImages = await Promise.all(
+    images.map(img => compressImage(img, 512, 0.6))
+  );
+  const { result } = await callApi({
+    action: 'eyeDiagnosis',
+    images: compressedImages
   });
   return result;
 };
