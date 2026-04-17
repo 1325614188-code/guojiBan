@@ -18,9 +18,11 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [commissions, setCommissions] = useState<any[]>([]);
     const [withdrawals, setWithdrawals] = useState<any[]>([]);
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'users' | 'commissions' | 'withdrawals' | 'config' | 'linktree' | 'support'>('users');
+    const [activeTab, setActiveTab] = useState<'users' | 'commissions' | 'withdrawals' | 'config' | 'linktree' | 'support' | 'ai'>('users');
     const [cBoard, setCBoard] = useState<any[]>(Array(20).fill({ user: '', amount: '' }));
     const [pBoard, setPBoard] = useState<any[]>(Array(20).fill({ user: '', amount: '' }));
+    const [aiUsage, setAiUsage] = useState<any[]>([]);
+    const [recentAiLogs, setRecentAiLogs] = useState<any[]>([]);
 
     // 客服支持状态
     const [conversations, setConversations] = useState<any[]>([]);
@@ -138,6 +140,16 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
             });
             const withdrawalsData = await withdrawalsRes.json();
             setWithdrawals(withdrawalsData.list || []);
+
+            // 获取 AI 使用统计
+            const aiRes = await fetch(getApiUrl('/api/admin'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'getAIUsage', adminId: admin.id })
+            });
+            const aiData = await aiRes.json();
+            setAiUsage(aiData.stats || []);
+            setRecentAiLogs(aiData.recentLogs || []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -449,6 +461,12 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                             {conversations.reduce((sum: number, c: any) => sum + (c.unread_count || 0), 0)}
                         </span>
                     )}
+                </button>
+                <button
+                    onClick={() => setActiveTab('ai')}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'ai' ? 'bg-white shadow-sm text-indigo-500' : 'text-gray-500'}`}
+                >
+                    🤖 AI
                 </button>
             </div>
 
@@ -1288,6 +1306,170 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                         </button>
                                     </div>
                                 </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {activeTab === 'ai' && (
+                <div className="space-y-6">
+                    {/* AI 统计概览 */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                            <div className="text-gray-400 text-[10px] font-bold uppercase mb-1">总调用次数</div>
+                            <div className="text-2xl font-black text-indigo-600">
+                                {aiUsage.reduce((acc, curr) => acc + curr.usage_count, 0)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                            <div className="text-gray-400 text-[10px] font-bold uppercase mb-1">累计 Token</div>
+                            <div className="text-2xl font-black text-purple-600">
+                                {(aiUsage.reduce((acc, curr) => acc + curr.total_tokens, 0) / 1000).toFixed(1)}k
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                            <div className="text-gray-400 text-[10px] font-bold uppercase mb-1">预估支出</div>
+                            <div className="text-2xl font-black text-pink-500">
+                                ${aiUsage.reduce((acc, curr) => {
+                                    const input = curr.prompt_tokens || 0;
+                                    const output = curr.completion_tokens || 0;
+                                    const isPro = curr.model_id?.includes('pro');
+                                    const rates = isPro ? { in: 3.5, out: 10.5 } : { in: 0.075, out: 0.30 };
+                                    return acc + (input / 1000000 * rates.in) + (output / 1000000 * rates.out);
+                                }, 0).toFixed(4)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                            <div className="text-gray-400 text-[10px] font-bold uppercase mb-1">成功率</div>
+                            <div className="text-2xl font-black text-green-500">
+                                {recentAiLogs.length > 0 
+                                    ? Math.round((recentAiLogs.filter(l => l.status === 'success').length / recentAiLogs.length) * 100) 
+                                    : 100}%
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                            <div className="text-gray-400 text-[10px] font-bold uppercase mb-1">活动模型</div>
+                            <div className="text-2xl font-black text-orange-500">{aiUsage.length}</div>
+                        </div>
+                    </div>
+
+                    {/* 模型详细分配 */}
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                        <h3 className="font-bold mb-6 flex items-center gap-2">
+                            <span>📊</span> 模型用量看板 (Tokens)
+                        </h3>
+                        <div className="space-y-6">
+                            {aiUsage.map(model => {
+                                const total = aiUsage.reduce((acc, curr) => acc + curr.total_tokens, 0);
+                                const percentage = total > 0 ? (model.total_tokens / total) * 100 : 0;
+                                
+                                // 根据模型 ID 获取计费（默认 Flash 价格）
+                                const isPro = model.model_id.includes('pro');
+                                const rates = isPro ? { in: 3.5, out: 10.5 } : { in: 0.075, out: 0.30 };
+                                const cost = (model.prompt_tokens / 1000000 * rates.in) + (model.completion_tokens / 1000000 * rates.out);
+
+                                return (
+                                    <div key={model.model_id} className="space-y-2">
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <span className="text-sm font-bold text-gray-700">{model.model_id}</span>
+                                                <span className="ml-2 text-[10px] text-gray-400">调用 {model.usage_count} 次</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-xs font-bold text-indigo-500">{model.total_tokens.toLocaleString()} <span className="text-[10px] text-gray-400 font-normal">Tokens</span></div>
+                                                <div className="text-[10px] font-bold text-pink-500">${cost.toFixed(4)}</div>
+                                            </div>
+                                        </div>
+                                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-1000" 
+                                                style={{ width: `${percentage}%` }}
+                                            />
+                                        </div>
+                                        <div className="flex gap-4 text-[9px] text-gray-400">
+                                            <span>输入: {model.prompt_tokens.toLocaleString()}</span>
+                                            <span>输出: {model.completion_tokens.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {aiUsage.length === 0 && (
+                                <div className="py-10 text-center text-gray-400 text-xs">暂无使用数据</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 最近活动日志 */}
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="font-bold flex items-center gap-2">
+                                <span>🕒</span> 最近调用日志
+                            </h3>
+                            <button 
+                                onClick={loadData}
+                                className="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-bold hover:bg-indigo-100 transition-colors"
+                            >
+                                刷新数据
+                            </button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="text-[10px] text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                                        <th className="pb-3 font-bold">动作</th>
+                                        <th className="pb-3 font-bold">模型</th>
+                                        <th className="pb-3 font-bold">Tokens</th>
+                                        <th className="pb-3 font-bold">耗时</th>
+                                        <th className="pb-3 font-bold">状态</th>
+                                        <th className="pb-3 font-bold">时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {recentAiLogs.map(log => (
+                                        <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="py-4 pr-4">
+                                                <div className="text-xs font-bold text-gray-700 break-all max-w-[120px] leading-tight">{log.action || 'unknown'}</div>
+                                            </td>
+                                            <td className="py-4">
+                                                <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md font-medium">
+                                                    {log.model_id}
+                                                </span>
+                                            </td>
+                                            <td className="py-4">
+                                                <div className="text-xs font-bold text-indigo-500">{log.total_tokens || 0}</div>
+                                                <div className="text-[9px] text-pink-500 font-medium">
+                                                    {(() => {
+                                                        const isPro = log.model_id?.includes('pro');
+                                                        const rates = isPro ? { in: 3.5, out: 10.5 } : { in: 0.075, out: 0.30 };
+                                                        const cost = ((log.prompt_tokens || 0) / 1000000 * rates.in) + ((log.completion_tokens || 0) / 1000000 * rates.out);
+                                                        return `$${cost.toFixed(5)}`;
+                                                    })()}
+                                                </div>
+                                            </td>
+                                            <td className="py-4">
+                                                <div className="text-[10px] text-gray-400">{log.duration_ms ? `${log.duration_ms}ms` : '-'}</div>
+                                            </td>
+                                            <td className="py-4">
+                                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                                    log.status === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                }`}>
+                                                    {log.status === 'success' ? '成功' : '失败'}
+                                                </span>
+                                            </td>
+                                            <td className="py-4">
+                                                <div className="text-[10px] text-gray-400 whitespace-nowrap">
+                                                    {new Date(log.created_at).toLocaleString()}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {recentAiLogs.length === 0 && (
+                                <div className="py-20 text-center">
+                                    <div className="text-4xl mb-2">🔭</div>
+                                    <div className="text-gray-400 text-xs">尚无任何活动记录</div>
+                                </div>
                             )}
                         </div>
                     </div>

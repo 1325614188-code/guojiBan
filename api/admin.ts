@@ -349,6 +349,81 @@ export default async function handler(req: any, res: any) {
                 return res.status(200).json({ success: true });
             }
 
+            case 'getAIUsage': {
+                // 1. 获取汇总统计
+                const { data: logs, error: statsError } = await supabase
+                    .from('gemini_usage_logs')
+                    .select('model_id, prompt_tokens, completion_tokens, total_tokens')
+                    .eq('status', 'success');
+
+                if (statsError) throw statsError;
+
+                const stats: Record<string, any> = {};
+                logs?.forEach(log => {
+                    const model = log.model_id;
+                    if (!stats[model]) {
+                        stats[model] = {
+                            model_id: model,
+                            usage_count: 0,
+                            prompt_tokens: 0,
+                            completion_tokens: 0,
+                            total_tokens: 0
+                        };
+                    }
+                    stats[model].usage_count += 1;
+                    stats[model].prompt_tokens += (log.prompt_tokens || 0);
+                    stats[model].completion_tokens += (log.completion_tokens || 0);
+                    stats[model].total_tokens += (log.total_tokens || 0);
+                });
+
+                // 2. 获取最近 50 条详细日志
+                const { data: recentLogs, error: logError } = await supabase
+                    .from('gemini_usage_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (logError) throw logError;
+
+                return res.status(200).json({ 
+                    stats: Object.values(stats),
+                    recentLogs: recentLogs || []
+                });
+            }
+
+            case 'getAIStats': {
+                // 获取最近 7 天的 AI 使用统计
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                const { data: logs } = await supabase
+                    .from('gemini_usage_logs')
+                    .select('*')
+                    .gte('created_at', sevenDaysAgo.toISOString())
+                    .order('created_at', { ascending: false });
+
+                // 计算统计数据
+                const stats = {
+                    totalRequests: logs?.length || 0,
+                    successRequests: logs?.filter(l => l.status === 'success').length || 0,
+                    errorRequests: logs?.filter(l => l.status === 'error').length || 0,
+                    totalTokens: logs?.reduce((acc, l) => acc + (l.total_tokens || 0), 0) || 0,
+                    byModel: {} as Record<string, number>,
+                    byAction: {} as Record<string, number>,
+                    dailyTokens: {} as Record<string, number>
+                };
+
+                logs?.forEach(log => {
+                    stats.byModel[log.model_id] = (stats.byModel[log.model_id] || 0) + 1;
+                    stats.byAction[log.action] = (stats.byAction[log.action] || 0) + 1;
+                    
+                    const day = new Date(log.created_at).toLocaleDateString();
+                    stats.dailyTokens[day] = (stats.dailyTokens[day] || 0) + (log.total_tokens || 0);
+                });
+
+                return res.status(200).json(stats);
+            }
+
             case 'cleanupMessages': {
                 // 清理 3 个月前（90天）的旧消息
                 const threeMonthsAgo = new Date();
