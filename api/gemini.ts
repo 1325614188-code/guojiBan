@@ -236,7 +236,20 @@ export default async function handler(req: any, res: any) {
             const { data: cached } = await supabase.from('gemini_cache').select('result').eq('input_hash', cacheKey).maybeSingle();
             if (cached) {
                 console.log(`[Cache Hit] Action: ${action}, Key: ${cacheKey}`);
-                return res.status(200).json({ result: cached.result });
+                let parsedResult = cached.result;
+                
+                // NOTE: 针对翡翠鉴定与眼诊功能，若缓存数据是字符串类型，则尝试将其反序列化为 JSON 对象，防止前端读取属性失败
+                if (action === 'jadeAppraisal' || action === 'eyeDiagnosis') {
+                    if (typeof cached.result === 'string') {
+                        try {
+                            parsedResult = JSON.parse(cached.result);
+                        } catch (e) {
+                            console.error("[Cache Parse Error] 还原 JSON 缓存失败:", e);
+                        }
+                    }
+                }
+                
+                return res.status(200).json({ result: parsedResult });
             }
         }
 
@@ -579,6 +592,7 @@ export default async function handler(req: any, res: any) {
 
             case 'jadeAppraisal':
             case 'eyeDiagnosis': {
+                const { images } = req.body;
                 const isJade = action === 'jadeAppraisal';
                 
                 // 定义明确的 JSON 结构要求 (完美复制自参考项目)
