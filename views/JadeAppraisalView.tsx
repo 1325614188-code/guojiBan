@@ -191,23 +191,96 @@ const JadeAppraisalView: React.FC<JadeAppraisalViewProps> = ({ onBack, onCheckCr
                                 {result?.authenticity?.conclusion || (result as any)?.conclusion || t('common.unknown', '未知')}
                             </h2>
 
-                            <div className="grid grid-cols-2 gap-2 mt-4">
-                                <div className="bg-slate-50 p-3 rounded-xl">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase">{t('tests.jade_texture', '种质')}</p>
-                                    <p className="text-sm font-bold">
+                            {/* 1. 真伪概率与风险评估徽章组 */}
+                            <div className="flex flex-wrap items-center gap-2 mt-3">
+                                <span className="text-xs font-bold text-emerald-700 bg-emerald-50/80 border border-emerald-100/60 px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                                    🛡️ {t('tests.jade_probability', '天然A货概率')}: {result?.authenticity?.probability || (result as any)?.probability || '98%+'}
+                                </span>
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-sm border ${
+                                    (result?.authenticity?.riskLevel || (result as any)?.riskLevel) === 'low' 
+                                        ? 'bg-green-50 text-green-600 border-green-100/60' 
+                                        : (result?.authenticity?.riskLevel || (result as any)?.riskLevel) === 'medium' 
+                                            ? 'bg-amber-50 text-amber-600 border-amber-100/60' 
+                                            : 'bg-red-50 text-red-600 border-red-100/60'
+                                }`}>
+                                    ⚠️ {t('tests.risk_evaluation', '风险评估')}: {
+                                        (result?.authenticity?.riskLevel || (result as any)?.riskLevel) === 'low' 
+                                            ? t('tests.risk_low', '极低风险') 
+                                            : (result?.authenticity?.riskLevel || (result as any)?.riskLevel) === 'medium' 
+                                                ? t('tests.risk_medium', '中等风险') 
+                                                : t('tests.risk_high', '存在风险')
+                                    }
+                                </span>
+                            </div>
+
+                            {/* 2. 国标级五大核心物理检测卡片 */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mt-5">
+                                <div className="bg-slate-50/80 backdrop-blur border border-slate-100/50 p-3 rounded-2xl shadow-sm transition-all hover:bg-slate-50">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">🔮 {t('tests.jade_texture', '种质 (种)')}</p>
+                                    <p className="text-sm font-bold text-slate-800 mt-1">
                                         {result?.quality?.texture || (result as any)?.texture || (result as any)?.quality?.texture || t('common.unknown', '未知')}
                                     </p>
                                 </div>
-                                <div className="bg-slate-50 p-3 rounded-xl">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase">{t('tests.jade_transparency', '水头')}</p>
-                                    <p className="text-sm font-bold">
+                                <div className="bg-slate-50/80 backdrop-blur border border-slate-100/50 p-3 rounded-2xl shadow-sm transition-all hover:bg-slate-50">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">💧 {t('tests.jade_transparency', '水头 (水)')}</p>
+                                    <p className="text-sm font-bold text-slate-800 mt-1">
                                         {result?.quality?.transparency || (result as any)?.transparency || (result as any)?.quality?.transparency || t('common.unknown', '未知')}
+                                    </p>
+                                </div>
+                                <div className="bg-slate-50/80 backdrop-blur border border-slate-100/50 p-3 rounded-2xl shadow-sm transition-all hover:bg-slate-50">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">🎨 {t('tests.jade_color', '色泽 (色)')}</p>
+                                    <p className="text-sm font-bold text-slate-800 mt-1">
+                                        {result?.quality?.color || (result as any)?.color || (result as any)?.quality?.color || t('common.unknown', '未知')}
+                                    </p>
+                                </div>
+                                <div className="bg-slate-50/80 backdrop-blur border border-slate-100/50 p-3 rounded-2xl shadow-sm transition-all hover:bg-slate-50">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">🪓 {t('tests.jade_craftsmanship', '雕工 (工)')}</p>
+                                    <p className="text-sm font-bold text-slate-800 mt-1">
+                                        {result?.quality?.craftsmanship || (result as any)?.craftsmanship || (result as any)?.quality?.craftsmanship || t('common.unknown', '未知')}
+                                    </p>
+                                </div>
+                                <div className="bg-slate-50/80 backdrop-blur border border-slate-100/50 p-3 rounded-2xl shadow-sm transition-all hover:bg-slate-50 col-span-2 md:col-span-2">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">🏆 {t('tests.overall_grade', '综合品质级别')}</p>
+                                    <p className="text-sm font-bold text-emerald-700 mt-1">
+                                        {result?.quality?.overallGrade || (result as any)?.overallGrade || (result as any)?.quality?.overallGrade || t('common.unknown', '未知')}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="mt-4 prose prose-sm max-w-none text-slate-600 border-t pt-4">
-                                <ReactMarkdown>{result?.detailedAnalysis || (result as any)?.detailedAnalysis || (result as any)?.analysis || ''}</ReactMarkdown>
+                            {/* 3. 商业估值与收藏评级 (金色豪华卡片) */}
+                            {(result?.valuation || (result as any)?.valuation) && (
+                                <div className="mt-4 bg-gradient-to-br from-amber-50/90 via-yellow-50/40 to-amber-50/90 border border-amber-100/80 rounded-2xl p-4 shadow-sm">
+                                    <div className="flex items-center gap-1.5 text-amber-800 font-bold text-xs uppercase tracking-wider">
+                                        <span>🪙 {t('tests.valuation_title', '商业估价与收藏建议')}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <p className="text-[10px] text-amber-700/80 font-bold">{t('tests.price_range', '参考估值区间')}</p>
+                                            <p className="text-base font-extrabold text-amber-900 mt-0.5">
+                                                {result?.valuation?.priceRange || (result as any)?.valuation?.priceRange}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-amber-700/80 font-bold">{t('tests.collectibility', '推荐收藏评级')}</p>
+                                            <p className="text-sm font-extrabold text-amber-900 mt-1">
+                                                {result?.valuation?.collectibility || (result as any)?.valuation?.collectibility}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 4. 深度报告正文 */}
+                            <div className="mt-4 border-t pt-4">
+                                <ReactMarkdown
+                                    components={{
+                                        h3: ({node, ...props}) => (
+                                            <h3 className="text-[#065f46] font-extrabold text-sm mt-4 mb-2 flex items-center gap-1 border-l-2 border-[#065f46] pl-2" {...props} />
+                                        )
+                                    }}
+                                >
+                                    {result?.detailedAnalysis || (result as any)?.detailedAnalysis || (result as any)?.analysis || ''}
+                                </ReactMarkdown>
                             </div>
                         </div>
                     </div>

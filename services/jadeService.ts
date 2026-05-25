@@ -6,6 +6,7 @@ export interface JadeAnalysisResult {
         conclusion: string;
         reasons: string[];
         riskLevel: "low" | "medium" | "high";
+        probability?: string; // 天然A货概率
     };
     quality: {
         color: string; // 色
@@ -13,6 +14,10 @@ export interface JadeAnalysisResult {
         texture: string; // 种
         craftsmanship: string; // 工
         overallGrade: string;
+    };
+    valuation?: {
+        priceRange: string; // 估值区间
+        collectibility: string; // 收藏与佩戴级别
     };
     detailedAnalysis: string; // Markdown content
 }
