@@ -437,11 +437,11 @@ const EyeDiagnosisView: React.FC<EyeDiagnosisViewProps> = ({ onBack, onCheckCred
 
                         <div className="space-y-6">
                             {[
-                                { title: t('tests.eye_res_spleen', '脾胃调理（肉轮）'), content: result.detailedAnalysis.spleenStomach, icon: '🦷' },
-                                { title: t('tests.eye_res_heart', '心血机能（血轮）'), content: result.detailedAnalysis.heart, icon: '❤️' },
-                                { title: t('tests.eye_res_lung', '肺气呼吸（气轮）'), content: result.detailedAnalysis.lung, icon: '💨' },
-                                { title: t('tests.eye_res_liver', '肝胆疏泄（风轮）'), content: result.detailedAnalysis.liver, icon: '🌱' },
-                                { title: t('tests.eye_res_kidney', '肾精系统（水轮）'), content: result.detailedAnalysis.kidney, icon: '💧' }
+                                { title: t('tests.eye_res_spleen', '脾胃调理（肉轮）'), content: result?.detailedAnalysis?.spleenStomach || (result as any)?.spleenStomach || (result as any)?.detailedAnalysis?.spleenStomach || t('common.unknown', '分析中...'), icon: '🦷' },
+                                { title: t('tests.eye_res_heart', '心血机能（血轮）'), content: result?.detailedAnalysis?.heart || (result as any)?.heart || (result as any)?.detailedAnalysis?.heart || t('common.unknown', '分析中...'), icon: '❤️' },
+                                { title: t('tests.eye_res_lung', '肺气呼吸（气轮）'), content: result?.detailedAnalysis?.lung || (result as any)?.lung || (result as any)?.detailedAnalysis?.lung || t('common.unknown', '分析中...'), icon: '💨' },
+                                { title: t('tests.eye_res_liver', '肝胆疏泄（风轮）'), content: result?.detailedAnalysis?.liver || (result as any)?.liver || (result as any)?.detailedAnalysis?.liver || t('common.unknown', '分析中...'), icon: '🌱' },
+                                { title: t('tests.eye_res_kidney', '肾精系统（水轮）'), content: result?.detailedAnalysis?.kidney || (result as any)?.kidney || (result as any)?.detailedAnalysis?.kidney || t('common.unknown', '分析中...'), icon: '💧' }
                             ].map((item, idx) => (
                                 <div key={idx} className="flex gap-4">
                                     <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-lg flex-shrink-0">
@@ -463,7 +463,7 @@ const EyeDiagnosisView: React.FC<EyeDiagnosisViewProps> = ({ onBack, onCheckCred
                             <h3 className="font-bold text-gray-900">{t('tests.advice_report', '调理建议报告')}</h3>
                         </div>
                         <article className="prose prose-sm max-w-none text-gray-600">
-                            <ReactMarkdown>{result.reportMarkdown}</ReactMarkdown>
+                            <ReactMarkdown>{result?.reportMarkdown || (result as any)?.reportMarkdown || (result as any)?.report || ''}</ReactMarkdown>
                         </article>
                     </div>
 

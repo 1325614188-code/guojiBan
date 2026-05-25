@@ -187,21 +187,27 @@ const JadeAppraisalView: React.FC<JadeAppraisalViewProps> = ({ onBack, onCheckCr
                     <div className="space-y-4">
                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{t('tests.jade_conclusion', '鉴定结论')}</span>
-                            <h2 className="text-2xl font-bold mt-2 text-slate-900">{result.authenticity.conclusion}</h2>
+                            <h2 className="text-2xl font-bold mt-2 text-slate-900">
+                                {result?.authenticity?.conclusion || (result as any)?.conclusion || t('common.unknown', '未知')}
+                            </h2>
 
                             <div className="grid grid-cols-2 gap-2 mt-4">
                                 <div className="bg-slate-50 p-3 rounded-xl">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase">{t('tests.jade_texture', '种质')}</p>
-                                    <p className="text-sm font-bold">{result.quality.texture}</p>
+                                    <p className="text-sm font-bold">
+                                        {result?.quality?.texture || (result as any)?.texture || (result as any)?.quality?.texture || t('common.unknown', '未知')}
+                                    </p>
                                 </div>
                                 <div className="bg-slate-50 p-3 rounded-xl">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase">{t('tests.jade_transparency', '水头')}</p>
-                                    <p className="text-sm font-bold">{result.quality.transparency}</p>
+                                    <p className="text-sm font-bold">
+                                        {result?.quality?.transparency || (result as any)?.transparency || (result as any)?.quality?.transparency || t('common.unknown', '未知')}
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="mt-4 prose prose-sm max-w-none text-slate-600 border-t pt-4">
-                                <ReactMarkdown>{result.detailedAnalysis}</ReactMarkdown>
+                                <ReactMarkdown>{result?.detailedAnalysis || (result as any)?.detailedAnalysis || (result as any)?.analysis || ''}</ReactMarkdown>
                             </div>
                         </div>
                     </div>
