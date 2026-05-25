@@ -1,4 +1,5 @@
 import { getApiUrl } from "../lib/api-config";
+import { compressImage } from "../lib/image-utils";
 
 export interface JadeAnalysisResult {
     authenticity: {
@@ -19,12 +20,17 @@ export interface JadeAnalysisResult {
 const API_BASE = getApiUrl('/api/gemini');
 
 export async function analyzeJadeImages(images: string[]): Promise<JadeAnalysisResult> {
+    // 压缩图片至超轻量 Base64 格式，规避 Vercel 4.5MB 限制
+    const compressedImages = await Promise.all(
+        images.map(img => compressImage(img, 512, 0.6))
+    );
+
     const response = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             action: 'jadeAppraisal',
-            images
+            images: compressedImages
         })
     });
 

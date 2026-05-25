@@ -639,7 +639,19 @@ JSON 结构规范：
                         systemInstruction: { parts: [{ text: systemInstruction }] }
                     });
 
-                    return JSON.parse(response.response.candidates[0].content.parts[0].text || "{}");
+                    let text = response.response.candidates[0].content.parts[0].text || "";
+                    console.log(`[${action}] Raw Response Sample: ${text.substring(0, 120)}...`);
+
+                    // 尝试清洗并精准过滤出 JSON
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    const cleanJson = jsonMatch ? jsonMatch[0] : text;
+
+                    try {
+                        return JSON.parse(cleanJson);
+                    } catch (e) {
+                        console.error(`[${action}] JSON Parse Failed:`, e);
+                        return { error: "AI 报告解析失败", raw: text };
+                    }
                 });
 
                 logUsage({
