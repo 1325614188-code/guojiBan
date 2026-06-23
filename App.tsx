@@ -32,6 +32,8 @@ import { getStableDeviceId } from './lib/fingerprint';
 import { useTranslation } from 'react-i18next';
 import { detectAndSetLanguage } from './services/geo';
 import i18n from './lib/i18n';
+import IntroductionView from './components/IntroductionView';
+
 
 // 路由板块与子路径双向映射表
 const SECTION_PATH_MAP: Record<AppSection, string> = {
@@ -88,6 +90,13 @@ const App: React.FC = () => {
   const showMemberRef = useRef(showMember);
   const { t } = useTranslation();
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [introActive, setIntroActive] = useState(true);
+
+  // 路由变化时自动重置介绍落地页展示状态
+  useEffect(() => {
+    setIntroActive(true);
+  }, [currentSection]);
+
 
   // 同步 state 到 ref（每次 state 变化时自动更新）
   useEffect(() => { currentSectionRef.current = currentSection; }, [currentSection]);
@@ -375,31 +384,46 @@ const App: React.FC = () => {
             {!showLogin && currentSection !== AppSection.ADMIN && !showMember && (
               <>
                 {currentSection === AppSection.HOME && <HomeView onNavigate={handleNavigate} onShowLogin={() => setShowLogin(true)} />}
-                {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.MAKEUP && <MakeupView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={handleBack} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.CALENDAR && <CalendarView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={handleBack} />}
-                {currentSection === AppSection.EQ_TEST && <EQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.IQ_TEST && <IQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={handleBack} />}
                 {currentSection === AppSection.LINKTREE && <LinktreeView />}
+                {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={handleBack} />}
+
+                {currentSection !== AppSection.HOME &&
+                 currentSection !== AppSection.LINKTREE &&
+                 currentSection !== AppSection.APP_DOWNLOAD && (
+                  introActive ? (
+                    <IntroductionView 
+                      section={currentSection} 
+                      onStart={() => setIntroActive(false)} 
+                      onBack={handleBack} 
+                    />
+                  ) : (
+                    <>
+                      {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.MAKEUP && <MakeupView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={handleBack} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.CALENDAR && <CalendarView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={handleBack} />}
+                      {currentSection === AppSection.EQ_TEST && <EQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.IQ_TEST && <IQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                    </>
+                  )
+                )}
               </>
             )}
 
