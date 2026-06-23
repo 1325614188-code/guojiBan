@@ -33,13 +33,51 @@ import { useTranslation } from 'react-i18next';
 import { detectAndSetLanguage } from './services/geo';
 import i18n from './lib/i18n';
 
+// 路由板块与子路径双向映射表
+const SECTION_PATH_MAP: Record<AppSection, string> = {
+  [AppSection.HOME]: '/',
+  [AppSection.JADE_APPRAISAL]: '/jade-appraisal',
+  [AppSection.TRY_ON_CLOTHES]: '/clothes',
+  [AppSection.ADVANCED_TRY_ON]: '/advanced-try-on',
+  [AppSection.TRY_ON_ACCESSORIES]: '/accessories',
+  [AppSection.HAIRSTYLE]: '/hairstyle',
+  [AppSection.MAKEUP]: '/makeup',
+  [AppSection.BEAUTY_SCORE]: '/beauty-score',
+  [AppSection.COUPLE_FACE]: '/couple-face',
+  [AppSection.TONGUE_DIAGNOSIS]: '/tongue-diagnosis',
+  [AppSection.FACE_COLOR]: '/face-color',
+  [AppSection.FACE_READING]: '/face-reading',
+  [AppSection.FENG_SHUI]: '/feng-shui',
+  [AppSection.CALENDAR]: '/calendar',
+  [AppSection.LICENSE_PLATE]: '/license-plate',
+  [AppSection.MBTI_TEST]: '/mbti-test',
+  [AppSection.DEPRESSION_TEST]: '/depression-test',
+  [AppSection.MARRIAGE_ANALYSIS]: '/marriage-analysis',
+  [AppSection.WEALTH_ANALYSIS]: '/wealth-analysis',
+  [AppSection.AI_EYE_DIAGNOSIS]: '/eye-diagnosis',
+  [AppSection.EQ_TEST]: '/eq-test',
+  [AppSection.IQ_TEST]: '/iq-test',
+  [AppSection.BIG_FIVE]: '/big-five',
+  [AppSection.ZI_WEI_DOU_SHU]: '/zi-wei-dou-shu',
+  [AppSection.APP_DOWNLOAD]: '/app-download',
+  [AppSection.LINKTREE]: '/linktree',
+  [AppSection.ADMIN]: '/admin',
+};
+
+// 从路径中解析对应的板块
+const getSectionFromPath = (path: string): AppSection => {
+  const cleanPath = path.replace(/\/$/, '') || '/';
+  const entries = Object.entries(SECTION_PATH_MAP);
+  const found = entries.find(([_, p]) => p === cleanPath);
+  return found ? (found[0] as AppSection) : AppSection.HOME;
+};
+
 const App: React.FC = () => {
     const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
   // 【问题1修复】user 类型从 any 改为 User | null
   const [user, setUser] = useState<User | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showMember, setShowMember] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
 
   // 【问题2修复】并发锁：防止 checkCredits 通过后在 AI 处理期间被再次调用
   const isProcessingRef = useRef(false);
@@ -48,7 +86,6 @@ const App: React.FC = () => {
   const currentSectionRef = useRef(currentSection);
   const showLoginRef = useRef(showLogin);
   const showMemberRef = useRef(showMember);
-  const showAdminRef = useRef(showAdmin);
   const { t } = useTranslation();
   const [showLangMenu, setShowLangMenu] = useState(false);
 
@@ -56,7 +93,6 @@ const App: React.FC = () => {
   useEffect(() => { currentSectionRef.current = currentSection; }, [currentSection]);
   useEffect(() => { showLoginRef.current = showLogin; }, [showLogin]);
   useEffect(() => { showMemberRef.current = showMember; }, [showMember]);
-  useEffect(() => { showAdminRef.current = showAdmin; }, [showAdmin]);
 
   // 0. 初始化地理位置语言检测
   useEffect(() => {
@@ -109,12 +145,56 @@ const App: React.FC = () => {
     initId();
   }, []);
 
-  // 3. 路由路径检测: 支持 /linktree 直接访问
+  // 3. 全局路由路径检测与浏览器历史（前进/后退）被动同步监听
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path === '/linktree' || path.endsWith('/linktree')) {
-      setCurrentSection(AppSection.LINKTREE);
-    }
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      const section = getSectionFromPath(path);
+      const hasUser = !!localStorage.getItem('user');
+
+      // 1) 后台管理路由校验
+      if (section === AppSection.ADMIN) {
+        if (!hasUser) {
+          // 未登录访问后台管理，重定向至首页并弹出登录框
+          setCurrentSection(AppSection.HOME);
+          window.history.replaceState({ section: AppSection.HOME }, '', '/');
+          setShowLogin(true);
+          return;
+        }
+
+        try {
+          const parsedUser = JSON.parse(localStorage.getItem('user') || '{}');
+          if (!parsedUser.is_admin) {
+            // 已登录但非管理员，越权拦截，弹窗警告并退回首页
+            alert(t('common.no_admin_permission', '您不是管理员，无权访问后台管理系统'));
+            setCurrentSection(AppSection.HOME);
+            window.history.replaceState({ section: AppSection.HOME }, '', '/');
+            return;
+          }
+        } catch {
+          setCurrentSection(AppSection.HOME);
+          window.history.replaceState({ section: AppSection.HOME }, '', '/');
+          return;
+        }
+      }
+
+      // 2) 其它页面的通用鉴权与豁免
+      const isExempt = section === AppSection.HOME || section === AppSection.APP_DOWNLOAD || section === AppSection.LINKTREE;
+
+      if (!isExempt && !hasUser) {
+        setCurrentSection(AppSection.HOME);
+        window.history.replaceState({ section: AppSection.HOME }, '', '/');
+        setShowLogin(true);
+      } else {
+        setCurrentSection(section);
+      }
+    };
+
+    // 初始化检测
+    handleLocationChange();
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
 
@@ -124,34 +204,74 @@ const App: React.FC = () => {
     setUser(u);
     localStorage.setItem('user', JSON.stringify(u));
     setShowLogin(false);
-    if (u.is_admin) setShowAdmin(true);
+    if (u.is_admin) {
+      handleNavigate(AppSection.ADMIN);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     setUser(null);
     setShowMember(false);
-    setShowAdmin(false);
     setCurrentSection(AppSection.HOME); // 登出时返回首页
   };
 
   /**
-   * 统一导航处理（带逻辑拦截）
+   * 统一导航处理（带逻辑拦截，支持 URL 主动更新）
    */
-  const handleNavigate = (section: AppSection) => {
-    // 豁免区域：首页、App 下载和导航页
-    if (section === AppSection.HOME || section === AppSection.APP_DOWNLOAD || section === AppSection.LINKTREE) {
+  const handleNavigate = (section: AppSection, pushState = true) => {
+    // 1) 后台管理路由前置权限拦截
+    if (section === AppSection.ADMIN) {
+      if (!user) {
+        setShowLogin(true);
+        return;
+      }
+      if (!user.is_admin) {
+        alert(t('common.no_admin_permission', '您不是管理员，无权访问后台管理系统'));
+        return;
+      }
       setCurrentSection(section);
+      if (pushState) {
+        const targetPath = SECTION_PATH_MAP[section] || '/';
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({ section }, '', targetPath);
+        }
+      }
       return;
     }
 
-    // 鉴权拦截：所有测试项目必须登录
+    // 2) 其它豁免区域：首页、App 下载和导航页
+    if (section === AppSection.HOME || section === AppSection.APP_DOWNLOAD || section === AppSection.LINKTREE) {
+      setCurrentSection(section);
+      if (pushState) {
+        const targetPath = SECTION_PATH_MAP[section] || '/';
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({ section }, '', targetPath);
+        }
+      }
+      return;
+    }
+
+    // 3) 其它页面通用鉴权拦截
     if (!user) {
       setShowLogin(true);
       return;
     }
 
     setCurrentSection(section);
+    if (pushState) {
+      const targetPath = SECTION_PATH_MAP[section] || '/';
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ section }, '', targetPath);
+      }
+    }
+  };
+
+  /**
+   * 统一返回逻辑，用于将状态和 URL 同步重置回首页
+   */
+  const handleBack = () => {
+    handleNavigate(AppSection.HOME);
   };
 
   const handleUserUpdate = (up: User) => {
@@ -248,37 +368,37 @@ const App: React.FC = () => {
 
             {showLogin && <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />}
 
-            {!showLogin && showAdmin && user?.is_admin && <AdminView admin={user} onBack={() => setShowAdmin(false)} />}
+            {!showLogin && currentSection === AppSection.ADMIN && user?.is_admin && <AdminView admin={user} onBack={handleBack} />}
 
-            {!showLogin && !showAdmin && showMember && user && <MemberView user={user} onLogout={handleLogout} onBack={() => setShowMember(false)} onUserUpdate={handleUserUpdate} />}
+            {!showLogin && currentSection !== AppSection.ADMIN && showMember && user && <MemberView user={user} onLogout={handleLogout} onBack={() => setShowMember(false)} onUserUpdate={handleUserUpdate} />}
 
-            {!showLogin && !showAdmin && !showMember && (
+            {!showLogin && currentSection !== AppSection.ADMIN && !showMember && (
               <>
                 {currentSection === AppSection.HOME && <HomeView onNavigate={handleNavigate} onShowLogin={() => setShowLogin(true)} />}
-                {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.MAKEUP && <MakeupView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={() => setCurrentSection(AppSection.HOME)} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.CALENDAR && <CalendarView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={() => setCurrentSection(AppSection.HOME)} />}
-                {currentSection === AppSection.EQ_TEST && <EQTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.IQ_TEST && <IQTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                { currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={() => setCurrentSection(AppSection.HOME)} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={() => setCurrentSection(AppSection.HOME)} />}
+                {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.MAKEUP && <MakeupView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={handleBack} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.CALENDAR && <CalendarView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={handleBack} />}
+                {currentSection === AppSection.EQ_TEST && <EQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.IQ_TEST && <IQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                { currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                { currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                { currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={handleBack} />}
                 {currentSection === AppSection.LINKTREE && <LinktreeView />}
               </>
             )}
@@ -286,9 +406,9 @@ const App: React.FC = () => {
           </Suspense>
         </div>
 
-        {!(showLogin || showAdmin || showMember || currentSection === AppSection.LINKTREE) && (
+        {!(showLogin || currentSection === AppSection.ADMIN || showMember || currentSection === AppSection.LINKTREE) && (
           <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
-            <button onClick={() => setCurrentSection(AppSection.HOME)} className={`flex flex-col items-center gap-1 ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}>
+            <button onClick={() => handleNavigate(AppSection.HOME)} className={`flex flex-col items-center gap-1 ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}>
               <span className="text-xl">🏠</span>
               <span className="text-xs">{t('common.home', '首页')}</span>
             </button>
@@ -297,7 +417,7 @@ const App: React.FC = () => {
               <span className="text-xs">{user ? t('common.mine', '我的') : t('common.login')}</span>
             </button>
             {user?.is_admin && (
-              <button onClick={() => setShowAdmin(true)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500">
+              <button onClick={() => handleNavigate(AppSection.ADMIN)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500">
                 <span className="text-xl">⚙️</span>
                 <span className="text-xs">{t('common.admin', '管理')}</span>
               </button>

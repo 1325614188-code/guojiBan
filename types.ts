@@ -25,7 +25,8 @@ export enum AppSection {
   BIG_FIVE = 'big-five',
   ZI_WEI_DOU_SHU = 'zi-wei-dou-shu',
   APP_DOWNLOAD = 'app-download',
-  LINKTREE = 'linktree'
+  LINKTREE = 'linktree',
+  ADMIN = 'admin'
 }
 
 /**
