@@ -1091,7 +1091,6 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                         <option value="vertex">☁️ 仅 GCP Vertex AI 官方 (直连通道，需配置 SA 密钥)</option>
                                         <option value="easyrouter">⚡ 仅 EasyRouter 代理通道 (免翻墙，快速稳定)</option>
                                         <option value="gemini">✨ 仅 Google AI Studio 直连 (普通 API Key)</option>
-                                        <option value="deepseek">🐳 仅 DeepSeek 官方通道 (直连 DeepSeek API)</option>
                                     </select>
                                 </div>
 
@@ -1154,29 +1153,6 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                     />
                                 </div>
 
-                                {/* DeepSeek 官方 API Key */}
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-slate-500 font-bold ml-1">DeepSeek 官方 API Key (翻译与客服通道)</label>
-                                    <input
-                                        type="password"
-                                        value={config.deepseek_api_key || ''}
-                                        onChange={e => updateConfig('deepseek_api_key', e.target.value)}
-                                        className="w-full h-10 px-4 rounded-xl border border-slate-200 text-slate-700 bg-white focus:border-pink-300 outline-none text-sm"
-                                        placeholder="sk-..."
-                                    />
-                                </div>
-
-                                {/* DeepSeek 客服/翻译模型名称 */}
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-slate-500 font-bold ml-1">DeepSeek 客服模型名称</label>
-                                    <input
-                                        type="text"
-                                        value={config.deepseek_model_name || 'deepseek-chat'}
-                                        onChange={e => updateConfig('deepseek_model_name', e.target.value)}
-                                        className="w-full h-10 px-4 rounded-xl border border-slate-200 text-slate-700 font-mono bg-white focus:border-pink-300 outline-none text-sm"
-                                        placeholder="deepseek-chat"
-                                    />
-                                </div>
                             </div>
                         </div>
 

@@ -33,9 +33,7 @@ async function getAiConfig() {
 
     const config = {
         AI_PROVIDER: (configMap['ai_mode'] || configMap['ai_provider'] || process.env.AI_PROVIDER || 'vertex').trim().toLowerCase(),
-        CHAT_AI_PROVIDER: (configMap['chat_ai_provider'] || process.env.CHAT_AI_PROVIDER || 'follow').trim().toLowerCase(),
         GEMINI_API_KEY: configMap['gemini_api_key'] || process.env.GEMINI_API_KEY || '',
-        DEEPSEEK_API_KEY: configMap['deepseek_api_key'] || process.env.DEEPSEEK_API_KEY || '',
         GCP_PROJECT_ID: configMap['gcp_project_id'] || process.env.GCP_PROJECT_ID || 'vertex-ai-for-vercel',
         GCP_LOCATION: configMap['gcp_location'] || process.env.GCP_LOCATION || 'us-central1',
         GCP_VERTEX_PROXY: configMap['vertex_proxy_url'] || configMap['vertex_proxy'] || process.env.GCP_VERTEX_PROXY || 'https://vertex.marylab.top/api/vertex-proxy',
@@ -43,16 +41,11 @@ async function getAiConfig() {
         VERTEX_PROXY_KEY: configMap['easyrouter_api_key'] || configMap['vertex_proxy_key'] || process.env.VERTEX_PROXY_KEY || process.env.EASYROUTER_API_KEY || '',
         GCP_SERVICE_ACCOUNT_KEY: configMap['vertex_keys'] || configMap['gcp_service_account_key'] || process.env.GCP_SERVICE_ACCOUNT_KEY || '',
         AI_MODEL_NAME: configMap['ai_model_name'] || process.env.AI_MODEL_NAME || 'gemini-2.5-flash',
-        DEEPSEEK_MODEL_NAME: configMap['deepseek_model_name'] || process.env.DEEPSEEK_MODEL_NAME || 'deepseek-chat',
         AI_MAX_RETRIES: configMap['ai_max_retries'] || process.env.AI_MAX_RETRIES || '3'
     };
 
     if (!config.GCP_VERTEX_ONLY_PROXY) {
         config.GCP_VERTEX_ONLY_PROXY = config.GCP_VERTEX_PROXY;
-    }
-
-    if (!config.DEEPSEEK_API_KEY) {
-        config.DEEPSEEK_API_KEY = config.GEMINI_API_KEY;
     }
 
     return config;
@@ -222,77 +215,7 @@ async function callGeminiStudio(modelName: string, payload: any, config: any) {
     return await response.json();
 }
 
-/**
- * 直接调用 DeepSeek 官方 API 接口 (将 Gemini 格式请求转换为 OpenAI/DeepSeek 格式)
- */
-async function callDeepSeek(modelName: string, payload: any, config: any) {
-    const apiKey = config.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-        throw new Error("DEEPSEEK_API_KEY 未配置");
-    }
 
-    const url = "https://api.deepseek.com/chat/completions";
-    console.log(`[DeepSeek Request] URL: ${url}`);
-
-    const openaiMessages: any[] = [];
-
-    // 提取 systemInstruction
-    let systemInstruction = "";
-    if (payload.systemInstruction) {
-        const parts = payload.systemInstruction.parts || [];
-        if (parts.length > 0) {
-            systemInstruction = parts[0].text || "";
-        }
-    }
-    if (systemInstruction) {
-        openaiMessages.push({ role: "system", content: systemInstruction });
-    }
-
-    // 提取用户 prompt
-    const contents = payload.contents || [];
-    if (contents.length > 0) {
-        const parts = contents[0].parts || [];
-        if (parts.length > 0) {
-            const promptText = parts[0].text || "";
-            openaiMessages.push({ role: "user", content: promptText || "开始 analysis" });
-        }
-    }
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: (modelName === "gemini-3-flash-preview" || modelName === "gemini-2.5-flash") 
-                ? (config.DEEPSEEK_MODEL_NAME || "deepseek-chat") 
-                : modelName, 
-            messages: openaiMessages,
-            temperature: 0.3
-        })
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`DeepSeek API Error (${response.status}): ${errorText}`);
-    }
-
-    const resJson = await response.json();
-    const text = resJson.choices?.[0]?.message?.content || "";
-    return {
-        candidates: [{
-            content: {
-                parts: [{ text }]
-            }
-        }],
-        usageMetadata: {
-            promptTokenCount: resJson.usage?.prompt_tokens || 0,
-            candidatesTokenCount: resJson.usage?.completion_tokens || 0,
-            totalTokenCount: resJson.usage?.total_tokens || 0
-        }
-    };
-}
 
 /**
  * 免费谷歌翻译接口（直连官方）
@@ -405,7 +328,7 @@ async function requestWithRetry<T>(
     let lastError: any;
 
     const finalMaxRetries = config.AI_MAX_RETRIES ? parseInt(config.AI_MAX_RETRIES) : maxRetries;
-    let currentProvider = config.CHAT_AI_PROVIDER === 'deepseek' ? 'deepseek' : config.AI_PROVIDER;
+    let currentProvider = config.AI_PROVIDER;
 
     if (currentProvider === 'local') {
         console.log("[AI Request] Local mode active, skipping model call.");
@@ -424,8 +347,6 @@ async function requestWithRetry<T>(
                         result = await callVertexAI(modelName, payload, config);
                     } else if (currentProvider === 'gemini') {
                         result = await callGeminiStudio(modelName, payload, config);
-                    } else if (currentProvider === 'deepseek') {
-                        result = await callDeepSeek(modelName, payload, config);
                     } else {
                         throw new Error(`未识别的 AI 提供商: ${currentProvider}`);
                     }
@@ -448,8 +369,7 @@ async function requestWithRetry<T>(
             console.error(`[Retry Strategy] 尝试 ${i + 1}/${finalMaxRetries + 1} 失败: ${message}`);
 
             const isConfigError = message.includes("401") || message.includes("403") || message.includes("404") ||
-                                  message.includes("GCP_SERVICE_ACCOUNT_KEY") || message.includes("GEMINI_API_KEY") ||
-                                  message.includes("DEEPSEEK_API_KEY");
+                                  message.includes("GCP_SERVICE_ACCOUNT_KEY") || message.includes("GEMINI_API_KEY");
 
             if (isConfigError || message.includes("429")) {
                 if (config.AI_PROVIDER === 'hybrid') {
