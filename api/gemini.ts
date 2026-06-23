@@ -16,9 +16,51 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 /**
  * 获取 GCP Access Token
  */
-async function getAccessToken() {
-    const keyStr = process.env.GCP_SERVICE_ACCOUNT_KEY;
-    const project = process.env.GCP_PROJECT_ID;
+/**
+ * 从 app_config 数据库表加载大模型配置，如果数据库未配置则退回到 process.env。
+ */
+async function getAiConfig() {
+    const { data: configs, error } = await supabase
+        .from('app_config')
+        .select('key, value');
+    
+    const configMap: Record<string, string> = {};
+    if (!error && configs) {
+        configs.forEach(c => {
+            configMap[c.key] = c.value;
+        });
+    }
+
+    const config = {
+        AI_PROVIDER: (configMap['ai_provider'] || process.env.AI_PROVIDER || 'vertex').trim().toLowerCase(),
+        CHAT_AI_PROVIDER: (configMap['chat_ai_provider'] || process.env.CHAT_AI_PROVIDER || 'follow').trim().toLowerCase(),
+        GEMINI_API_KEY: configMap['gemini_api_key'] || process.env.GEMINI_API_KEY || '',
+        DEEPSEEK_API_KEY: configMap['deepseek_api_key'] || process.env.DEEPSEEK_API_KEY || '',
+        GCP_PROJECT_ID: configMap['gcp_project_id'] || process.env.GCP_PROJECT_ID || 'vertex-ai-for-vercel',
+        GCP_LOCATION: configMap['gcp_location'] || process.env.GCP_LOCATION || 'us-central1',
+        GCP_VERTEX_PROXY: configMap['vertex_proxy_url'] || process.env.GCP_VERTEX_PROXY || 'https://vertex.marylab.top/api/vertex-proxy',
+        GCP_VERTEX_ONLY_PROXY: configMap['vertex_only_proxy_url'] || process.env.GCP_VERTEX_ONLY_PROXY || '',
+        VERTEX_PROXY_KEY: configMap['vertex_proxy_key'] || process.env.VERTEX_PROXY_KEY || process.env.EASYROUTER_API_KEY || '',
+        GCP_SERVICE_ACCOUNT_KEY: configMap['gcp_service_account_key'] || process.env.GCP_SERVICE_ACCOUNT_KEY || ''
+    };
+
+    if (!config.GCP_VERTEX_ONLY_PROXY) {
+        config.GCP_VERTEX_ONLY_PROXY = config.GCP_VERTEX_PROXY;
+    }
+
+    if (!config.DEEPSEEK_API_KEY) {
+        config.DEEPSEEK_API_KEY = config.GEMINI_API_KEY;
+    }
+
+    return config;
+}
+
+/**
+ * 获取 GCP Access Token (支持多个 GCP_SERVICE_ACCOUNT_KEY 轮换)
+ */
+async function getAccessToken(config: any) {
+    const keyStr = config.GCP_SERVICE_ACCOUNT_KEY;
+    const project = config.GCP_PROJECT_ID;
 
     if (!keyStr || !project) {
         throw new Error("GCP_SERVICE_ACCOUNT_KEY 或 GCP_PROJECT_ID 未配置");
@@ -26,12 +68,24 @@ async function getAccessToken() {
 
     try {
         let sanitizedKey = keyStr.trim();
-        // 兼容 Vercel 环境变量中可能出现的转义引号或多重引号
+        // 兼容 Vercel 环境变量中可能出现的转义双引号
         if (sanitizedKey.startsWith('"') && sanitizedKey.endsWith('"')) {
             sanitizedKey = sanitizedKey.substring(1, sanitizedKey.length - 1).replace(/\\"/g, '"');
         }
+
+        // 识别是否配置了多个 Service Account Key，支持换行或者 '|||' 分隔
+        const keyLines = sanitizedKey.split(/\r?\n|\|\|\|/).map((k: string) => k.trim()).filter(Boolean);
+        if (keyLines.length === 0) {
+            throw new Error("GCP_SERVICE_ACCOUNT_KEY 配置内容为空");
+        }
+
+        // 轮换机制：随机选择一个 Key
+        const randomIndex = Math.floor(Math.random() * keyLines.length);
+        const selectedKey = keyLines[randomIndex];
+        console.log(`[Vertex Auth] GCP 密钥轮换：共配置了 ${keyLines.length} 个密钥，当前选中第 ${randomIndex + 1} 个密钥进行授权调用。`);
+
+        const credentials = JSON.parse(selectedKey);
         
-        const credentials = JSON.parse(sanitizedKey);
         const auth = new GoogleAuth({
             credentials,
             scopes: 'https://www.googleapis.com/auth/cloud-platform',
@@ -60,17 +114,38 @@ const getVertexModelPath = (model: string): string => {
 };
 
 /**
- * 底层 Fetch 调用 Vertex AI REST API
+ * 底层 Fetch 调用 Vertex AI REST API (支持直连、以及 EasyRouter 免 Token 网关代理)
  */
-async function callVertexAI(modelName: string, payload: any) {
-    const project = process.env.GCP_PROJECT_ID;
-    const location = process.env.GCP_LOCATION || "us-central1";
-    const token = await getAccessToken();
+async function callVertexAI(modelName: string, payload: any, config: any) {
+    const providerMode = config.AI_PROVIDER === 'hybrid' ? 'vertex' : config.AI_PROVIDER;
+    
+    // 1. 获取 Token/Key
+    let token = "";
+    if (providerMode === 'easyrouter' && config.VERTEX_PROXY_KEY) {
+        token = config.VERTEX_PROXY_KEY;
+    } else {
+        token = await getAccessToken(config);
+    }
 
+    // 2. 映射模型为 Vertex 兼容路径
     const modelPath = getVertexModelPath(modelName);
-    const url = `https://${location}-aiplatform.googleapis.com/v1beta1/projects/${project}/locations/${location}/${modelPath}:generateContent`;
 
-    console.log(`[Vertex AI Request] URL: ${url}`);
+    // 3. 拼接目标端点 URL
+    let url = "";
+    if (providerMode === 'easyrouter' && config.GCP_VERTEX_PROXY) {
+        // EasyRouter 格式：${base}/v1beta/models/${modelNameOnly}:generateContent
+        let baseUrl = config.GCP_VERTEX_PROXY.replace(/\/$/, "");
+        if (baseUrl.includes("vertex-proxy")) {
+            baseUrl = baseUrl.replace("vertex-proxy", "easyrouter-proxy");
+        }
+        const mappedModel = getVertexModelPath(modelName).split('/').pop();
+        url = `${baseUrl}/v1beta/models/${mappedModel}:generateContent`;
+        console.log(`[AI Client - EasyRouter] Route: ${url}`);
+    } else {
+        // Vertex 格式 直连
+        url = `https://${config.GCP_LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${config.GCP_PROJECT_ID}/locations/${config.GCP_LOCATION}/${modelPath}:generateContent`;
+        console.log(`[AI Client - Vertex Direct] Route: ${url}`);
+    }
 
     const response = await fetch(url, {
         method: 'POST',
@@ -87,6 +162,152 @@ async function callVertexAI(modelName: string, payload: any) {
     }
 
     return await response.json();
+}
+
+/**
+ * 调用 Google AI Studio 的 Gemini API
+ */
+async function callGeminiStudio(modelName: string, payload: any, config: any) {
+    const key = config.GEMINI_API_KEY;
+    if (!key) {
+        throw new Error("GEMINI_API_KEY 未配置，无法调用 Gemini Studio API");
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+    console.log(`[Gemini Studio Request] URL: ${url}`);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini Studio API Error (${response.status}): ${errorText}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * 直接调用 DeepSeek 官方 API 接口 (将 Gemini 格式请求转换为 OpenAI/DeepSeek 格式)
+ */
+async function callDeepSeek(modelName: string, payload: any, config: any) {
+    const key = config.DEEPSEEK_API_KEY;
+    if (!key) {
+        throw new Error("DEEPSEEK_API_KEY 未配置");
+    }
+
+    const url = "https://api.deepseek.com/chat/completions";
+    console.log(`[DeepSeek Request] URL: ${url}`);
+
+    const openaiMessages: any[] = [];
+
+    // 提取 systemInstruction
+    let systemInstruction = "";
+    if (payload.systemInstruction) {
+        const parts = payload.systemInstruction.parts || [];
+        if (parts.length > 0) {
+            systemInstruction = parts[0].text || "";
+        }
+    }
+    if (systemInstruction) {
+        openaiMessages.push({ role: "system", content: systemInstruction });
+    }
+
+    // 提取用户 prompt
+    const contents = payload.contents || [];
+    if (contents.length > 0) {
+        const parts = contents[0].parts || [];
+        if (parts.length > 0) {
+            const promptText = parts[0].text || "";
+            openaiMessages.push({ role: "user", content: promptText || "开始分析图片" });
+        }
+    }
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+            model: modelName === "gemini-3-flash-preview" ? "deepseek-chat" : modelName, 
+            messages: openaiMessages,
+            temperature: 0.3
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`DeepSeek API Error (${response.status}): ${errorText}`);
+    }
+
+    const resJson = await response.json();
+    const text = resJson.choices?.[0]?.message?.content || "";
+    return {
+        candidates: [{
+            content: {
+                parts: [{ text }]
+            }
+        }],
+        usageMetadata: {
+            promptTokenCount: resJson.usage?.prompt_tokens || 0,
+            candidatesTokenCount: resJson.usage?.completion_tokens || 0,
+            totalTokenCount: resJson.usage?.total_tokens || 0
+        }
+    };
+}
+
+/**
+ * 免费谷歌翻译接口（直连官方）
+ */
+async function googleFreeTranslate(text: string, targetLang: string): Promise<string> {
+    if (!text || !text.trim()) return text;
+    
+    let langCode = targetLang;
+    if (langCode === 'zh_tw') langCode = 'zh-TW';
+
+    const baseUrl = "https://translate.googleapis.com";
+    const maxRetries = 3;
+    const url = `${baseUrl}/translate_a/single?client=gtx&sl=auto&tl={langCode}&dt=t`;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const params = new URLSearchParams();
+            params.append('q', text);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data[0]) {
+                    const translatedText = data[0].map((x: any) => x[0] || '').join('');
+                    if (translatedText && translatedText.trim()) {
+                        return translatedText.trim();
+                    }
+                }
+            } else {
+                console.warn(`[Google Free Translate] Attempt ${attempt + 1} non-200: ${response.status}`);
+            }
+        } catch (e: any) {
+            console.error(`[Google Free Translate] Attempt ${attempt + 1} error: ${e.message}`);
+            if (attempt < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+    }
+    throw new Error("Google Free Translate failed after retries.");
 }
 
 /**
@@ -127,7 +348,6 @@ function getCacheKey(action: string, model: string, body: any): string {
             industry: body.industry,
             lang: body.lang
         },
-        // 对图像数据取指纹（取前1000个字符和后1000个字符）
         imagesFingerprint: [
             body.image,
             body.baseImage,
@@ -140,7 +360,7 @@ function getCacheKey(action: string, model: string, body: any): string {
 }
 
 /**
- * 带有超时和自动重试的请求包装器 (强制使用 Vertex AI)
+ * 带有超时、自动重试与 Hybrid 降级的大模型请求分发包装器
  */
 async function requestWithRetry<T>(
     modelName: string,
@@ -148,47 +368,118 @@ async function requestWithRetry<T>(
     maxRetries = 2,
     initialDelay = 1000
 ): Promise<{ result: T; usage?: any; duration: number }> {
-    let lastError: any;
+    const config = await getAiConfig();
     const startTime = Date.now();
-    
+    let lastError: any;
+
+    let currentProvider = config.CHAT_AI_PROVIDER === 'deepseek' ? 'deepseek' : config.AI_PROVIDER;
+
+    if (currentProvider === 'local') {
+        console.log("[AI Request] Local mode active, skipping model call.");
+        throw new Error("System is in local mode");
+    }
+
     for (let i = 0; i <= maxRetries; i++) {
         try {
             let lastUsage: any = null;
             const mockModel = {
                 generateContent: async (payload: any) => {
-                    const finalModelPath = getVertexModelPath(modelName);
-                    console.log(`[AI Request Executing] Action: ${modelName}, Final Path: ${finalModelPath}`);
+                    let result: any = null;
+                    console.log(`[AI Request Executing] Provider: ${currentProvider}, Model: ${modelName}`);
 
-                    const result = await callVertexAI(modelName, payload);
+                    if (currentProvider === 'vertex' || currentProvider === 'easyrouter' || currentProvider === 'hybrid') {
+                        result = await callVertexAI(modelName, payload, config);
+                    } else if (currentProvider === 'gemini') {
+                        result = await callGeminiStudio(modelName, payload, config);
+                    } else if (currentProvider === 'deepseek') {
+                        result = await callDeepSeek(modelName, payload, config);
+                    } else {
+                        throw new Error(`未识别的 AI 提供商: ${currentProvider}`);
+                    }
+
                     lastUsage = result.usageMetadata || result.usage;
                     return { response: result };
                 }
             };
+
             const result = await operation(mockModel);
-            return { 
-                result, 
-                usage: lastUsage, 
-                duration: Date.now() - startTime 
+            return {
+                result,
+                usage: lastUsage,
+                duration: Date.now() - startTime
             };
+
         } catch (error: any) {
             lastError = error;
             const message = error?.message || "";
-            
             console.error(`[Retry Strategy] 尝试 ${i + 1}/${maxRetries + 1} 失败: ${message}`);
 
-            if (message.includes("429") || message.toLowerCase().includes("too many requests")) {
-                console.warn("[Retry Strategy] 触发频率限制 (429)，立即停止重试。");
-                throw error;
-            }
+            const isConfigError = message.includes("401") || message.includes("403") || message.includes("404") ||
+                                  message.includes("GCP_SERVICE_ACCOUNT_KEY") || message.includes("GEMINI_API_KEY") ||
+                                  message.includes("DEEPSEEK_API_KEY");
 
-            if (message.includes("404") || message.includes("401") || message.includes("403")) {
+            if (isConfigError || message.includes("429")) {
+                if (config.AI_PROVIDER === 'hybrid') {
+                    console.warn("[AI Client Hybrid] 官方直连异常，触发高可用偏转，自动降级至 EasyRouter 中转通道...");
+                    try {
+                        config.AI_PROVIDER = 'easyrouter'; 
+                        currentProvider = 'easyrouter';
+                        
+                        let lastUsage: any = null;
+                        const mockModel = {
+                            generateContent: async (payload: any) => {
+                                const result = await callVertexAI(modelName, payload, config);
+                                lastUsage = result.usageMetadata || result.usage;
+                                return { response: result };
+                            }
+                        };
+                        const result = await operation(mockModel);
+                        return {
+                            result,
+                            usage: lastUsage,
+                            duration: Date.now() - startTime
+                        };
+                    } catch (fallbackErr: any) {
+                        console.error("[AI Client Hybrid Critical] EasyRouter 降级通道亦调用失败:", fallbackErr.message);
+                        throw fallbackErr;
+                    } finally {
+                        config.AI_PROVIDER = 'hybrid'; 
+                    }
+                }
                 throw error;
             }
 
             if (i < maxRetries) {
-                const delay = initialDelay * Math.pow(2, i); 
+                const delay = initialDelay * Math.pow(2, i) + (Math.random() * 500); 
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
+            }
+            
+            if (config.AI_PROVIDER === 'hybrid') {
+                console.warn("[AI Client Hybrid] 所有直连重试全部失败，执行最终的 EasyRouter 降级...");
+                try {
+                    config.AI_PROVIDER = 'easyrouter';
+                    currentProvider = 'easyrouter';
+                    
+                    let lastUsage: any = null;
+                    const mockModel = {
+                        generateContent: async (payload: any) => {
+                            const result = await callVertexAI(modelName, payload, config);
+                            lastUsage = result.usageMetadata || result.usage;
+                            return { response: result };
+                        }
+                    };
+                    const result = await operation(mockModel);
+                    return {
+                        result,
+                        usage: lastUsage,
+                        duration: Date.now() - startTime
+                    };
+                } catch (fallbackErr: any) {
+                    console.error("[AI Client Hybrid Critical] EasyRouter 最终降级失败:", fallbackErr.message);
+                } finally {
+                    config.AI_PROVIDER = 'hybrid';
+                }
             }
             throw error;
         }

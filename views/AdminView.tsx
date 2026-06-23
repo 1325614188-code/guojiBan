@@ -942,30 +942,6 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* AI 服务商选择 */}
-                            <div className="mt-4 p-4 bg-purple-50/50 rounded-2xl border border-purple-100/50 flex items-center justify-between">
-                                <div>
-                                    <p className="font-bold text-sm text-purple-700">AI 模型服务商</p>
-                                    <p className="text-[10px] text-purple-500 mt-0.5">
-                                        {config.ai_provider === 'gemini' ? '当前：Gemini API (耗 API Key)' : '当前：Vertex AI (耗 GCP 赠金)'}
-                                    </p>
-                                </div>
-                                <div className="flex bg-slate-200/80 p-1 rounded-xl shrink-0">
-                                    <button
-                                        onClick={() => updateConfig('ai_provider', 'vertex')}
-                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${config.ai_provider !== 'gemini' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}
-                                    >
-                                        Vertex
-                                    </button>
-                                    <button
-                                        onClick={() => updateConfig('ai_provider', 'gemini')}
-                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${config.ai_provider === 'gemini' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500'}`}
-                                    >
-                                        Gemini
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
                         {/* ⭐ 积分兑换红包配置 */}
@@ -1095,6 +1071,115 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
 
                     {/* 右侧栏：支付通道与排行榜配置 */}
                     <div className="space-y-6">
+                        {/* 🤖 大模型与 AI 路由配置 */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+                            <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <span className="text-lg">🤖</span> 大模型与 AI 路由配置
+                            </h3>
+                            <p className="text-[10px] text-gray-400 mb-4">配置智能诊断与多国语言翻译的核心大语言模型及路由规则</p>
+                            
+                            <div className="space-y-4">
+                                {/* AI 路由模式 */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">AI 路由模式 (ai_mode)</label>
+                                    <select
+                                        value={config.ai_mode || 'hybrid'}
+                                        onChange={e => updateConfig('ai_mode', e.target.value)}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 text-slate-700 bg-white font-bold focus:border-pink-300 outline-none text-sm animate-none"
+                                    >
+                                        <option value="hybrid">🤖 混合模式 (优先 GCP Vertex，失败自动降级 EasyRouter)</option>
+                                        <option value="vertex">☁️ 仅 GCP Vertex AI 官方 (直连通道，需配置 SA 密钥)</option>
+                                        <option value="easyrouter">⚡ 仅 EasyRouter 代理通道 (免翻墙，快速稳定)</option>
+                                        <option value="gemini">✨ 仅 Google AI Studio 直连 (普通 API Key)</option>
+                                        <option value="deepseek">🐳 仅 DeepSeek 官方通道 (直连 DeepSeek API)</option>
+                                    </select>
+                                </div>
+
+                                {/* 主要文本大模型名称 & 最大重试次数 */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs text-slate-500 font-bold ml-1">文本模型名称</label>
+                                        <input
+                                            type="text"
+                                            value={config.ai_model_name || 'gemini-2.5-flash'}
+                                            onChange={e => updateConfig('ai_model_name', e.target.value)}
+                                            className="h-10 px-4 rounded-xl border border-slate-200 text-slate-700 font-mono bg-white focus:border-pink-300 outline-none text-sm"
+                                            placeholder="gemini-2.5-flash"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs text-slate-500 font-bold ml-1">最大故障重试次数</label>
+                                        <input
+                                            type="number"
+                                            value={config.ai_max_retries || '3'}
+                                            onChange={e => updateConfig('ai_max_retries', e.target.value)}
+                                            className="h-10 px-4 rounded-xl border border-slate-200 text-slate-700 bg-white focus:border-pink-300 outline-none text-sm"
+                                            placeholder="3"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Vertex AI GCP 服务账号 Key */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">
+                                        GCP 服务账号秘钥 JSON (支持多 Key 轮换，换行或用 ||| 分隔)
+                                    </label>
+                                    <textarea
+                                        value={config.vertex_keys || ''}
+                                        onChange={e => updateConfig('vertex_keys', e.target.value)}
+                                        className="w-full h-32 px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-mono text-slate-600 bg-white resize-y focus:border-pink-300 outline-none"
+                                        placeholder={`{"type": "service_account", "project_id": "...", ...}\n\n可在下方粘贴多个 JSON 秘钥，以换行或 ||| 分隔以进行轮询。`}
+                                    />
+                                </div>
+
+                                {/* Google AI Studio API Key */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">Google AI Studio API Key (支持多 Key，换行或用 ||| 分隔)</label>
+                                    <textarea
+                                        value={config.gemini_api_key || ''}
+                                        onChange={e => updateConfig('gemini_api_key', e.target.value)}
+                                        className="w-full h-16 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono text-slate-600 bg-white resize-y focus:border-pink-300 outline-none"
+                                        placeholder="AIzaSy...&#10;支持换行配置多个 Key"
+                                    />
+                                </div>
+
+                                {/* EasyRouter API Key */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">EasyRouter API Key (支持多 Key，换行或用 ||| 分隔)</label>
+                                    <textarea
+                                        value={config.easyrouter_api_key || ''}
+                                        onChange={e => updateConfig('easyrouter_api_key', e.target.value)}
+                                        className="w-full h-16 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono text-slate-600 bg-white resize-y focus:border-pink-300 outline-none"
+                                        placeholder="er-key...&#10;支持换行配置多个 Key"
+                                    />
+                                </div>
+
+                                {/* DeepSeek 官方 API Key */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">DeepSeek 官方 API Key (翻译与客服通道)</label>
+                                    <input
+                                        type="password"
+                                        value={config.deepseek_api_key || ''}
+                                        onChange={e => updateConfig('deepseek_api_key', e.target.value)}
+                                        className="w-full h-10 px-4 rounded-xl border border-slate-200 text-slate-700 bg-white focus:border-pink-300 outline-none text-sm"
+                                        placeholder="sk-..."
+                                    />
+                                </div>
+
+                                {/* DeepSeek 客服/翻译模型名称 */}
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-slate-500 font-bold ml-1">DeepSeek 客服模型名称</label>
+                                    <input
+                                        type="text"
+                                        value={config.deepseek_model_name || 'deepseek-chat'}
+                                        onChange={e => updateConfig('deepseek_model_name', e.target.value)}
+                                        className="w-full h-10 px-4 rounded-xl border border-slate-200 text-slate-700 font-mono bg-white focus:border-pink-300 outline-none text-sm"
+                                        placeholder="deepseek-chat"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 💰 支付宝配置 */}
                         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
                             <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
