@@ -285,3 +285,115 @@ export const INTRO_TRANSLATIONS: Record<string, Record<LanguageCode, IntroConten
     'ko': { desc: 'AI 비취 및 옥석 감정 진단. 표면 결정구조와 광택 패턴을 기하학적으로 식별하여 옥석 가치 평가 참고 자료를 제공해 드립니다.', tips: '빛 번짐이 심하지 않고 옥의 단면이나 입자가 선명히 보이는 확대 사진을 사용하세요.' }
   }
 };
+
+export const INTRO_UI_TRANSLATIONS: Record<string, Record<LanguageCode, string>> = {
+  mechanism: {
+    'zh-CN': 'AI 分析机制',
+    'zh-TW': 'AI 分析機制',
+    'en': 'AI Analysis Mechanism',
+    'vi': 'Cơ chế phân tích AI',
+    'ja': 'AI分析メカニズム',
+    'th': 'กลไกการวิเคราะห์ AI',
+    'fr': 'Mécanisme d\'analyse IA',
+    'es': 'Mecanismo de análisis IA',
+    'de': 'KI-Analysemechanismus',
+    'ko': 'AI 분석 메커니즘'
+  },
+  preparations: {
+    'zh-CN': '体验准备',
+    'zh-TW': '體驗準備',
+    'en': 'Preparation Tips',
+    'vi': 'Chuẩn bị trải nghiệm',
+    'ja': '体験の準備',
+    'th': 'การเตรียมตัวก่อนลอง',
+    'fr': 'Préparation',
+    'es': 'Preparación de la experiencia',
+    'de': 'Vorbereitung',
+    'ko': '체험 준비'
+  },
+  start_free: {
+    'zh-CN': '开始免费测评',
+    'zh-TW': '開始免費測評',
+    'en': 'Start Free Evaluation',
+    'vi': 'Bắt đầu đánh giá miễn phí',
+    'ja': '無料測定を開始',
+    'th': 'เริ่มการประเมินฟรี',
+    'fr': 'Démarrer l\'évaluation gratuite',
+    'es': 'Iniciar evaluación gratuita',
+    'de': 'Kostenlose Bewertung starten',
+    'ko': '무료 테스트 시작'
+  },
+  start_test: {
+    'zh-CN': '开始测试',
+    'zh-TW': '開始測試',
+    'en': 'Start Test',
+    'vi': 'Bắt đầu kiểm tra',
+    'ja': 'テストを開始',
+    'th': 'เริ่มทำการทดสอบ',
+    'fr': 'Démarrer le test',
+    'es': 'Iniciar prueba',
+    'de': 'Test starten',
+    'ko': '테스트 시작'
+  },
+  use_credit_desc: {
+    'zh-CN': '(消耗 1 点额度)',
+    'zh-TW': '(消耗 1 點額度)',
+    'en': '(Cost 1 Credit)',
+    'vi': '(Tiêu tốn 1 điểm)',
+    'ja': '(1クレジット消費)',
+    'th': '(ใช้ 1 เครดิต)',
+    'fr': '(Consomme 1 crédit)',
+    'es': '(Consume 1 crédito)',
+    'de': '(Kostet 1 Guthabenpunkt)',
+    'ko': '(1 크레딧 소모)'
+  },
+  aesthetic: {
+    'zh-CN': '美学研究',
+    'zh-TW': '美學研究',
+    'en': 'Aesthetics',
+    'vi': 'Nghiên cứu thẩm mỹ',
+    'ja': '美学研究',
+    'th': 'การศึกษาความงาม',
+    'fr': 'Étude esthétique',
+    'es': 'Investigación estética',
+    'de': 'Ästhetik-Forschung',
+    'ko': '미학 연구'
+  },
+  health: {
+    'zh-CN': '健康望诊',
+    'zh-TW': '健康望診',
+    'en': 'Health Check',
+    'vi': 'Kiểm tra sức khỏe',
+    'ja': '健康診断',
+    'th': 'ตรวจสุขภาพ',
+    'fr': 'Bilan de santé',
+    'es': 'Consulta de salud',
+    'de': 'Gesundheits-Check',
+    'ko': '건강 진단'
+  },
+  metaphysics: {
+    'zh-CN': '传统玄学',
+    'zh-TW': '傳統玄學',
+    'en': 'Metaphysics',
+    'vi': 'Huyền học truyền thống',
+    'ja': '伝統玄学',
+    'th': 'โหราศาสตร์แบบดั้งเดิม',
+    'fr': 'Métaphysique',
+    'es': 'Metafísica tradicional',
+    'de': 'Traditionelle Metaphysik',
+    'ko': '전통 명리학'
+  },
+  psychology: {
+    'zh-CN': '心理测评',
+    'zh-TW': '心理測評',
+    'en': 'Psychology',
+    'vi': 'Đánh giá tâm lý',
+    'ja': '心理測定',
+    'th': 'การประเมินทางจิตวิทยา',
+    'fr': 'Évaluation psychologique',
+    'es': 'Evaluación psicológica',
+    'de': 'Psychologischer Test',
+    'ko': '심리 테스트'
+  }
+};
+

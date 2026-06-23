@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppSection } from '../types';
-import { INTRO_TRANSLATIONS, LanguageCode } from '../lib/intro-translations';
+import { INTRO_TRANSLATIONS, INTRO_UI_TRANSLATIONS, LanguageCode } from '../lib/intro-translations';
 
 interface IntroductionViewProps {
   section: AppSection;
@@ -531,15 +531,15 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
     const isMetaphysics = [AppSection.FENG_SHUI, AppSection.CALENDAR, AppSection.LICENSE_PLATE, AppSection.MARRIAGE_ANALYSIS, AppSection.WEALTH_ANALYSIS, AppSection.ZI_WEI_DOU_SHU, AppSection.JADE_APPRAISAL].includes(section);
     
     if (isAesthetic) {
-      return { category: t('categories.aesthetic', '美学研究'), themeColor: 'from-pink-500 to-purple-600', badgeBg: 'bg-pink-100 text-pink-600' };
+      return { category: INTRO_UI_TRANSLATIONS.aesthetic[langKey] || 'Aesthetics', themeColor: 'from-pink-500 to-purple-600', badgeBg: 'bg-pink-100 text-pink-600' };
     }
     if (isHealth) {
-      return { category: t('categories.health', '健康望诊'), themeColor: 'from-emerald-500 to-teal-600', badgeBg: 'bg-emerald-100 text-emerald-600' };
+      return { category: INTRO_UI_TRANSLATIONS.health[langKey] || 'Health Check', themeColor: 'from-emerald-500 to-teal-600', badgeBg: 'bg-emerald-100 text-emerald-600' };
     }
     if (isMetaphysics) {
-      return { category: t('categories.metaphysics', '传统玄学'), themeColor: 'from-amber-500 to-red-600', badgeBg: 'bg-amber-100 text-amber-700' };
+      return { category: INTRO_UI_TRANSLATIONS.metaphysics[langKey] || 'Metaphysics', themeColor: 'from-amber-500 to-red-600', badgeBg: 'bg-amber-100 text-amber-700' };
     }
-    return { category: t('categories.psychology', '心理测评'), themeColor: 'from-blue-500 to-indigo-600', badgeBg: 'bg-blue-100 text-blue-600' };
+    return { category: INTRO_UI_TRANSLATIONS.psychology[langKey] || 'Psychology', themeColor: 'from-blue-500 to-indigo-600', badgeBg: 'bg-blue-100 text-blue-600' };
   };
 
   const { category, themeColor, badgeBg } = getCategoryAndTheme();
@@ -584,12 +584,16 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
         <div className="h-px bg-gradient-to-r from-pink-200 to-transparent mb-4" />
 
         <div className="flex-1">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">{t('intro.mechanism', 'AI 分析机制')}</h3>
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+            {INTRO_UI_TRANSLATIONS.mechanism[langKey] || 'AI Analysis Mechanism'}
+          </h3>
           <p className="text-sm text-gray-600 leading-relaxed mb-6 font-medium">
             {introData.desc}
           </p>
 
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">{t('intro.preparations', '体验准备')}</h3>
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+            {INTRO_UI_TRANSLATIONS.preparations[langKey] || 'Preparation Tips'}
+          </h3>
           <div className="flex items-start gap-2 bg-pink-50/50 p-3 rounded-2xl border border-pink-100/50">
             <span className="text-pink-500 text-sm">💡</span>
             <p className="text-xs text-gray-500 leading-relaxed font-semibold">
@@ -603,7 +607,9 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
           onClick={onStart}
           className={`w-full py-4 rounded-2xl bg-gradient-to-r ${themeColor} text-white font-bold text-base shadow-lg shadow-pink-500/20 active:scale-[0.98] active:brightness-95 transition-all mt-6`}
         >
-          {isFreeTest ? t('intro.start_free', '开始免费测评') : `${t('intro.start_test', '开始测试')} ${t('intro.use_credit_desc', '(消耗 1 点额度)')}`}
+          {isFreeTest 
+            ? (INTRO_UI_TRANSLATIONS.start_free[langKey] || 'Start Free Evaluation') 
+            : `${INTRO_UI_TRANSLATIONS.start_test[langKey] || 'Start Test'} ${INTRO_UI_TRANSLATIONS.use_credit_desc[langKey] || '(Cost 1 Credit)'}`}
         </button>
       </div>
     </div>
