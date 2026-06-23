@@ -32,16 +32,19 @@ async function getAiConfig() {
     }
 
     const config = {
-        AI_PROVIDER: (configMap['ai_provider'] || process.env.AI_PROVIDER || 'vertex').trim().toLowerCase(),
+        AI_PROVIDER: (configMap['ai_mode'] || configMap['ai_provider'] || process.env.AI_PROVIDER || 'vertex').trim().toLowerCase(),
         CHAT_AI_PROVIDER: (configMap['chat_ai_provider'] || process.env.CHAT_AI_PROVIDER || 'follow').trim().toLowerCase(),
         GEMINI_API_KEY: configMap['gemini_api_key'] || process.env.GEMINI_API_KEY || '',
         DEEPSEEK_API_KEY: configMap['deepseek_api_key'] || process.env.DEEPSEEK_API_KEY || '',
         GCP_PROJECT_ID: configMap['gcp_project_id'] || process.env.GCP_PROJECT_ID || 'vertex-ai-for-vercel',
         GCP_LOCATION: configMap['gcp_location'] || process.env.GCP_LOCATION || 'us-central1',
-        GCP_VERTEX_PROXY: configMap['vertex_proxy_url'] || process.env.GCP_VERTEX_PROXY || 'https://vertex.marylab.top/api/vertex-proxy',
-        GCP_VERTEX_ONLY_PROXY: configMap['vertex_only_proxy_url'] || process.env.GCP_VERTEX_ONLY_PROXY || '',
-        VERTEX_PROXY_KEY: configMap['vertex_proxy_key'] || process.env.VERTEX_PROXY_KEY || process.env.EASYROUTER_API_KEY || '',
-        GCP_SERVICE_ACCOUNT_KEY: configMap['gcp_service_account_key'] || process.env.GCP_SERVICE_ACCOUNT_KEY || ''
+        GCP_VERTEX_PROXY: configMap['vertex_proxy_url'] || configMap['vertex_proxy'] || process.env.GCP_VERTEX_PROXY || 'https://vertex.marylab.top/api/vertex-proxy',
+        GCP_VERTEX_ONLY_PROXY: configMap['vertex_only_proxy_url'] || configMap['vertex_only_proxy'] || process.env.GCP_VERTEX_ONLY_PROXY || '',
+        VERTEX_PROXY_KEY: configMap['easyrouter_api_key'] || configMap['vertex_proxy_key'] || process.env.VERTEX_PROXY_KEY || process.env.EASYROUTER_API_KEY || '',
+        GCP_SERVICE_ACCOUNT_KEY: configMap['vertex_keys'] || configMap['gcp_service_account_key'] || process.env.GCP_SERVICE_ACCOUNT_KEY || '',
+        AI_MODEL_NAME: configMap['ai_model_name'] || process.env.AI_MODEL_NAME || 'gemini-2.5-flash',
+        DEEPSEEK_MODEL_NAME: configMap['deepseek_model_name'] || process.env.DEEPSEEK_MODEL_NAME || 'deepseek-chat',
+        AI_MAX_RETRIES: configMap['ai_max_retries'] || process.env.AI_MAX_RETRIES || '3'
     };
 
     if (!config.GCP_VERTEX_ONLY_PROXY) {
@@ -102,14 +105,18 @@ async function getAccessToken(config: any) {
 /**
  * 适配 Vertex AI 模型路径 (严格锁定 Flash 系列，杜绝 Pro)
  */
-const getVertexModelPath = (model: string): string => {
+const getVertexModelPath = (model: string, config?: any): string => {
+    let targetModel = model;
+    if ((model === 'gemini-3-flash-preview' || model === 'gemini-2.5-flash') && config?.AI_MODEL_NAME) {
+        targetModel = config.AI_MODEL_NAME;
+    }
     const mapping: Record<string, string> = {
         'gemini-3-flash-preview': 'gemini-2.5-flash', 
         'gemini-1.5-flash': 'gemini-2.5-flash', 
         'gemini-1.5-pro': 'gemini-2.5-flash', // 强制锁定到 Flash 以节省成本
         'gemini-2.5-flash-image': 'gemini-2.5-flash-image'
     };
-    const mapped = mapping[model] || model;
+    const mapped = mapping[targetModel] || targetModel;
     return `publishers/google/models/${mapped}`;
 };
 
@@ -128,7 +135,7 @@ async function callVertexAI(modelName: string, payload: any, config: any) {
     }
 
     // 2. 映射模型为 Vertex 兼容路径
-    const modelPath = getVertexModelPath(modelName);
+    const modelPath = getVertexModelPath(modelName, config);
 
     // 3. 拼接目标端点 URL
     let url = "";
@@ -138,7 +145,7 @@ async function callVertexAI(modelName: string, payload: any, config: any) {
         if (baseUrl.includes("vertex-proxy")) {
             baseUrl = baseUrl.replace("vertex-proxy", "easyrouter-proxy");
         }
-        const mappedModel = getVertexModelPath(modelName).split('/').pop();
+        const mappedModel = getVertexModelPath(modelName, config).split('/').pop();
         url = `${baseUrl}/v1beta/models/${mappedModel}:generateContent`;
         console.log(`[AI Client - EasyRouter] Route: ${url}`);
     } else {
@@ -168,12 +175,35 @@ async function callVertexAI(modelName: string, payload: any, config: any) {
  * 调用 Google AI Studio 的 Gemini API
  */
 async function callGeminiStudio(modelName: string, payload: any, config: any) {
-    const key = config.GEMINI_API_KEY;
-    if (!key) {
+    const keyStr = config.GEMINI_API_KEY;
+    if (!keyStr) {
         throw new Error("GEMINI_API_KEY 未配置，无法调用 Gemini Studio API");
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+    // 识别是否配置了多个 Key，以换行或 '|||' 分隔
+    const keys = keyStr.split(/\r?\n|\|\|\|/).map((k: string) => k.trim()).filter(Boolean);
+    if (keys.length === 0) {
+        throw new Error("GEMINI_API_KEY 配置内容为空");
+    }
+
+    // 轮候随机挑选一个 Key
+    const randomIndex = Math.floor(Math.random() * keys.length);
+    const selectedKey = keys[randomIndex];
+    console.log(`[Gemini Studio Auth] API Key 轮换：共 ${keys.length} 个 Key，当前选中第 ${randomIndex + 1} 个调用。`);
+
+    let targetModel = modelName;
+    if ((modelName === 'gemini-3-flash-preview' || modelName === 'gemini-2.5-flash') && config.AI_MODEL_NAME) {
+        targetModel = config.AI_MODEL_NAME;
+    }
+    const mapping: Record<string, string> = {
+        'gemini-3-flash-preview': 'gemini-2.5-flash',
+        'gemini-1.5-flash': 'gemini-2.5-flash',
+        'gemini-1.5-pro': 'gemini-2.5-flash',
+        'gemini-2.5-flash-image': 'gemini-2.5-flash-image'
+    };
+    const mappedModel = mapping[targetModel] || targetModel;
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${mappedModel}:generateContent?key=${selectedKey}`;
     console.log(`[Gemini Studio Request] URL: ${url}`);
 
     const response = await fetch(url, {
@@ -196,8 +226,8 @@ async function callGeminiStudio(modelName: string, payload: any, config: any) {
  * 直接调用 DeepSeek 官方 API 接口 (将 Gemini 格式请求转换为 OpenAI/DeepSeek 格式)
  */
 async function callDeepSeek(modelName: string, payload: any, config: any) {
-    const key = config.DEEPSEEK_API_KEY;
-    if (!key) {
+    const apiKey = config.DEEPSEEK_API_KEY;
+    if (!apiKey) {
         throw new Error("DEEPSEEK_API_KEY 未配置");
     }
 
@@ -224,7 +254,7 @@ async function callDeepSeek(modelName: string, payload: any, config: any) {
         const parts = contents[0].parts || [];
         if (parts.length > 0) {
             const promptText = parts[0].text || "";
-            openaiMessages.push({ role: "user", content: promptText || "开始分析图片" });
+            openaiMessages.push({ role: "user", content: promptText || "开始 analysis" });
         }
     }
 
@@ -232,10 +262,12 @@ async function callDeepSeek(modelName: string, payload: any, config: any) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`
+            'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: modelName === "gemini-3-flash-preview" ? "deepseek-chat" : modelName, 
+            model: (modelName === "gemini-3-flash-preview" || modelName === "gemini-2.5-flash") 
+                ? (config.DEEPSEEK_MODEL_NAME || "deepseek-chat") 
+                : modelName, 
             messages: openaiMessages,
             temperature: 0.3
         })
@@ -372,6 +404,7 @@ async function requestWithRetry<T>(
     const startTime = Date.now();
     let lastError: any;
 
+    const finalMaxRetries = config.AI_MAX_RETRIES ? parseInt(config.AI_MAX_RETRIES) : maxRetries;
     let currentProvider = config.CHAT_AI_PROVIDER === 'deepseek' ? 'deepseek' : config.AI_PROVIDER;
 
     if (currentProvider === 'local') {
@@ -379,7 +412,7 @@ async function requestWithRetry<T>(
         throw new Error("System is in local mode");
     }
 
-    for (let i = 0; i <= maxRetries; i++) {
+    for (let i = 0; i <= finalMaxRetries; i++) {
         try {
             let lastUsage: any = null;
             const mockModel = {
@@ -412,7 +445,7 @@ async function requestWithRetry<T>(
         } catch (error: any) {
             lastError = error;
             const message = error?.message || "";
-            console.error(`[Retry Strategy] 尝试 ${i + 1}/${maxRetries + 1} 失败: ${message}`);
+            console.error(`[Retry Strategy] 尝试 ${i + 1}/${finalMaxRetries + 1} 失败: ${message}`);
 
             const isConfigError = message.includes("401") || message.includes("403") || message.includes("404") ||
                                   message.includes("GCP_SERVICE_ACCOUNT_KEY") || message.includes("GEMINI_API_KEY") ||
