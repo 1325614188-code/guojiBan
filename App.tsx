@@ -330,125 +330,133 @@ const App: React.FC = () => {
     }
   };
 
+  const isAdmin = !showLogin && currentSection === AppSection.ADMIN && user?.is_admin;
+
   return (
     <ErrorBoundary>
-      <div className="min-h-screen max-w-md mx-auto relative overflow-hidden bg-pink-50 flex flex-col shadow-2xl pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-        {/* 语言切换器 */}
-        <div className="absolute top-4 right-4 z-[1001]">
-          <button 
-            onClick={() => setShowLangMenu(!showLangMenu)}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md flex items-center justify-center text-lg border border-pink-100 active:scale-95 transition-all"
-          >
-            🌐
-          </button>
-          
-          {showLangMenu && (
-            <div className="absolute top-12 right-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-pink-50 p-2 min-w-[120px] animate-in fade-in slide-in-from-top-2 duration-200">
-              {[
-                { code: 'zh-CN', name: '简体中文' },
-                { code: 'zh-TW', name: '繁体中文' },
-                { code: 'en', name: 'English' },
-                { code: 'vi', name: 'Tiếng Việt' },
-                { code: 'ja', name: '日本語' },
-                { code: 'th', name: 'ไทย' },
-                { code: 'fr', name: 'Français' },
-                { code: 'es', name: 'Español' },
-                { code: 'de', name: 'Deutsch' }
-              ].map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => {
-                    i18n.changeLanguage(lang.code);
-                    localStorage.setItem('i18nextLng', lang.code);
-                    localStorage.setItem('lang_manually_set', 'true');
-                    setShowLangMenu(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 rounded-xl text-sm font-medium transition-colors ${i18n.language === lang.code ? 'bg-pink-500 text-white' : 'text-gray-600 hover:bg-pink-50'}`}
-                >
-                  {lang.name}
+      {isAdmin ? (
+        <div className="min-h-screen w-full bg-slate-50 flex flex-col">
+          <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-pink-300">{t('common.loading')}</div>}>
+            <AdminView admin={user} onBack={handleBack} />
+          </Suspense>
+        </div>
+      ) : (
+        <div className="min-h-screen max-w-md mx-auto relative overflow-hidden bg-pink-50 flex flex-col shadow-2xl pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+          {/* 语言切换器 */}
+          <div className="absolute top-4 right-4 z-[1001]">
+            <button 
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md flex items-center justify-center text-lg border border-pink-100 active:scale-95 transition-all"
+            >
+              🌐
+            </button>
+            
+            {showLangMenu && (
+              <div className="absolute top-12 right-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-pink-50 p-2 min-w-[120px] animate-in fade-in slide-in-from-top-2 duration-200">
+                {[
+                  { code: 'zh-CN', name: '简体中文' },
+                  { code: 'zh-TW', name: '繁体中文' },
+                  { code: 'en', name: 'English' },
+                  { code: 'vi', name: 'Tiếng Việt' },
+                  { code: 'ja', name: '日本語' },
+                  { code: 'th', name: 'ไทย' },
+                  { code: 'fr', name: 'Français' },
+                  { code: 'es', name: 'Español' },
+                  { code: 'de', name: 'Deutsch' }
+                ].map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      i18n.changeLanguage(lang.code);
+                      localStorage.setItem('i18nextLng', lang.code);
+                      localStorage.setItem('lang_manually_set', 'true');
+                      setShowLangMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 rounded-xl text-sm font-medium transition-colors ${i18n.language === lang.code ? 'bg-pink-500 text-white' : 'text-gray-600 hover:bg-pink-50'}`}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto pb-20">
+            <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-pink-300">{t('common.loading')}</div>}>
+
+              {showLogin && <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />}
+
+              {!showLogin && showMember && user && <MemberView user={user} onLogout={handleLogout} onBack={() => setShowMember(false)} onUserUpdate={handleUserUpdate} />}
+
+              {!showLogin && !showMember && (
+                <>
+                  {currentSection === AppSection.HOME && <HomeView onNavigate={handleNavigate} onShowLogin={() => setShowLogin(true)} />}
+                  {currentSection === AppSection.LINKTREE && <LinktreeView />}
+                  {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={handleBack} />}
+
+                  {currentSection !== AppSection.HOME &&
+                   currentSection !== AppSection.LINKTREE &&
+                   currentSection !== AppSection.APP_DOWNLOAD && (
+                    introActive ? (
+                      <IntroductionView 
+                        section={currentSection} 
+                        onStart={() => setIntroActive(false)} 
+                        onBack={handleBack} 
+                      />
+                    ) : (
+                      <>
+                        {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.MAKEUP && <MakeupView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={handleBack} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.CALENDAR && <CalendarView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={handleBack} />}
+                        {currentSection === AppSection.EQ_TEST && <EQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.IQ_TEST && <IQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                        {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
+                      </>
+                    )
+                  )}
+                </>
+              )}
+
+            </Suspense>
+          </div>
+
+          {!(showLogin || showMember || currentSection === AppSection.LINKTREE) && (
+            <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
+              <button onClick={() => handleNavigate(AppSection.HOME)} className={`flex flex-col items-center gap-1 ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}>
+                <span className="text-xl">🏠</span>
+                <span className="text-xs">{t('common.home', '首页')}</span>
+              </button>
+              <button onClick={() => user ? setShowMember(true) : setShowLogin(true)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-pink-500">
+                <span className="text-xl">{user ? '👤' : '🔐'}</span>
+                <span className="text-xs">{user ? t('common.mine', '我的') : t('common.login')}</span>
+              </button>
+              {user?.is_admin && (
+                <button onClick={() => handleNavigate(AppSection.ADMIN)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500">
+                  <span className="text-xl">⚙️</span>
+                  <span className="text-xs">{t('common.admin', '管理')}</span>
                 </button>
-              ))}
+              )}
             </div>
           )}
         </div>
-
-        <div className="flex-1 overflow-y-auto pb-20">
-          <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-pink-300">{t('common.loading')}</div>}>
-
-            {showLogin && <LoginView onLogin={handleLogin} onBack={() => setShowLogin(false)} />}
-
-            {!showLogin && currentSection === AppSection.ADMIN && user?.is_admin && <AdminView admin={user} onBack={handleBack} />}
-
-            {!showLogin && currentSection !== AppSection.ADMIN && showMember && user && <MemberView user={user} onLogout={handleLogout} onBack={() => setShowMember(false)} onUserUpdate={handleUserUpdate} />}
-
-            {!showLogin && currentSection !== AppSection.ADMIN && !showMember && (
-              <>
-                {currentSection === AppSection.HOME && <HomeView onNavigate={handleNavigate} onShowLogin={() => setShowLogin(true)} />}
-                {currentSection === AppSection.LINKTREE && <LinktreeView />}
-                {currentSection === AppSection.APP_DOWNLOAD && <DownloadAppView onBack={handleBack} />}
-
-                {currentSection !== AppSection.HOME &&
-                 currentSection !== AppSection.LINKTREE &&
-                 currentSection !== AppSection.APP_DOWNLOAD && (
-                  introActive ? (
-                    <IntroductionView 
-                      section={currentSection} 
-                      onStart={() => setIntroActive(false)} 
-                      onBack={handleBack} 
-                    />
-                  ) : (
-                    <>
-                      {currentSection === AppSection.ADVANCED_TRY_ON && <AdvancedTryOnView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.TRY_ON_CLOTHES && <TryOnView type="clothes" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.TRY_ON_ACCESSORIES && <TryOnView type="accessories" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.HAIRSTYLE && <HairstyleView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.MAKEUP && <MakeupView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.BEAUTY_SCORE && <AnalysisView title={t('sections.beauty_score', '颜值打分')} type="颜值打分" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.COUPLE_FACE && <CoupleFaceView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.TONGUE_DIAGNOSIS && <AnalysisView title={t('sections.tongue_diagnosis', '趣味舌诊')} type="舌诊" onBack={handleBack} helpText={t('ai.upload_photo', '请上传一张清晰的舌头照片哦～')} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.FACE_COLOR && <AnalysisView title={t('sections.face_color', '面色分析')} type="中医面色" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.FACE_READING && <AnalysisView title={t('sections.face_reading', '传统面相')} type="传统相术" onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.FENG_SHUI && <FengShuiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.LICENSE_PLATE && <LicensePlateView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.CALENDAR && <CalendarView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.MBTI_TEST && <MBTITestView onBack={handleBack} />}
-                      {currentSection === AppSection.EQ_TEST && <EQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.IQ_TEST && <IQTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.BIG_FIVE && <BigFiveView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.DEPRESSION_TEST && <DepressionTestView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.MARRIAGE_ANALYSIS && <MarriageView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.WEALTH_ANALYSIS && <WealthView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.ZI_WEI_DOU_SHU && <ZiWeiView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.JADE_APPRAISAL && <JadeAppraisalView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                      {currentSection === AppSection.AI_EYE_DIAGNOSIS && <EyeDiagnosisView onBack={handleBack} onCheckCredits={checkCredits} onDeductCredit={deductCredit} onResetLock={() => { isProcessingRef.current = false; }} />}
-                    </>
-                  )
-                )}
-              </>
-            )}
-
-          </Suspense>
-        </div>
-
-        {!(showLogin || currentSection === AppSection.ADMIN || showMember || currentSection === AppSection.LINKTREE) && (
-          <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto h-16 bg-white/80 backdrop-blur-md border-t flex justify-around items-center px-4 z-50">
-            <button onClick={() => handleNavigate(AppSection.HOME)} className={`flex flex-col items-center gap-1 ${currentSection === AppSection.HOME ? 'text-pink-500' : 'text-gray-500'}`}>
-              <span className="text-xl">🏠</span>
-              <span className="text-xs">{t('common.home', '首页')}</span>
-            </button>
-            <button onClick={() => user ? setShowMember(true) : setShowLogin(true)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-pink-500">
-              <span className="text-xl">{user ? '👤' : '🔐'}</span>
-              <span className="text-xs">{user ? t('common.mine', '我的') : t('common.login')}</span>
-            </button>
-            {user?.is_admin && (
-              <button onClick={() => handleNavigate(AppSection.ADMIN)} className="flex flex-col items-center gap-1 text-gray-500 hover:text-purple-500">
-                <span className="text-xl">⚙️</span>
-                <span className="text-xs">{t('common.admin', '管理')}</span>
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </ErrorBoundary>
   );
 };
