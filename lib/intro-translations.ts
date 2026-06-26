@@ -394,6 +394,18 @@ export const INTRO_UI_TRANSLATIONS: Record<string, Record<LanguageCode, string>>
     'es': 'Evaluación psicológica',
     'de': 'Psychologischer Test',
     'ko': '심리 테스트'
+  },
+  appraisal: {
+    'zh-CN': '智能鉴定',
+    'zh-TW': '智能鑑定',
+    'en': 'AI Appraisal',
+    'vi': 'Giám định AI',
+    'ja': 'AI鑑定',
+    'th': 'การประเมินด้วย AI',
+    'fr': 'Évaluation IA',
+    'es': 'Evaluación IA',
+    'de': 'KI-Bewertung',
+    'ko': 'AI 감정'
   }
 };
 

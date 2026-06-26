@@ -528,13 +528,17 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
   const getCategoryAndTheme = () => {
     const isAesthetic = [AppSection.TRY_ON_CLOTHES, AppSection.ADVANCED_TRY_ON, AppSection.TRY_ON_ACCESSORIES, AppSection.HAIRSTYLE, AppSection.MAKEUP, AppSection.BEAUTY_SCORE, AppSection.COUPLE_FACE].includes(section);
     const isHealth = [AppSection.TONGUE_DIAGNOSIS, AppSection.FACE_COLOR, AppSection.AI_EYE_DIAGNOSIS].includes(section);
-    const isMetaphysics = [AppSection.FENG_SHUI, AppSection.CALENDAR, AppSection.LICENSE_PLATE, AppSection.MARRIAGE_ANALYSIS, AppSection.WEALTH_ANALYSIS, AppSection.ZI_WEI_DOU_SHU, AppSection.JADE_APPRAISAL].includes(section);
+    const isMetaphysics = [AppSection.FENG_SHUI, AppSection.CALENDAR, AppSection.LICENSE_PLATE, AppSection.MARRIAGE_ANALYSIS, AppSection.WEALTH_ANALYSIS, AppSection.ZI_WEI_DOU_SHU].includes(section);
+    const isAppraisal = [AppSection.JADE_APPRAISAL].includes(section);
     
     if (isAesthetic) {
       return { category: INTRO_UI_TRANSLATIONS.aesthetic[langKey] || 'Aesthetics', themeColor: 'from-pink-500 to-purple-600', badgeBg: 'bg-pink-100 text-pink-600' };
     }
     if (isHealth) {
       return { category: INTRO_UI_TRANSLATIONS.health[langKey] || 'Health Check', themeColor: 'from-emerald-500 to-teal-600', badgeBg: 'bg-emerald-100 text-emerald-600' };
+    }
+    if (isAppraisal) {
+      return { category: (INTRO_UI_TRANSLATIONS as any).appraisal?.[langKey] || 'AI Appraisal', themeColor: 'from-cyan-500 to-blue-600', badgeBg: 'bg-cyan-100 text-cyan-700' };
     }
     if (isMetaphysics) {
       return { category: INTRO_UI_TRANSLATIONS.metaphysics[langKey] || 'Metaphysics', themeColor: 'from-amber-500 to-red-600', badgeBg: 'bg-amber-100 text-amber-700' };
