@@ -69,12 +69,19 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     const [message, setMessage] = useState('');
     const [config, setConfig] = useState<any>({});
     const [copied, setCopied] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
     const [rechargeMessage, setRechargeMessage] = useState('');
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const [referralCount, setReferralCount] = useState(0);
     const [referralHistory, setReferralHistory] = useState<any[]>([]);
     const [userPoints, setUserPoints] = useState(0);
     const [pointsMessage, setPointsMessage] = useState('');
+
+    // 获取专属推广链接 (自动适配当前域名)
+    const getReferralLink = (): string => {
+        if (!user?.id) return '';
+        return `${window.location.origin}/?ref=${user.id}`;
+    };
 
     // 获取用户ID后6位作为邀请码
     const getInviteCode = (): string => {
@@ -603,6 +610,36 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
 
                         <div className="flex items-center gap-1.5 px-1">
                             <span className="text-xs text-pink-500 font-medium">🎁 {t('member.invite_owner_reward_desc')}</span>
+                        </div>
+                        
+                        {/* 专属推广链接 */}
+                        <div className="mt-2 pt-4 border-t border-gray-100 flex flex-col gap-2">
+                            <h4 className="font-bold flex items-center gap-2 text-sm text-gray-800">
+                                🔗 {t('member.exclusive_referral_link')}
+                            </h4>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    readOnly
+                                    value={getReferralLink()}
+                                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                                    className="flex-1 h-10 px-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-500 focus:outline-none transition-all font-mono select-all"
+                                />
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(getReferralLink()).then(() => {
+                                            setCopiedLink(true);
+                                            setTimeout(() => setCopiedLink(false), 2000);
+                                        });
+                                    }}
+                                    className="px-4 h-10 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm shrink-0"
+                                >
+                                    {copiedLink ? t('member.copied') : t('member.copy_referral_link')}
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-medium leading-relaxed">
+                                {t('member.referral_link_tip')}
+                            </p>
                         </div>
                         
                         {/* 填码领奖入口 (移入此栏目) */}
