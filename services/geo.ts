@@ -42,7 +42,7 @@ export async function detectAndSetLanguage() {
     const data = await response.json();
     const countryCode = data.country_code; // 例如 "US", "HK", "CN"
 
-    let targetLang = 'en'; // 默认设为英文 (Default to English)
+    let targetLang = 'vi'; // 默认设为越南文 (Default to Vietnamese)
 
     if (countryCode && countryToLang[countryCode]) {
       targetLang = countryToLang[countryCode];
@@ -51,8 +51,8 @@ export async function detectAndSetLanguage() {
     console.log(`[Geo] Country detected: ${countryCode || 'unknown'}, switching to: ${targetLang}`);
     i18n.changeLanguage(targetLang);
   } catch (error) {
-    console.error('[Geo] Detection failed, falling back to English:', error);
-    // 即使识别失败，国际化版本也应默认英文
-    i18n.changeLanguage('en');
+    console.error('[Geo] Detection failed, falling back to Vietnamese:', error);
+    // 即使识别失败，国际化版本也应默认越南文
+    i18n.changeLanguage('vi');
   }
 }
