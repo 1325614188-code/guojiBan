@@ -317,6 +317,23 @@ export default async function handler(req: any, res: any) {
 
                 // 【重构】解析真实推荐人ID (优先支持通过 URL referrerId 传入)
                 let realReferrerId = referrerId;
+                if (realReferrerId && realReferrerId.trim().length === 6) {
+                    try {
+                        const { data: refUser } = await supabase
+                            .from('users')
+                            .select('id')
+                            .filter('id', 'like', `%${realReferrerId.trim().toLowerCase()}`)
+                            .maybeSingle();
+                        if (refUser) {
+                            realReferrerId = refUser.id;
+                        } else {
+                            realReferrerId = null;
+                        }
+                    } catch (e) {
+                        console.error('[Resolve Referrer Error]', e);
+                        realReferrerId = null;
+                    }
+                }
 
                 // 仅针对该设备的首次注册赠送 3 次免费额度
                 const initialCredits = isFirstOnDevice ? 3 : 0;

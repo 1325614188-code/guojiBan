@@ -80,7 +80,7 @@ const MemberView: React.FC<MemberViewProps> = ({ user, onLogout, onBack, onUserU
     // 获取专属推广链接 (自动适配当前域名)
     const getReferralLink = (): string => {
         if (!user?.id) return '';
-        return `${window.location.origin}/?ref=${user.id}`;
+        return `${window.location.origin}/?ref=${getInviteCode()}`;
     };
 
     // 获取用户ID后6位作为邀请码

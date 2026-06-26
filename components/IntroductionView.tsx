@@ -16,12 +16,14 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
   const [copied, setCopied] = React.useState(false);
 
   const getSubProjectShareLink = (): string => {
-    let userId = '';
+    let inviteCode = '';
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
-        userId = parsed.id || '';
+        if (parsed.id) {
+          inviteCode = parsed.id.slice(-6).toUpperCase();
+        }
       } catch (e) {
         console.error(e);
       }
@@ -56,8 +58,8 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
     
     const subPath = sectionPaths[section] || '';
     const origin = window.location.origin;
-    if (userId) {
-      return `${origin}${subPath}?ref=${userId}`;
+    if (inviteCode) {
+      return `${origin}${subPath}?ref=${inviteCode}`;
     }
     return `${origin}${subPath}`;
   };
