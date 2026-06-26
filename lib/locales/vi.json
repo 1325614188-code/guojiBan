@@ -32,7 +32,10 @@
     "announcement_default": "✨ Khám phá nét quyến rũ riêng bạn ✨",
     "home": "Trang chủ",
     "mine": "Tôi",
-    "admin": "Quản trị"
+    "admin": "Quản trị",
+    "share_project_link": "Sao chép liên kết quảng bá",
+    "share_project_success": "Đã sao chép liên kết giới thiệu độc quyền!",
+    "share_project_tip": "(Người dùng đăng ký qua liên kết này sẽ tự động liên kết giới thiệu với bạn)"
   },
   "home": {
     "download_app": "Tải App",

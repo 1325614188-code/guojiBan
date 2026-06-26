@@ -13,6 +13,63 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || 'en') as LanguageCode;
   
+  const [copied, setCopied] = React.useState(false);
+
+  const getSubProjectShareLink = (): string => {
+    let userId = '';
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        userId = parsed.id || '';
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    
+    // Map AppSection to path (aligned with SECTION_PATH_MAP in App.tsx)
+    const sectionPaths: Record<string, string> = {
+      'advanced-try-on': '/advanced-try-on',
+      'try-on-clothes': '/try-on-clothes',
+      'try-on-accessories': '/try-on-accessories',
+      'hairstyle': '/hairstyle',
+      'makeup': '/makeup',
+      'beauty-score': '/beauty-score',
+      'jade-appraisal': '/jade-appraisal',
+      'ai-eye-diagnosis': '/eye-diagnosis',
+      'tongue-diagnosis': '/tongue-diagnosis',
+      'face-color': '/face-color',
+      'depression-test': '/depression-test',
+      'couple-face': '/couple-face',
+      'face-reading': '/face-reading',
+      'feng-shui': '/feng-shui',
+      'license-plate': '/license-plate',
+      'calendar': '/calendar',
+      'marriage-analysis': '/marriage-analysis',
+      'wealth-analysis': '/wealth-analysis',
+      'zi-wei-dou-shu': '/zi-wei-dou-shu',
+      'mbti-test': '/mbti-test',
+      'eq-test': '/eq-test',
+      'iq-test': '/iq-test',
+      'big-five': '/big-five',
+    };
+    
+    const subPath = sectionPaths[section] || '';
+    const origin = window.location.origin;
+    if (userId) {
+      return `${origin}${subPath}?ref=${userId}`;
+    }
+    return `${origin}${subPath}`;
+  };
+
+  const handleCopyShareLink = () => {
+    const link = getSubProjectShareLink();
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   // 智能降级兜底语言
   const langKey = INTRO_TRANSLATIONS[section] && INTRO_TRANSLATIONS[section][currentLang] 
     ? currentLang 
@@ -564,7 +621,18 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
         <span className={`text-xs font-semibold px-3 py-1 rounded-full ${badgeBg} shadow-sm`}>
           {category}
         </span>
-        <div className="w-10 h-10" /> {/* 保持平衡占位 */}
+        <button 
+          onClick={handleCopyShareLink}
+          title={t('common.share_project_link')}
+          className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md flex items-center justify-center text-sm border border-pink-100 active:scale-95 transition-all text-pink-500 relative"
+        >
+          {copied ? '✅' : '🔗'}
+          {copied && (
+            <span className="absolute bottom-full mb-2 right-0 bg-gray-900/90 text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap shadow-lg">
+              {t('common.share_project_success')}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* 精密矢量大图卡片 */}
@@ -598,11 +666,30 @@ const IntroductionView: React.FC<IntroductionViewProps> = ({ section, onStart, o
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
             {INTRO_UI_TRANSLATIONS.preparations[langKey] || 'Preparation Tips'}
           </h3>
-          <div className="flex items-start gap-2 bg-pink-50/50 p-3 rounded-2xl border border-pink-100/50">
+          <div className="flex items-start gap-2 bg-pink-50/50 p-3 rounded-2xl border border-pink-100/50 mb-4">
             <span className="text-pink-500 text-sm">💡</span>
             <p className="text-xs text-gray-500 leading-relaxed font-semibold">
               {introData.tips}
             </p>
+          </div>
+
+          {/* 推广分享入口 */}
+          <div 
+            onClick={handleCopyShareLink}
+            className="flex items-start gap-2.5 bg-gradient-to-r from-pink-50/70 to-purple-50/70 p-3 rounded-2xl border border-pink-100/60 cursor-pointer hover:from-pink-100/50 hover:to-purple-100/50 active:scale-[0.99] transition-all select-none"
+          >
+            <span className="text-pink-500 text-sm mt-0.5">📢</span>
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-pink-600 block mb-0.5">
+                {t('common.share_project_link')}
+              </span>
+              <p className="text-[10px] text-gray-400 leading-relaxed font-semibold">
+                {t('common.share_project_tip')}
+              </p>
+            </div>
+            <span className="text-xs bg-pink-500 text-white font-bold px-2 py-0.5 rounded-full shrink-0 scale-90 self-center">
+              {copied ? '✓' : 'Copy'}
+            </span>
           </div>
         </div>
 

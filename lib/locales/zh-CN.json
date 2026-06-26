@@ -40,7 +40,10 @@
     "announcement_update": "APP已经更新，请及时下载安装。",
     "home": "首页",
     "mine": "我的",
-    "admin": "管理"
+    "admin": "管理",
+    "share_project_link": "复制推广链接",
+    "share_project_success": "专属推广链接已复制！",
+    "share_project_tip": "（好友点击此链接注册或体验即可直接绑定您的推荐关系）"
   },
   "home": {
     "download_app": "下载 APP",

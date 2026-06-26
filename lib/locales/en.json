@@ -40,7 +40,10 @@
     "announcement_update": "App updated, please download and install in time.",
     "home": "Home",
     "mine": "Me",
-    "admin": "Admin"
+    "admin": "Admin",
+    "share_project_link": "Copy referral link",
+    "share_project_success": "Exclusive referral link copied!",
+    "share_project_tip": "(Users registering via this link will be automatically referred to you)"
   },
   "home": {
     "download_app": "Download APP",
