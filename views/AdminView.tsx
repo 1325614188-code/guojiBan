@@ -24,6 +24,29 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
     const [aiUsage, setAiUsage] = useState<any[]>([]);
     const [recentAiLogs, setRecentAiLogs] = useState<any[]>([]);
 
+    // Vertex 多 Key 编辑状态
+    const [localVertexKeys, setLocalVertexKeys] = useState<string[]>(['']);
+
+    useEffect(() => {
+        if (config.vertex_keys) {
+            const keys = config.vertex_keys.split(/\r?\n|\|\|\|/).map((k: string) => k.trim()).filter(Boolean);
+            setLocalVertexKeys(keys.length > 0 ? keys : ['']);
+        } else {
+            setLocalVertexKeys(['']);
+        }
+    }, [config.vertex_keys]);
+
+    const handleVertexKeyChange = (index: number, val: string) => {
+        const newList = [...localVertexKeys];
+        newList[index] = val;
+        setLocalVertexKeys(newList);
+    };
+
+    const handleRemoveVertexKey = (index: number) => {
+        const newList = localVertexKeys.filter((_, i) => i !== index);
+        setLocalVertexKeys(newList.length > 0 ? newList : ['']);
+    };
+
     // 客服支持状态
     const [conversations, setConversations] = useState<any[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -1119,16 +1142,69 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                 </div>
 
                                 {/* Vertex AI GCP 服务账号 Key */}
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-slate-500 font-bold ml-1">
-                                        GCP 服务账号秘钥 JSON (支持多 Key 轮换，换行或用 ||| 分隔)
-                                    </label>
-                                    <textarea
-                                        value={config.vertex_keys || ''}
-                                        onChange={e => updateConfig('vertex_keys', e.target.value)}
-                                        className="w-full h-32 px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-mono text-slate-600 bg-white resize-y focus:border-pink-300 outline-none"
-                                        placeholder={`{"type": "service_account", "project_id": "...", ...}\n\n可在下方粘贴多个 JSON 秘钥，以换行或 ||| 分隔以进行轮询。`}
-                                    />
+                                <div className="flex flex-col gap-3.5 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex flex-col">
+                                            <label className="text-xs text-slate-500 font-bold ml-1">
+                                                GCP 服务账号秘钥 JSON (支持多 Key 轮换)
+                                            </label>
+                                            <span className="text-[10px] text-slate-400 ml-1">每个输入框填写一个完整的 Google Service Account JSON。</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLocalVertexKeys([...localVertexKeys, ''])}
+                                            className="px-2.5 py-1 bg-pink-50 hover:bg-pink-100 text-pink-500 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 active:scale-95 border border-pink-100/50"
+                                        >
+                                            ➕ 添加密钥填写入口
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        {localVertexKeys.map((keyVal, idx) => (
+                                            <div key={idx} className="flex flex-col gap-1 border border-slate-200/60 p-3 rounded-xl bg-white relative">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-[10px] text-slate-400 font-bold font-mono">KEY #{idx + 1}</span>
+                                                    {localVertexKeys.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveVertexKey(idx)}
+                                                            className="text-xs text-red-400 hover:text-red-500 font-bold active:scale-95 transition-colors"
+                                                        >
+                                                            🗑️ 删除该入口
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <textarea
+                                                    value={keyVal}
+                                                    onChange={e => handleVertexKeyChange(idx, e.target.value)}
+                                                    className="w-full h-24 px-3 py-2 rounded-lg border border-slate-200 text-[10px] font-mono text-slate-600 bg-slate-50/30 resize-y focus:border-pink-300 outline-none"
+                                                    placeholder={`{"type": "service_account", "project_id": "...", ...}`}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const filteredList = localVertexKeys.map(k => k.trim()).filter(Boolean);
+                                            
+                                            // 校验 JSON 格式
+                                            for (let i = 0; i < filteredList.length; i++) {
+                                                try {
+                                                     JSON.parse(filteredList[i]);
+                                                } catch (e) {
+                                                     alert(`KEY #${i + 1} 的 JSON 格式不合法，请检查后再保存！`);
+                                                     return;
+                                                }
+                                            }
+
+                                            const joined = filteredList.join('\n');
+                                            updateConfig('vertex_keys', joined);
+                                            alert('Vertex 密钥保存成功！');
+                                        }}
+                                        className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-xs font-bold transition-all self-start flex items-center gap-1 shadow-sm active:scale-95"
+                                    >
+                                        💾 保存所有 Vertex 密钥
+                                    </button>
                                 </div>
 
                                 {/* Google AI Studio API Key */}
