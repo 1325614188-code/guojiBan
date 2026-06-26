@@ -1120,10 +1120,12 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                 {/* 主要文本大模型名称 & 最大重试次数 */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs text-slate-500 font-bold ml-1">文本模型名称</label>
+                                        <label className="text-xs text-slate-500 font-bold ml-1">
+                                            文本模型名称 <span className="text-[10px] text-slate-400 font-normal">（留空则默认使用系统内置的 gemini-2.5-flash，通常无需修改）</span>
+                                        </label>
                                         <input
                                             type="text"
-                                            value={config.ai_model_name || 'gemini-2.5-flash'}
+                                            value={config.ai_model_name || ''}
                                             onChange={e => updateConfig('ai_model_name', e.target.value)}
                                             className="h-10 px-4 rounded-xl border border-slate-200 text-slate-700 font-mono bg-white focus:border-pink-300 outline-none text-sm"
                                             placeholder="gemini-2.5-flash"
