@@ -27,18 +27,26 @@ const resources = {
   'ko': { translation: ko }
 };
 
+// 检查是否手动设置过语言
+const isManuallySet = typeof window !== 'undefined' && localStorage.getItem('lang_manually_set') === 'true';
+const initialLang = isManuallySet 
+  ? (typeof window !== 'undefined' ? localStorage.getItem('i18nextLng') || 'vi' : 'vi')
+  : 'vi';
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: initialLang,
     fallbackLng: 'vi',
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
     detection: {
-      order: ['querystring', 'localStorage', 'cookie', 'navigator', 'htmlTag', 'path', 'subdomain'],
-      caches: ['localStorage', 'cookie'],
+      // 仅从 querystring 或已手动设置的 localStorage 中检测，避免 navigator 自动检测浏览器语言
+      order: isManuallySet ? ['querystring', 'localStorage'] : ['querystring'],
+      caches: ['localStorage'],
     }
   });
 

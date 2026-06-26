@@ -4,26 +4,7 @@
 
 import i18n from '../lib/i18n';
 
-const GEO_API = 'https://ipapi.co/json/';
 
-const countryToLang: Record<string, string> = {
-  'CN': 'zh-CN',
-  'HK': 'zh-TW',
-  'TW': 'zh-TW',
-  'MO': 'zh-TW',
-  'VN': 'vi',
-  'JP': 'ja',
-  'TH': 'th',
-  'FR': 'fr',
-  'ES': 'es',
-  'DE': 'de',
-  'KR': 'ko',
-  'US': 'en',
-  'GB': 'en',
-  'CA': 'en',
-  'AU': 'en',
-  'SG': 'en'
-};
 
 export async function detectAndSetLanguage() {
   try {
@@ -34,25 +15,11 @@ export async function detectAndSetLanguage() {
       return;
     }
 
-    // 2. 调用 IP 定位接口
-    console.log('[Geo] Detecting country by IP...');
-    const response = await fetch(GEO_API);
-    if (!response.ok) throw new Error('IP API Error');
-    
-    const data = await response.json();
-    const countryCode = data.country_code; // 例如 "US", "HK", "CN"
-
-    let targetLang = 'vi'; // 默认设为越南文 (Default to Vietnamese)
-
-    if (countryCode && countryToLang[countryCode]) {
-      targetLang = countryToLang[countryCode];
-    }
-
-    console.log(`[Geo] Country detected: ${countryCode || 'unknown'}, switching to: ${targetLang}`);
-    i18n.changeLanguage(targetLang);
+    // 2. 由于默认语言为越南语，我们不再根据 IP 自动切换到其它国家的语言（以防国内或其它地区访问时自动切走）
+    console.log(`[Geo] Default language forced to: vi`);
+    i18n.changeLanguage('vi');
   } catch (error) {
     console.error('[Geo] Detection failed, falling back to Vietnamese:', error);
-    // 即使识别失败，国际化版本也应默认越南文
     i18n.changeLanguage('vi');
   }
 }
