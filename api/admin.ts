@@ -80,9 +80,10 @@ export default async function handler(req: any, res: any) {
             case 'getUsers': {
                 const { page = 1, pageSize = 20 } = data;
 
+                // 使用 * 选择，避免因数据库中缺少 points 字段导致整个查询报错
                 const { data: users, count } = await supabase
                     .from('users')
-                    .select('id, username, nickname, credits, points, device_id, created_at, is_admin', { count: 'exact' })
+                    .select('*', { count: 'exact' })
                     .order('created_at', { ascending: false })
                     .range((page - 1) * pageSize, page * pageSize - 1);
 
