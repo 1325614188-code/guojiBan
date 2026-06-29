@@ -17,6 +17,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onShowLogin }) => {
   const [showDownloadDialog, setShowDownloadDialog] = React.useState(false);
   const [downloadEnabled, setDownloadEnabled] = React.useState(true);
   const [pwaEnabled, setPwaEnabled] = React.useState(true);
+  const [publicConfig, setPublicConfig] = React.useState<Record<string, string>>({});
   const [rewardsEnabled, setRewardsEnabled] = React.useState(true);
   const { t } = useTranslation();
 
@@ -28,17 +29,20 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onShowLogin }) => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.config?.announcement) {
-          setAnnouncement(data.config.announcement);
-        }
-        if (data.config?.home_download_app_enabled === 'false') {
-          setDownloadEnabled(false);
-        }
-        if (data.config?.home_add_to_desktop_enabled === 'false') {
-          setPwaEnabled(false);
-        }
-        if (data.config?.home_rewards_enabled === 'false') {
-          setRewardsEnabled(false);
+        if (data.config) {
+          setPublicConfig(data.config);
+          if (data.config.announcement) {
+            setAnnouncement(data.config.announcement);
+          }
+          if (data.config.home_download_app_enabled === 'false') {
+            setDownloadEnabled(false);
+          }
+          if (data.config.home_add_to_desktop_enabled === 'false') {
+            setPwaEnabled(false);
+          }
+          if (data.config.home_rewards_enabled === 'false') {
+            setRewardsEnabled(false);
+          }
         }
       })
       .catch(err => console.error('[HomeView] Failed to fetch announcement', err));
@@ -154,42 +158,47 @@ const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onShowLogin }) => {
       </div>
 
       <div className="space-y-10">
-        {categories.map((cat, catIdx) => (
-          <div 
-            key={catIdx} 
-            className={`${cat.bg} ${cat.border} border-2 border-dashed rounded-[32px] p-6 relative pt-8`}
-          >
-            {/* Category Title Badge */}
-            <div className={`absolute -top-4 left-6 px-4 py-1.5 rounded-full bg-white border ${cat.border} shadow-sm z-10`}>
-              <span className={`text-xs font-black tracking-widest ${cat.accent}`}>{cat.title}</span>
-            </div>
+        {categories.map((cat, catIdx) => {
+          const activeItems = cat.items.filter(item => publicConfig[`show_sec_${item.id}`] !== 'false');
+          if (activeItems.length === 0) return null;
 
-            <div className="grid grid-cols-2 gap-3">
-              {cat.items.map((sec) => (
-                <button
-                  key={sec.id}
-                  onClick={() => onNavigate(sec.id)}
-                  className={`${sec.color} ${sec.border} border-b-4 border-r-2 ${sec.textColor || 'text-gray-800'} rounded-2xl p-4 flex flex-row items-center justify-start gap-3 shadow-sm hover:shadow-md transition-all transform active:scale-95 h-16 relative overflow-hidden group`}
-                >
-                  {sec.isNew && (
-                    <div className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10">NEW</div>
-                  )}
-                  <span className="text-2xl flex-shrink-0 relative z-10 group-hover:scale-110 transition-transform">{sec.icon}</span>
-                  <div className="flex flex-col items-start overflow-hidden relative z-10">
-                    <span className="font-black text-[13px] whitespace-nowrap overflow-hidden text-ellipsis">
-                      {sec.title}
-                    </span>
-                    { (sec as any).subTitle && (
-                      <span className="text-[10px] opacity-60 font-bold -mt-0.5">
-                        {(sec as any).subTitle}
-                      </span>
+          return (
+            <div 
+              key={catIdx} 
+              className={`${cat.bg} ${cat.border} border-2 border-dashed rounded-[32px] p-6 relative pt-8`}
+            >
+              {/* Category Title Badge */}
+              <div className={`absolute -top-4 left-6 px-4 py-1.5 rounded-full bg-white border ${cat.border} shadow-sm z-10`}>
+                <span className={`text-xs font-black tracking-widest ${cat.accent}`}>{cat.title}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {activeItems.map((sec) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => onNavigate(sec.id)}
+                    className={`${sec.color} ${sec.border} border-b-4 border-r-2 ${sec.textColor || 'text-gray-800'} rounded-2xl p-4 flex flex-row items-center justify-start gap-3 shadow-sm hover:shadow-md transition-all transform active:scale-95 h-16 relative overflow-hidden group`}
+                  >
+                    {sec.isNew && (
+                      <div className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl-lg z-10">NEW</div>
                     )}
-                  </div>
-                </button>
-              ))}
+                    <span className="text-2xl flex-shrink-0 relative z-10 group-hover:scale-110 transition-transform">{sec.icon}</span>
+                    <div className="flex flex-col items-start overflow-hidden relative z-10">
+                      <span className="font-black text-[13px] whitespace-nowrap overflow-hidden text-ellipsis">
+                        {sec.title}
+                      </span>
+                      { (sec as any).subTitle && (
+                        <span className="text-[10px] opacity-60 font-bold -mt-0.5">
+                          {(sec as any).subTitle}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
 

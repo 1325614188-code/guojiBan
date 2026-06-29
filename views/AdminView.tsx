@@ -1017,6 +1017,114 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                             </div>
                         </div>
 
+                        {/* 🔮 AI 测试项目显示开关 */}
+                        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+                            <h3 className="text-base font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <span className="text-lg">🔮</span> AI 测试项目显示开关
+                            </h3>
+                            <p className="text-[10px] text-gray-400 mb-6">控制前台首页各个测试项目的显示与隐藏。关闭后前台实时隐藏该项入口。</p>
+                            
+                            <div className="space-y-6">
+                                {/* 美学设计 */}
+                                <div className="border border-slate-100 rounded-2xl p-4 bg-rose-50/10">
+                                    <h4 className="text-xs font-bold text-rose-600 mb-3 flex items-center gap-1">🌸 美学设计</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {[
+                                            { id: 'advanced-try-on', name: '高级试衣 (✨)' },
+                                            { id: 'try-on-accessories', name: '饰品试戴 (💎)' },
+                                            { id: 'hairstyle', name: '发型设计 (💇‍♀️)' },
+                                            { id: 'makeup', name: '彩妆设计 (💄)' },
+                                            { id: 'beauty-score', name: '颜值打分 (✨)' },
+                                            { id: 'jade-appraisal', name: '玉石鉴定 (📿)' }
+                                        ].map(item => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 text-xs">
+                                                <span className="font-medium text-slate-750">{item.name}</span>
+                                                <button
+                                                    onClick={() => updateConfig(`show_sec_${item.id}`, config[`show_sec_${item.id}`] !== 'false' ? 'false' : 'true')}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${config[`show_sec_${item.id}`] !== 'false' ? 'bg-pink-500' : 'bg-gray-300'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${config[`show_sec_${item.id}`] !== 'false' ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 健康自测 */}
+                                <div className="border border-slate-100 rounded-2xl p-4 bg-emerald-50/10">
+                                    <h4 className="text-xs font-bold text-emerald-600 mb-3 flex items-center gap-1">🌿 健康自测</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {[
+                                            { id: 'eye-diagnosis', name: 'AI眼睑诊断 (👁️)' },
+                                            { id: 'tongue-diagnosis', name: '中医舌诊 (👅)' },
+                                            { id: 'face-color', name: '中医面色 (💆‍♀️)' },
+                                            { id: 'depression-test', name: '抑郁自测 (💙)' }
+                                        ].map(item => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 text-xs">
+                                                <span className="font-medium text-slate-750">{item.name}</span>
+                                                <button
+                                                    onClick={() => updateConfig(`show_sec_${item.id}`, config[`show_sec_${item.id}`] !== 'false' ? 'false' : 'true')}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${config[`show_sec_${item.id}`] !== 'false' ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${config[`show_sec_${item.id}`] !== 'false' ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 传统玄学 */}
+                                <div className="border border-slate-100 rounded-2xl p-4 bg-amber-50/10">
+                                    <h4 className="text-xs font-bold text-amber-700 mb-3 flex items-center gap-1">🔮 传统玄学</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {[
+                                            { id: 'couple-face', name: '夫妻相度量 (👩‍❤️‍👨)' },
+                                            { id: 'face-reading', name: 'AI面相分析 (🧿)' },
+                                            { id: 'feng-shui', name: 'AI家居风水 (🪑)' },
+                                            { id: 'license-plate', name: '车牌测吉凶 (🚗)' },
+                                            { id: 'calendar', name: '老黄历万年历 (📅)' },
+                                            { id: 'marriage-analysis', name: '八字合婚 (💘)' },
+                                            { id: 'wealth-analysis', name: '财运分析 (💰)' },
+                                            { id: 'zi-wei-dou-shu', name: '紫微斗数 (🌌)' }
+                                        ].map(item => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 text-xs">
+                                                <span className="font-medium text-slate-750">{item.name}</span>
+                                                <button
+                                                    onClick={() => updateConfig(`show_sec_${item.id}`, config[`show_sec_${item.id}`] !== 'false' ? 'false' : 'true')}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${config[`show_sec_${item.id}`] !== 'false' ? 'bg-amber-600' : 'bg-gray-300'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${config[`show_sec_${item.id}`] !== 'false' ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 趣味心理 */}
+                                <div className="border border-slate-100 rounded-2xl p-4 bg-violet-50/10">
+                                    <h4 className="text-xs font-bold text-violet-600 mb-3 flex items-center gap-1">🧠 趣味心理</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {[
+                                            { id: 'mbti-test', name: 'MBTI测试 (🧠)' },
+                                            { id: 'eq-test', name: 'EQ情商测试 (🎭)' },
+                                            { id: 'iq-test', name: 'IQ智商测试 (🧬)' },
+                                            { id: 'big-five', name: '大五人格测试 (🌊)' }
+                                        ].map(item => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 text-xs">
+                                                <span className="font-medium text-slate-750">{item.name}</span>
+                                                <button
+                                                    onClick={() => updateConfig(`show_sec_${item.id}`, config[`show_sec_${item.id}`] !== 'false' ? 'false' : 'true')}
+                                                    className={`w-12 h-6 rounded-full transition-all relative ${config[`show_sec_${item.id}`] !== 'false' ? 'bg-violet-500' : 'bg-gray-300'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${config[`show_sec_${item.id}`] !== 'false' ? 'left-7' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 🛠️ 兑换码生成助手 */}
                         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-3">

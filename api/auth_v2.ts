@@ -833,11 +833,20 @@ export default async function handler(req: any, res: any) {
             case 'getPublicConfig': {
                 const { data: configs } = await supabase
                     .from('app_config')
-                    .select('key, value')
-                    .in('key', ['announcement', 'recharge_enabled', 'home_download_app_enabled', 'home_add_to_desktop_enabled', 'home_rewards_enabled']);
+                    .select('key, value');
 
                 const configMap: Record<string, string> = {};
-                configs?.forEach(c => { configMap[c.key] = c.value; });
+                configs?.forEach(c => {
+                    if ([
+                        'announcement', 
+                        'recharge_enabled', 
+                        'home_download_app_enabled', 
+                        'home_add_to_desktop_enabled', 
+                        'home_rewards_enabled'
+                    ].includes(c.key) || c.key.startsWith('show_sec_')) {
+                        configMap[c.key] = c.value;
+                    }
+                });
 
                 return res.status(200).json({ config: configMap });
             }
