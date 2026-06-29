@@ -708,7 +708,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="py-4 text-orange-500 font-bold text-sm">¥{u.commission_balance || '0.00'}</td>
+                                                    <td className="py-4 text-orange-500 font-bold text-sm">${u.commission_balance || '0.00'}</td>
                                                     <td className="py-4">
                                                         <div className="flex gap-2">
                                                             <button
@@ -746,8 +746,8 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                         {commissions.map(req => (
                                             <tr key={req.id} className="border-b border-gray-100 hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-4 font-bold text-slate-800">{req.users?.nickname || req.users?.username}</td>
-                                                <td className="py-4 text-gray-500 text-xs">@{req.source_user?.username} 充值</td>
-                                                <td className="py-4 text-green-600 font-bold">+{req.amount}元</td>
+                                                <td className="py-4 text-gray-500 text-xs">@{req.source?.username} 充值</td>
+                                                <td className="py-4 text-green-600 font-bold">+${req.amount}</td>
                                                 <td className="py-4 text-gray-400 text-xs">{new Date(req.created_at).toLocaleString()}</td>
                                             </tr>
                                         ))}
