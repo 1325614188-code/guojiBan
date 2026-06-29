@@ -610,7 +610,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                 <div>
                                                     <p className="font-bold text-sm">@{redemption.username || redemption.user_id}</p>
                                                     <p className="text-xs text-gray-500 mt-1">
-                                                        {redemption.points_used}积分 → <span className="text-pink-500 font-bold">{redemption.reward_amount}元红包</span>
+                                                        {redemption.points_used}积分 → <span className="text-pink-500 font-bold">${redemption.reward_amount} 红包</span>
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -781,7 +781,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                     <div className="font-bold text-slate-800">{req.username}</div>
                                                     <div className="text-[10px] text-gray-400">UID: {req.user_id?.slice(0, 8)}...</div>
                                                 </td>
-                                                <td className="py-4 text-red-500 font-bold">¥{req.amount}</td>
+                                                <td className="py-4 text-red-500 font-bold">${req.amount}</td>
                                                 <td className="py-4">
                                                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                                                         req.status === 'pending' ? 'bg-orange-100 text-orange-600' :
@@ -985,7 +985,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1.5 p-4 bg-purple-50/20 rounded-2xl border border-purple-100/40">
-                                    <label className="text-xs text-pink-600 font-bold">档位1：红包金额 (元)</label>
+                                    <label className="text-xs text-pink-600 font-bold">档位1：红包金额 (美元)</label>
                                     <input
                                         type="number"
                                         value={config.points_reward_1 || '20'}
@@ -1005,7 +1005,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1.5 p-4 bg-purple-50/20 rounded-2xl border border-purple-100/40">
-                                    <label className="text-xs text-pink-600 font-bold">档位2：红包金额 (元)</label>
+                                    <label className="text-xs text-pink-600 font-bold">档位2：红包金额 (美元)</label>
                                     <input
                                         type="number"
                                         value={config.points_reward_2 || '50'}
@@ -1675,7 +1675,7 @@ const AdminView: React.FC<AdminViewProps> = ({ admin, onBack }) => {
                                                 {/* 佣金余额显示 */}
                                                 <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 flex justify-between items-center">
                                                     <span className="text-xs font-bold text-amber-800">可提现佣金</span>
-                                                    <span className="text-sm font-black text-amber-600">¥{selectedUser.commission_balance || '0.00'}</span>
+                                                    <span className="text-sm font-black text-amber-600">${selectedUser.commission_balance || '0.00'}</span>
                                                 </div>
                                             </div>
                                         );
